@@ -1,4 +1,4 @@
-package backend
+package gandalf
 
 const (
 	host     = "localhost"
