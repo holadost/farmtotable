@@ -1,4 +1,7 @@
 package backend
 
-type Backend interface {
+import "github.com/jinzhu/gorm"
+
+type SqlBackend interface {
+	GetDB() *gorm.DB
 }
