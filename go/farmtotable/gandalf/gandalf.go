@@ -1,7 +1,10 @@
 package gandalf
 
 import (
+	"fmt"
 	"github.com/jinzhu/gorm"
+	_ "github.com/jinzhu/gorm/dialects/postgres"
+	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/rs/xid"
 	"time"
 )
@@ -12,12 +15,29 @@ type Gandalf struct {
 
 func NewSqliteGandalf() *Gandalf {
 	gandalf := &Gandalf{}
+	db, err := gorm.Open("sqlite3", SQLiteDBPath)
+	if err != nil {
+		panic("Unable to open Sqlite database")
+		return nil
+	}
+	gandalf.Db = db
 	return gandalf
 }
 
 func NewPostgresGandalf() *Gandalf {
 	gandalf := &Gandalf{}
+	addrString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", PGHost, PGPort, PGUser, PGDbName, PGPassword)
+	db, err := gorm.Open("postgres", addrString)
+	if err != nil {
+		panic("Unable to open postgres database")
+		return nil
+	}
+	gandalf.Db = db
 	return gandalf
+}
+
+func (gandalf *Gandalf) Close() {
+	gandalf.Db.Close()
 }
 
 func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string, phNum string, address string) error {
