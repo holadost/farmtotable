@@ -1,15 +1,13 @@
 package gandalf
 
 import (
-	"farmtotable/gandalf/backend"
 	"github.com/jinzhu/gorm"
 	"github.com/rs/xid"
 	"time"
 )
 
 type Gandalf struct {
-	sqlBackend backend.SqlBackend
-	db         *gorm.DB
+	Db *gorm.DB
 }
 
 func NewSqliteGandalf() *Gandalf {
@@ -30,8 +28,7 @@ func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string,
 		PhNum:   phNum,
 		Address: address,
 	}
-	db := gandalf.sqlBackend.GetDB()
-	dbc := db.Create(user)
+	dbc := gandalf.Db.Create(user)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
@@ -39,17 +36,17 @@ func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string,
 }
 
 func (gandalf *Gandalf) GetUserByID(userID string) (user User) {
-	gandalf.db.Where("user_id = ?", userID).First(&user)
+	gandalf.Db.Where("user_id = ?", userID).First(&user)
 	return
 }
 
 func (gandalf *Gandalf) GetUserByEmailID(emailID string) (user User) {
-	gandalf.db.Where("email_id = ?", emailID).First(&user)
+	gandalf.Db.Where("email_id = ?", emailID).First(&user)
 	return
 }
 
 func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
-	gandalf.db.Where("ph_num = ?", phNum).First(&user)
+	gandalf.Db.Where("ph_num = ?", phNum).First(&user)
 	return
 }
 
@@ -66,7 +63,7 @@ func (gandalf *Gandalf) RegisterItem(itemName string, itemDesc string, itemQty u
 	}
 	for ii := 0; ii < 5; ii++ {
 		item.ItemID = xid.New().String()
-		dbc = gandalf.db.Create(item)
+		dbc = gandalf.Db.Create(item)
 		if dbc.Error != nil {
 			// TODO: Ensure that this was a primary key error before retrying.
 			// Retry with a new item ID.
@@ -80,7 +77,7 @@ func (gandalf *Gandalf) RegisterItem(itemName string, itemDesc string, itemQty u
 }
 
 func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
-	gandalf.db.Where("item_id = ?", itemID).First(&item)
+	gandalf.Db.Where("item_id = ?", itemID).First(&item)
 	return
 }
 
@@ -93,7 +90,7 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 		AuctionStartTime: auctionStartTime,
 		MinPrice:         minPrice,
 	}
-	dbc := gandalf.db.Updates(&item)
+	dbc := gandalf.Db.Updates(&item)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
@@ -108,14 +105,14 @@ func (gandalf *Gandalf) AddBid(itemID string, userID string, bidAmount float32, 
 		BidAmount: bidAmount,
 		BidQty:    bidQty,
 	}
-	dbc := gandalf.db.Create(&bid)
+	dbc := gandalf.Db.Create(&bid)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
 
 	// Update the max bid.
 	auction := Auction{}
-	tx := gandalf.db.Begin()
+	tx := gandalf.Db.Begin()
 	tx.Where("item_id = ?", itemID).First(&auction)
 	if auction.MaxBid < bidAmount {
 		auction.MaxBid = bidAmount
@@ -133,7 +130,7 @@ func (gandalf *Gandalf) AddBid(itemID string, userID string, bidAmount float32, 
 
 func (gandalf *Gandalf) GetMaxBid(itemIDs []string) ([]Auction, error) {
 	var auctions []Auction
-	dbc := gandalf.db.Where("item_id IN (?)", itemIDs).Find(&auctions)
+	dbc := gandalf.Db.Where("item_id IN (?)", itemIDs).Find(&auctions)
 	if dbc.Error != nil {
 		return auctions, dbc.Error
 	}
@@ -142,7 +139,7 @@ func (gandalf *Gandalf) GetMaxBid(itemIDs []string) ([]Auction, error) {
 
 func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([]Auction, error) {
 	var auctions []Auction
-	dbc := gandalf.db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
+	dbc := gandalf.Db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
 	if dbc.Error != nil {
 		return auctions, dbc.Error
 	}
@@ -151,7 +148,7 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 
 func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.db.Where("user_id = ?", userID).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -160,7 +157,7 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 
 func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.db.Where("user_id = ? AND status = ?", userID, KOrderPaymentPending).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderPaymentPending).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -170,7 +167,7 @@ func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, err
 
 func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.db.Where("user_id = ? AND status = ?", userID, KOrderDeliveryPending).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderDeliveryPending).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -180,7 +177,7 @@ func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, er
 
 func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.db.Where("user_id = ? AND status = ?", userID, KOrderDelivered).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderDelivered).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -189,7 +186,7 @@ func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
 
 func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 	var order Order
-	dbc := gandalf.db.Where("order_id = ?", orderID, KOrderDelivered).First(&order)
+	dbc := gandalf.Db.Where("order_id = ?", orderID, KOrderDelivered).First(&order)
 	if dbc.Error != nil {
 		return order, dbc.Error
 	}
@@ -198,7 +195,7 @@ func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 
 func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
 	var order Order
-	dbc := gandalf.db.Model(&order).Where("order_id = ?", status).Update("status", status)
+	dbc := gandalf.Db.Model(&order).Where("order_id = ?", status).Update("status", status)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
