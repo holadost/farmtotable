@@ -1,9 +1,13 @@
 package gandalf
 
 const (
-	host     = "localhost"
-	port     = 5432
-	user     = "postgres"
-	password = "farmToTable4u"
-	dbname   = "nikhil"
+	PGHost     = "localhost"
+	PGPort     = 5432
+	PGUser     = "postgres"
+	PGPassword = "farmToTable4u"
+	PGDbName   = "nikhil"
+)
+
+const (
+	SQLiteDBPath = "/tmp/gandalf.db"
 )
