@@ -26,7 +26,7 @@ func NewSqliteGandalf() *Gandalf {
 
 func NewPostgresGandalf() *Gandalf {
 	gandalf := &Gandalf{}
-	addrString := fmt.Sprintf("host=%s port=%s user=%s dbname=%s password=%s", PGHost, PGPort, PGUser, PGDbName, PGPassword)
+	addrString := fmt.Sprintf("host=%s port=%d user=%s dbname=%s password=%s", PGHost, PGPort, PGUser, PGDbName, PGPassword)
 	db, err := gorm.Open("postgres", addrString)
 	if err != nil {
 		panic("Unable to open postgres database")
