@@ -65,7 +65,6 @@ func (gandalf *Gandalf) RegisterItem(itemName string, itemDesc string, itemQty u
 		item.ItemID = xid.New().String()
 		dbc = gandalf.Db.Create(item)
 		if dbc.Error != nil {
-			// TODO: Ensure that this was a primary key error before retrying.
 			// Retry with a new item ID.
 			err = dbc.Error
 			continue
@@ -97,7 +96,7 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 	return nil
 }
 
-func (gandalf *Gandalf) AddBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
+func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
 	// Registers the user bid.
 	bid := Bid{
 		ItemID:    itemID,
@@ -128,7 +127,7 @@ func (gandalf *Gandalf) AddBid(itemID string, userID string, bidAmount float32, 
 	return nil
 }
 
-func (gandalf *Gandalf) GetMaxBid(itemIDs []string) ([]Auction, error) {
+func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {
 	var auctions []Auction
 	dbc := gandalf.Db.Where("item_id IN (?)", itemIDs).Find(&auctions)
 	if dbc.Error != nil {
@@ -144,6 +143,11 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 		return auctions, dbc.Error
 	}
 	return auctions, nil
+}
+
+func (gandalf *Gandalf) AddOrders(orders []Order) error {
+	// Adds the given orders to the database.
+	return nil
 }
 
 func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
