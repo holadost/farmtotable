@@ -11,16 +11,14 @@ type baseModel struct {
 
 /* Database model/schema */
 type User struct {
-	baseModel
 	UserID  string `gorm:"type:varchar(100);PRIMARY_KEY"`
 	Name    string `gorm:"type:varchar(255);NOT NULL"`
-	EmailID string `gorm:"type:varchar(255);NOT NULL"`
-	PhNum   string `gorm:"type:varchar(20);NOT NULL"`
+	EmailID string `gorm:"type:varchar(255);NOT NULL;index"`
+	PhNum   string `gorm:"type:varchar(20);NOT NULL;index"`
 	Address string `gorm:"NOT NULL"`
 }
 
 type Item struct {
-	baseModel
 	ItemID           string `gorm:"type:varchar(32);PRIMARY_KEY"`
 	ItemName         string `gorm:"type:varchar(255);NOT NULL"`
 	ItemDescription  string `gorm:"NOT NULL"`
@@ -37,7 +35,6 @@ type Bid struct {
 }
 
 type Auction struct {
-	baseModel
 	ItemID              string `gorm:"type:varchar(32);PRIMARY_KEY"`
 	ItemQty             uint32
 	AuctionStartTime    time.Time
@@ -46,7 +43,6 @@ type Auction struct {
 }
 
 type Order struct {
-	baseModel
 	OrderID   string `gorm:"type:varchar(32);PRIMARY_KEY"`
 	UserID    string `gorm:"type:varchar(100);index"`
 	ItemID    string `gorm:"type:varchar(32);index"`

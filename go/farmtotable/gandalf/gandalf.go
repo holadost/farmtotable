@@ -21,6 +21,7 @@ func NewSqliteGandalf() *Gandalf {
 		return nil
 	}
 	gandalf.Db = db
+	gandalf.Initialize()
 	return gandalf
 }
 
@@ -33,7 +34,22 @@ func NewPostgresGandalf() *Gandalf {
 		return nil
 	}
 	gandalf.Db = db
+	gandalf.Initialize()
 	return gandalf
+}
+
+func (gandalf *Gandalf) Initialize() error {
+	user := User{}
+	item := Item{}
+	bid := Bid{}
+	auction := Auction{}
+	order := Order{}
+	dbc := gandalf.Db.AutoMigrate(&user, &item, &bid, &auction, &order)
+	if dbc != nil && dbc.Error != nil {
+		panic("Unable to create database")
+		return dbc.Error
+	}
+	return nil
 }
 
 func (gandalf *Gandalf) Close() {
