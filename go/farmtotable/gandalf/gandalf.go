@@ -186,7 +186,15 @@ func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, err
 		return orders, dbc.Error
 	}
 	return orders, nil
+}
 
+func (gandalf *Gandalf) GetAllPaymentPendingOrders() ([]Order, error) {
+	var orders []Order
+	dbc := gandalf.Db.Where("status = ?", KOrderPaymentPending).Find(&orders)
+	if dbc.Error != nil {
+		return orders, dbc.Error
+	}
+	return orders, nil
 }
 
 func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, error) {
@@ -196,7 +204,15 @@ func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, er
 		return orders, dbc.Error
 	}
 	return orders, nil
+}
 
+func (gandalf *Gandalf) GetAllDeliveryPendingOrders() ([]Order, error) {
+	var orders []Order
+	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Find(&orders)
+	if dbc.Error != nil {
+		return orders, dbc.Error
+	}
+	return orders, nil
 }
 
 func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
