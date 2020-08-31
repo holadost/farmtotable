@@ -20,6 +20,7 @@ type User struct {
 
 type Item struct {
 	ItemID           string `gorm:"type:varchar(32);PRIMARY_KEY"`
+	UserID           string `gorm:"type:varchar(100);index"`
 	ItemName         string `gorm:"type:varchar(255);NOT NULL"`
 	ItemDescription  string `gorm:"NOT NULL"`
 	ItemQty          uint32

@@ -86,11 +86,12 @@ func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
 	return
 }
 
-func (gandalf *Gandalf) RegisterItem(itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
+func (gandalf *Gandalf) RegisterItem(userID string, itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
 	var dbc *gorm.DB
 	var err error
 	err = nil
 	item := &Item{
+		UserID:           userID,
 		ItemName:         itemName,
 		ItemDescription:  itemDesc,
 		ItemQty:          itemQty,
@@ -111,6 +112,15 @@ func (gandalf *Gandalf) RegisterItem(itemName string, itemDesc string, itemQty u
 	return err
 }
 
+func (gandalf *Gandalf) GetUserItems(userID string) ([]Item, error) {
+	var items []Item
+	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&items)
+	if dbc.Error != nil {
+		return items, dbc.Error
+	}
+	return items, nil
+}
+
 func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
 	gandalf.Db.Where("item_id = ?", itemID).First(&item)
 	return
@@ -125,7 +135,7 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 		AuctionStartTime: auctionStartTime,
 		MinPrice:         minPrice,
 	}
-	dbc := gandalf.Db.Updates(&item)
+	dbc := gandalf.Db.Model(&item).Updates(&item)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
@@ -136,7 +146,7 @@ func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	item := Item{
 		ItemID: itemID,
 	}
-	dbc := gandalf.Db.Delete(&item)
+	dbc := gandalf.Db.Model(&item).Delete(&item)
 	if dbc.Error != nil {
 		return dbc.Error
 	}
@@ -162,7 +172,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 	tx.Where("item_id = ?", itemID).First(&auction)
 	if auction.MaxBid < bidAmount {
 		auction.MaxBid = bidAmount
-		dbc := tx.Updates(&auction)
+		dbc := tx.Model(&auction).Updates(&auction)
 		if dbc.Error != nil {
 			tx.Rollback()
 			return dbc.Error
