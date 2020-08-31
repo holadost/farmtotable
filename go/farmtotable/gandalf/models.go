@@ -30,15 +30,15 @@ type Item struct {
 }
 
 type Bid struct {
-	ItemID    string `gorm:"type:varchar(32)"`
-	UserID    string `gorm:"type:varchar(100)"`
+	ItemID    string `gorm:"type:varchar(32);index"`
+	UserID    string `gorm:"type:varchar(100);index"`
 	BidAmount float32
 	BidQty    uint32
 }
 
 type Auction struct {
 	baseModel
-	ItemID              string `gorm:"type:varchar(32)"`
+	ItemID              string `gorm:"type:varchar(32);PRIMARY_KEY"`
 	ItemQty             uint32
 	AuctionStartTime    time.Time
 	AuctionDurationSecs uint64
@@ -48,8 +48,8 @@ type Auction struct {
 type Order struct {
 	baseModel
 	OrderID   string `gorm:"type:varchar(32);PRIMARY_KEY"`
-	UserID    string
-	ItemID    string
+	UserID    string `gorm:"type:varchar(100);index"`
+	ItemID    string `gorm:"type:varchar(32);index"`
 	ItemQty   uint32
 	ItemPrice float32
 	Status    uint32
