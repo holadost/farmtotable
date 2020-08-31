@@ -132,6 +132,17 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 	return nil
 }
 
+func (gandalf *Gandalf) DeleteItem(itemID string) error {
+	item := Item{
+		ItemID: itemID,
+	}
+	dbc := gandalf.Db.Delete(&item)
+	if dbc.Error != nil {
+		return dbc.Error
+	}
+	return nil
+}
+
 func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
 	// Registers the user bid.
 	bid := Bid{
