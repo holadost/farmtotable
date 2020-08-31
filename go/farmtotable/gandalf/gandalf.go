@@ -6,6 +6,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/rs/xid"
+	bulk "github.com/sunary/gorm-bulk-insert"
 	"time"
 )
 
@@ -149,6 +150,18 @@ func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	dbc := gandalf.Db.Model(&item).Delete(&item)
 	if dbc.Error != nil {
 		return dbc.Error
+	}
+	return nil
+}
+
+func (gandalf *Gandalf) RegisterAuctions(auctions []Auction) error {
+	var insertRecords []interface{}
+	for ii := 0; ii < len(auctions); ii++ {
+		insertRecords = append(insertRecords, auctions[ii])
+	}
+	err := bulk.BulkInsertWithTableName(gandalf.Db, "auctions", insertRecords)
+	if err != nil {
+		return err
 	}
 	return nil
 }

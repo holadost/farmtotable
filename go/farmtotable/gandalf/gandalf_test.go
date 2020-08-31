@@ -3,6 +3,7 @@ package gandalf
 import (
 	"log"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -114,5 +115,74 @@ func TestGandalf_Item(t *testing.T) {
 	}
 	if len(items) != 2 {
 		t.Fatalf("Did not get the correct number of items")
+	}
+}
+
+func TestGandalf_Auction(t *testing.T) {
+	cleanupSqliteDB()
+	gandalf := NewSqliteGandalf()
+	defer gandalf.Close()
+	var auctions []Auction
+	for ii := 0; ii < 5; ii++ {
+		itemName := "Item" + strconv.Itoa(ii)
+		itemDesc := itemName + ": Item description"
+		err := gandalf.RegisterItem("nikhil", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii))
+		if err != nil {
+			t.Fatalf("Unable to register item")
+		}
+	}
+	items, err := gandalf.GetUserItems("nikhil")
+	if err != nil || len(items) != 5 {
+		t.Fatalf("Unable to fetch items for user")
+	}
+	for ii := 0; ii < 5; ii++ {
+		auctions = append(auctions, Auction{
+			ItemID:              items[ii].ItemID,
+			ItemQty:             items[ii].ItemQty,
+			AuctionStartTime:    items[ii].AuctionStartTime,
+			AuctionDurationSecs: 24 * 86400,
+			MaxBid:              items[ii].MinPrice,
+		})
+	}
+	err = gandalf.RegisterAuctions(auctions)
+	if err != nil {
+		t.Fatalf("Unable to register auction")
+	}
+
+	mainAucs, err := gandalf.GetAllAuctions(0, 5)
+	if err != nil || len(mainAucs) != 5 {
+		t.Fatalf("Unable to fetch auctions")
+	}
+
+	newMaxBid := items[0].MinPrice + 1.0
+	err = gandalf.RegisterBid(items[0].ItemID, "raunaq", newMaxBid, 10)
+	if err != nil {
+		t.Fatalf("Unable to register bid. Error: %v", err)
+	}
+
+	var itemIDs []string
+	itemIDs = append(itemIDs, items[0].ItemID)
+	mainAucs, err = gandalf.GetMaxBids(itemIDs)
+	if err != nil || len(mainAucs) != 1 {
+		t.Fatalf("Unable to fetch max bids for required items")
+	}
+	if mainAucs[0].MaxBid != newMaxBid {
+		t.Fatalf("Max bid did not get updated as expected")
+	}
+
+	newMaxBid = items[1].MinPrice - 1.0
+	err = gandalf.RegisterBid(items[1].ItemID, "raunaq", newMaxBid, 10)
+	if err != nil {
+		t.Fatalf("Unable to register bid. Error: %v", err)
+	}
+
+	itemIDs = itemIDs[:0]
+	itemIDs = append(itemIDs, items[1].ItemID)
+	mainAucs, err = gandalf.GetMaxBids(itemIDs)
+	if err != nil || len(mainAucs) != 1 {
+		t.Fatalf("Unable to fetch max bids for required items")
+	}
+	if mainAucs[0].MaxBid != items[1].MinPrice {
+		t.Fatalf("Max bid got updated even though it should not have")
 	}
 }
