@@ -41,11 +41,12 @@ func NewPostgresGandalf() *Gandalf {
 
 func (gandalf *Gandalf) Initialize() error {
 	user := User{}
+	supplier := Supplier{}
 	item := Item{}
 	bid := Bid{}
 	auction := Auction{}
 	order := Order{}
-	dbc := gandalf.Db.AutoMigrate(&user, &item, &bid, &auction, &order)
+	dbc := gandalf.Db.AutoMigrate(&user, &supplier, &item, &auction, &bid, &order)
 	if dbc != nil && dbc.Error != nil {
 		panic("Unable to create database")
 		return dbc.Error
@@ -83,6 +84,11 @@ func (gandalf *Gandalf) GetUserByEmailID(emailID string) (user User) {
 }
 
 func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
+	gandalf.Db.Where("ph_num = ?", phNum).First(&user)
+	return
+}
+
+func (gandalf *Gandalf) RegisterSupplier(phNum string) (user User) {
 	gandalf.Db.Where("ph_num = ?", phNum).First(&user)
 	return
 }

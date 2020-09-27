@@ -76,7 +76,7 @@ func TestGandalf_Item(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to register item 3")
 	}
-	items, err := gandalf.GetUserItems("nikhil_srivatsan")
+	items, err := gandalf.GetSupplierItems("nikhil_srivatsan")
 	if err != nil {
 		t.Fatalf("Unable to get user items")
 	}
@@ -109,7 +109,7 @@ func TestGandalf_Item(t *testing.T) {
 		t.Fatalf("Deleted item came back")
 	}
 
-	items, err = gandalf.GetUserItems("nikhil_srivatsan")
+	items, err = gandalf.GetSupplierItems("nikhil_srivatsan")
 	if err != nil {
 		t.Fatalf("Unable to get user items")
 	}
@@ -131,7 +131,7 @@ func TestGandalf_Auction(t *testing.T) {
 			t.Fatalf("Unable to register item")
 		}
 	}
-	items, err := gandalf.GetUserItems("nikhil")
+	items, err := gandalf.GetSupplierItems("nikhil")
 	if err != nil || len(items) != 5 {
 		t.Fatalf("Unable to fetch items for user")
 	}

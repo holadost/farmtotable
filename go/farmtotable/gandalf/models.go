@@ -20,7 +20,7 @@ type Supplier struct {
 	SupplierPhNum       string
 	SupplierAddress     string
 	SupplierDescription string
-	SupplierTags        []string
+	SupplierTags        string
 }
 
 type Item struct {
