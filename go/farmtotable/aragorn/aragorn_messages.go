@@ -32,6 +32,7 @@ type RegisterUserRet struct {
 
 // Register Item Args and Ret.
 type RegisterItemArg struct {
+	SupplierID       string    `json:"supplier_id"`
 	ItemName         string    `json:"item_name"`
 	ItemDescription  string    `json:"item_description"`
 	ItemQty          uint32    `json:"item_qty"`
@@ -45,14 +46,19 @@ type RegisterItemRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
+type RemoveItemRet struct {
+	BaseAPIResponse
+	Data RegistrationStatusRet `json:"data"`
+}
+
 // Register Item Args and Ret.
 type RegisterSupplierArg struct {
-	SupplierName        string
-	SupplierDescription string
-	SupplierEmailID     string
-	SupplierPhNum       string
-	SupplierAddress     string
-	SupplierTags        string
+	SupplierName        string `json:"supplier_name"`
+	SupplierDescription string `json:"supplier_description"`
+	SupplierEmailID     string `json:"supplier_email_id"`
+	SupplierPhNum       string `json:"supplier_ph_num"`
+	SupplierAddress     string `json:"supplier_address"`
+	SupplierTags        string `json:"supplier_tags"`
 }
 
 type RegisterSupplierRet struct {
@@ -60,11 +66,24 @@ type RegisterSupplierRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
+// Get all suppliers.
+type GetAllSuppliersRet struct {
+	BaseAPIResponse
+	Data []gandalf.Supplier `json:"data"`
+}
+
+// Get supplier ret.
+type GetSupplierRet struct {
+	BaseAPIResponse
+	Data gandalf.Supplier `json:"data"`
+}
+
 // Register bid args and ret.
 type RegisterBidArg struct {
-	ItemID    string
-	BidAmount float32
-	BidQty    uint32
+	ItemID    string  `json:"item_id"`
+	UserID    string  `json:"user_id"`
+	BidAmount float32 `json:"bid_amount"`
+	BidQty    uint32  `json:"bid_qty"`
 }
 
 type RegisterBidRet struct {

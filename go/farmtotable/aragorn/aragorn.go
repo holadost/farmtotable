@@ -2,13 +2,11 @@ package aragorn
 
 import (
 	"context"
-	"errors"
 	"farmtotable/gandalf"
 	"firebase.google.com/go"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
-	"strings"
 )
 
 type Aragorn struct {
@@ -46,10 +44,10 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/items/remove/:item_id", aragorn.removeItem) // Administrator API. Removes item
 
 	// Auction APIs.
-	r.GET("/api/v1/resources/auctions/fetchallauctions", aragorn.getAllAuctions)     // Returns all the live auctions.
-	r.GET("/api/v1/resources/auctions/fetchmaxbids", aragorn.getMaxBids)             // Returns the max bids for all requested items so far.
-	r.POST("/api/v1/resources/auctions/registerbid", aragorn.registerBid)            // Registers a new bid by the user.
-	r.GET("/api/v1/resources/auctions/fetchuserauctions", aragorn.fetchUserAuctions) // Fetches all items on which the user had previously bid.
+	r.GET("/api/v1/resources/auctions/fetchallauctions", aragorn.getAllAuctions) // Returns all the live auctions.
+	r.GET("/api/v1/resources/auctions/fetchmaxbids", aragorn.getMaxBids)         // Returns the max bids for all requested items so far.
+	r.POST("/api/v1/resources/auctions/registerbid", aragorn.registerBid)        // Registers a new bid by the user.
+	// r.GET("/api/v1/resources/auctions/fetchuserauctions", aragorn.fetchUserAuctions) // Fetches all items on which the user had previously bid.
 
 	// Order APIs.
 	//r.GET("/api/v1/resources/orders/getUserOrders", aragorn.getUserOrders) // Administrator API.
@@ -62,36 +60,35 @@ func (aragorn *Aragorn) Run() {
 	r.Run()
 }
 
-func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
-	idToken := c.Request.Header["Authorization"][0]
-	client, err := aragorn.firebaseApp.Auth(context.Background())
-	if err != nil {
-		return "", err
-	}
-	token, err := client.VerifyIDToken(context.Background(), idToken)
-	if err != nil {
-		return "", err
-	}
-	return token.UID, nil
-}
-
-func (aragorn *Aragorn) doesUserExist(userID string) bool {
-	user := aragorn.gandalf.GetUserByID(userID)
-	if user.UserID != userID {
-		return false
-	}
-	return true
-}
+//func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
+//	idToken := c.Request.Header["Authorization"][0]
+//	client, err := aragorn.firebaseApp.Auth(context.Background())
+//	if err != nil {
+//		return "", err
+//	}
+//	token, err := client.VerifyIDToken(context.Background(), idToken)
+//	if err != nil {
+//		return "", err
+//	}
+//	return token.UID, nil
+//}
+//
+//func (aragorn *Aragorn) doesUserExist(userID string) bool {
+//	user := aragorn.gandalf.GetUserByID(userID)
+//	if user.UserID != userID {
+//		return false
+//	}
+//	return true
+//}
 
 func (aragorn *Aragorn) getUser(c *gin.Context) {
-	_, err := aragorn.authenticate(c)
-	var response APIResponse
-	if err != nil {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "Invalid user"
-		c.JSON(http.StatusUnauthorized, response)
-		return
-	}
+	var response GetUserRet
+	//if err != nil {
+	//	response.Status = http.StatusUnauthorized
+	//	response.ErrorMsg = "Invalid user"
+	//	c.JSON(http.StatusUnauthorized, response)
+	//	return
+	//}
 	var user gandalf.User
 	if err := c.ShouldBindJSON(&user); err != nil {
 		response.Status = http.StatusBadRequest
@@ -109,33 +106,20 @@ func (aragorn *Aragorn) getUser(c *gin.Context) {
 	fullUser := aragorn.gandalf.GetUserByID(user.UserID)
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
-	response.Data = &fullUser
+	response.Data = fullUser
 	c.JSON(http.StatusOK, response)
 }
 
 func (aragorn *Aragorn) registerUser(c *gin.Context) {
-	userID, err := aragorn.authenticate(c)
-	var response APIResponse
-	if err != nil {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "Invalid user"
-		c.JSON(http.StatusUnauthorized, response)
-		return
-	}
-	var user gandalf.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var response RegisterUserRet
+	var userArg RegisterUserArg
+	if err := c.ShouldBindJSON(&userArg); err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-	if user.UserID != userID {
-		response.Status = http.StatusBadRequest
-		response.ErrorMsg = "Invalid user ID"
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
-	err = aragorn.gandalf.RegisterUser(user.UserID, user.Name, user.EmailID, user.PhNum, user.Address)
+	err := aragorn.gandalf.RegisterUser(userArg.UserID, userArg.Name, userArg.EmailID, userArg.PhNum, userArg.Address)
 	if err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = fmt.Sprintf("Error while registering user: %v", err)
@@ -148,15 +132,60 @@ func (aragorn *Aragorn) registerUser(c *gin.Context) {
 }
 
 func (aragorn *Aragorn) registerSupplier(c *gin.Context) {
+	var ret RegisterSupplierRet
+	var arg RegisterSupplierArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	err := aragorn.gandalf.RegisterSupplier(arg.SupplierName, arg.SupplierEmailID, arg.SupplierPhNum,
+		arg.SupplierAddress, arg.SupplierDescription, arg.SupplierTags)
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Error while registering supplier: %v", err)
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{}
+	retData.RegistrationStatus = true
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
 
 }
 
 func (aragorn *Aragorn) getAllSuppliers(c *gin.Context) {
-
+	var ret GetAllSuppliersRet
+	suppliers, err := aragorn.gandalf.GetAllSuppliers()
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Error while registering supplier: %v", err)
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = suppliers
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) getSupplier(c *gin.Context) {
-
+	var ret GetSupplierRet
+	supplierID := c.Param("supplier_id")
+	supplier := aragorn.gandalf.GetSupplierByID(supplierID)
+	if supplier.SupplierName == "" {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Error while registering supplier: %v", err)
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = supplier
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) getSupplierItems(c *gin.Context) {
@@ -164,23 +193,16 @@ func (aragorn *Aragorn) getSupplierItems(c *gin.Context) {
 }
 
 func (aragorn *Aragorn) registerItem(c *gin.Context) {
-	userID, err := aragorn.authenticate(c)
-	var response APIResponse
-	if err != nil {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "Invalid user"
-		c.JSON(http.StatusUnauthorized, response)
-		return
-	}
-	var item gandalf.Item
+	var response RegisterItemRet
+	var item RegisterItemArg
 	if err := c.ShouldBindJSON(&item); err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	err = aragorn.gandalf.RegisterItem(userID, item.ItemName, item.ItemDescription, item.ItemQty, item.AuctionStartTime, item.MinPrice)
+	err := aragorn.gandalf.RegisterItem(item.SupplierID, item.ItemName, item.ItemDescription, item.ItemQty,
+		item.AuctionStartDate, item.MinPrice)
 	if err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = fmt.Sprintf("Error while registering item: %v", err)
@@ -189,47 +211,40 @@ func (aragorn *Aragorn) registerItem(c *gin.Context) {
 	}
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
+	retData := RegistrationStatusRet{}
+	retData.RegistrationStatus = true
+	response.Data = retData
 	c.JSON(http.StatusOK, response)
 }
 
 func (aragorn *Aragorn) removeItem(c *gin.Context) {
-	userID, err := aragorn.authenticate(c)
-	var response APIResponse
-	if err != nil {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "Invalid user"
-		c.JSON(http.StatusUnauthorized, response)
-		return
-	}
+	var ret RemoveItemRet
 	itemID := c.Param("item_id")
 	item := aragorn.gandalf.GetItem(itemID)
-	if item.UserID != userID {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "User does not own this item"
-		c.JSON(http.StatusUnauthorized, response)
+	if item.ItemName == "" {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Did not find item to delete")
+		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
-	err = aragorn.gandalf.DeleteItem(itemID)
+	err := aragorn.gandalf.DeleteItem(itemID)
 	if err != nil {
-		response.Status = http.StatusBadRequest
-		response.ErrorMsg = fmt.Sprintf("Error while removing item: %v", err)
-		c.JSON(http.StatusBadRequest, response)
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Error while removing item: %v", err)
+		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
-	response.Status = http.StatusOK
-	response.ErrorMsg = ""
-	c.JSON(http.StatusOK, response)
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) getAllAuctions(c *gin.Context) {
-	userID, err := aragorn.authenticate(c)
-	var response APIResponse
-	if err != nil {
-		response.Status = http.StatusUnauthorized
-		response.ErrorMsg = "Invalid user"
-		c.JSON(http.StatusUnauthorized, response)
-		return
-	}
+	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
 	if err := c.ShouldBindJSON(&fetchAucArg); err != nil {
 		response.Status = http.StatusBadRequest
@@ -244,29 +259,64 @@ func (aragorn *Aragorn) getAllAuctions(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, response)
 		return
 	}
-
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
-	response.Data = &items
+	response.Data = auctions
 	c.JSON(http.StatusOK, response)
 }
 
 func (aragorn *Aragorn) getMaxBids(c *gin.Context) {
-	auctions, err := aragorn.gandalf.GetMaxBids(itemIDs)
+	var response FetchMaxBidsRet
+	var arg FetchMaxBidsArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		response.Status = http.StatusBadRequest
+		response.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, response)
+		return
+	}
+	auctions, err := aragorn.gandalf.GetMaxBids(arg.ItemIDs)
+	if err != nil {
+		response.Status = http.StatusInternalServerError
+		response.ErrorMsg = "Unable to fetch user items"
+		c.JSON(http.StatusInternalServerError, response)
+		return
+	}
+	var results []FetchMaxBidsRetData
+	for ii := 0; ii < len(auctions); ii++ {
+		itemBid := FetchMaxBidsRetData{
+			ItemID: auctions[ii].ItemID,
+			MaxBid: auctions[ii].MaxBid,
+		}
+		results = append(results, itemBid)
+	}
+	response.Status = http.StatusOK
+	response.ErrorMsg = ""
+	response.Data = results
+	c.JSON(http.StatusOK, response)
 }
 
 func (aragorn *Aragorn) registerBid(c *gin.Context) {
-	err := aragorn.gandalf.RegisterBid(itemID, userID, bidAmount, bidQty)
-	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to register bid for item: %s by user: %s. Backend Error: %v", itemID, userID, err))
+	var arg RegisterBidArg
+	var ret RegisterBidRet
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
 	}
-	return nil
-}
-
-func (aragorn *Aragorn) fetchUserAuctions(c *gin.Context) {
-	err := aragorn.gandalf.RegisterBid(itemID, userID, bidAmount, bidQty)
+	err := aragorn.gandalf.RegisterBid(arg.ItemID, arg.UserID, arg.BidAmount, arg.BidQty)
 	if err != nil {
-		return errors.New(fmt.Sprintf("Unable to register bid for item: %s by user: %s. Backend Error: %v", itemID, userID, err))
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to register bid"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
 	}
-	return nil
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
+	return
 }
