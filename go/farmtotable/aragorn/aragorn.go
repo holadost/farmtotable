@@ -1,7 +1,6 @@
 package aragorn
 
 import (
-	"context"
 	"farmtotable/gandalf"
 	"firebase.google.com/go"
 	"fmt"
@@ -18,10 +17,10 @@ type Aragorn struct {
 func NewAragorn() *Aragorn {
 	aragorn := &Aragorn{}
 	// TODO: Populate the config after we have the file from Raunaq.
-	_, err := firebase.NewApp(context.Background(), nil)
-	if err != nil {
-		panic("Unable to initialize firebase app")
-	}
+	//_, err := firebase.NewApp(context.Background(), nil)
+	//if err != nil {
+	//	panic("Unable to initialize firebase app")
+	//}
 	// TODO: Pick the backend type based on env. For now hardcode to sqlite.
 	aragorn.gandalf = gandalf.NewSqliteGandalf()
 	return aragorn
@@ -34,19 +33,20 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/users/register", aragorn.registerUser)
 
 	// Supplier APIs.
-	r.GET("/api/v1/resources/suppliers/fetchAll", aragorn.getAllSuppliers)       // Administrator API. Returns all the suppliers.
+	r.GET("/api/v1/resources/suppliers/fetch_all", aragorn.getAllSuppliers)      // Administrator API. Returns all the suppliers.
 	r.POST("/api/v1/resources/suppliers/register", aragorn.registerSupplier)     // Administrator API. // Register Supplier.
 	r.GET("/api/v1/resources/suppliers/fetch/:supplier_id", aragorn.getSupplier) // Administrator API. Gets the supplier info.
 
 	// Item APIs.
-	r.GET("/api/v1/resources/items/fetch", aragorn.getSupplierItems)      // Administrator API. Gets all items by a supplier.
-	r.POST("/api/v1/resources/items/register", aragorn.registerItem)      // Administrator API. Registers item.
-	r.POST("/api/v1/resources/items/remove/:item_id", aragorn.removeItem) // Administrator API. Removes item
+	r.GET("/api/v1/resources/items/fetch/:supplier_id", aragorn.getSupplierItems) // Administrator API. Gets all items by a supplier.
+	r.POST("/api/v1/resources/items/register", aragorn.registerItem)              // Administrator API. Registers item.
+	r.POST("/api/v1/resources/items/remove/:item_id", aragorn.removeItem)         // Administrator API. Removes item
 
 	// Auction APIs.
-	r.GET("/api/v1/resources/auctions/fetchallauctions", aragorn.getAllAuctions) // Returns all the live auctions.
-	r.GET("/api/v1/resources/auctions/fetchmaxbids", aragorn.getMaxBids)         // Returns the max bids for all requested items so far.
-	r.POST("/api/v1/resources/auctions/registerbid", aragorn.registerBid)        // Registers a new bid by the user.
+	r.GET("/api/v1/resources/auctions/fetch_all_auctions", aragorn.getAllAuctions)       // Returns all the live auctions.
+	r.GET("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)               // Returns the max bids for all requested items so far.
+	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)               // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/fetch_user_bids/:user_id", aragorn.fetchUserBids) // Registers a new bid by the user.
 	// r.GET("/api/v1/resources/auctions/fetchuserauctions", aragorn.fetchUserAuctions) // Fetches all items on which the user had previously bid.
 
 	// Order APIs.
@@ -80,7 +80,7 @@ func (aragorn *Aragorn) Run() {
 //	}
 //	return true
 //}
-
+/* User APIs. */
 func (aragorn *Aragorn) getUser(c *gin.Context) {
 	var response GetUserRet
 	//if err != nil {
@@ -131,6 +131,7 @@ func (aragorn *Aragorn) registerUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
+/* Supplier APIs. */
 func (aragorn *Aragorn) registerSupplier(c *gin.Context) {
 	var ret RegisterSupplierRet
 	var arg RegisterSupplierArg
@@ -178,7 +179,7 @@ func (aragorn *Aragorn) getSupplier(c *gin.Context) {
 	supplier := aragorn.gandalf.GetSupplierByID(supplierID)
 	if supplier.SupplierName == "" {
 		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = fmt.Sprintf("Error while registering supplier: %v", err)
+		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier with ID: %s", supplierID)
 		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
@@ -188,8 +189,21 @@ func (aragorn *Aragorn) getSupplier(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
+/* Item APIs. */
 func (aragorn *Aragorn) getSupplierItems(c *gin.Context) {
-
+	var ret GetSupplierItemsRet
+	supplierID := c.Param("supplier_id")
+	items, err := aragorn.gandalf.GetSupplierItems(supplierID)
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier items for supplier: %s", supplierID)
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = items
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) registerItem(c *gin.Context) {
@@ -243,6 +257,7 @@ func (aragorn *Aragorn) removeItem(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
+/* Auction APIs. */
 func (aragorn *Aragorn) getAllAuctions(c *gin.Context) {
 	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
@@ -320,3 +335,22 @@ func (aragorn *Aragorn) registerBid(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 	return
 }
+
+func (aragorn *Aragorn) fetchUserBids(c *gin.Context) {
+	var ret FetchAllAuctionsRet
+	userID := c.Param("user_id")
+	auctions, err := aragorn.gandalf.GetUserAuctions(userID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user bids"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = auctions
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+/* Order APIs. */

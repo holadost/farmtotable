@@ -78,6 +78,12 @@ type GetSupplierRet struct {
 	Data gandalf.Supplier `json:"data"`
 }
 
+//  Get supplier items.
+type GetSupplierItemsRet struct {
+	BaseAPIResponse
+	Data []gandalf.Item `json:"data"`
+}
+
 // Register bid args and ret.
 type RegisterBidArg struct {
 	ItemID    string  `json:"item_id"`
