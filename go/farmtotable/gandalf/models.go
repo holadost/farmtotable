@@ -4,11 +4,6 @@ import (
 	"time"
 )
 
-type baseModel struct {
-	CreatedAt time.Time
-	UpdatedAt time.Time
-}
-
 /* Database model/schema */
 type User struct {
 	UserID  string `gorm:"type:varchar(100);PRIMARY_KEY" json:"user_id"`
@@ -18,9 +13,19 @@ type User struct {
 	Address string `gorm:"NOT NULL" json:"address"`
 }
 
+type Supplier struct {
+	SupplierID          string
+	SupplierName        string
+	SupplierEmailID     string
+	SupplierPhNum       string
+	SupplierAddress     string
+	SupplierDescription string
+	SupplierTags        []string
+}
+
 type Item struct {
 	ItemID           string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
-	UserID           string    `gorm:"type:varchar(100);index" json:"user_id"`
+	SupplierID       string    `gorm:"type:varchar(100);index" json:"user_id"`
 	ItemName         string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
 	ItemDescription  string    `gorm:"NOT NULL" json:"item_description"`
 	ItemQty          uint32    `json:"item_qty"`
@@ -37,6 +42,7 @@ type Bid struct {
 
 type Auction struct {
 	ItemID              string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
+	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"`
 	ItemQty             uint32    `json:"item_qty"`
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
