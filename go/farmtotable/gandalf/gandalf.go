@@ -88,9 +88,45 @@ func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
 	return
 }
 
-func (gandalf *Gandalf) RegisterSupplier(phNum string) (user User) {
-	gandalf.Db.Where("ph_num = ?", phNum).First(&user)
+func (gandalf *Gandalf) RegisterSupplier(supplierName string, emailID string, phNum string,
+	address string, description string, tags string) error {
+	var dbc *gorm.DB
+	var err error
+	err = nil
+	supplier := &Supplier{
+		SupplierName:        supplierName,
+		SupplierAddress:     address,
+		SupplierEmailID:     emailID,
+		SupplierDescription: description,
+		SupplierPhNum:       phNum,
+		SupplierTags:        tags,
+	}
+	for ii := 0; ii < 5; ii++ {
+		supplier.SupplierID = xid.New().String()
+		dbc = gandalf.Db.Create(supplier)
+		if dbc.Error != nil {
+			// Retry with a new item ID.
+			err = dbc.Error
+			continue
+		} else {
+			break
+		}
+	}
+	return err
+}
+
+func (gandalf *Gandalf) GetSupplierByID(supplierID string) (supplier Supplier) {
+	gandalf.Db.Where("supplier_id = ?", supplierID).First(&supplier)
 	return
+}
+
+func (gandalf *Gandalf) GetAllSuppliers() ([]Supplier, error) {
+	var suppliers []Supplier
+	dbc := gandalf.Db.Find(&suppliers)
+	if dbc.Error != nil {
+		return suppliers, dbc.Error
+	}
+	return suppliers, nil
 }
 
 func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDesc string, itemQty uint32,
