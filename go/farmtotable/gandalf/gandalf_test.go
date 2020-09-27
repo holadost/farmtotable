@@ -60,6 +60,38 @@ func TestGandalf_User(t *testing.T) {
 	}
 }
 
+func TestGandalf_Supplier(t *testing.T) {
+	cleanupSqliteDB()
+	gandalf := NewSqliteGandalf()
+	defer gandalf.Close()
+	err := gandalf.RegisterSupplier("nikhil_srivatsan", "nikhil.sriniva@nutanix.com",
+		"9198029973", "Mera Naam Joker", "This supplier is a god amongst humans",
+		"tag1,tag2,tag3")
+	if err != nil {
+		t.Fatalf("Unable to register supplier")
+	}
+
+	err = gandalf.RegisterSupplier("rohit_srinivasan", "rohit.sriniva@nutanix.com",
+		"9198029973", "Mera Naam Joker", "This supplier is a god amongst humans",
+		"tag1,tag2,tag3")
+	if err != nil {
+		t.Fatalf("Unable to register supplier")
+	}
+
+	suppliers, err := gandalf.GetAllSuppliers()
+	if err != nil {
+		t.Fatalf("Unable to fetch all suppliers. Error: %v", err)
+	}
+	if len(suppliers) != 2 {
+		t.Fatalf("Did not get the correct number of suppliers")
+	}
+
+	supplier := gandalf.GetSupplierByID(suppliers[0].SupplierID)
+	if supplier.SupplierName != suppliers[0].SupplierName {
+		t.Fatalf("Fetched the wrong record")
+	}
+}
+
 func TestGandalf_Item(t *testing.T) {
 	cleanupSqliteDB()
 	gandalf := NewSqliteGandalf()

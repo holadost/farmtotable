@@ -14,13 +14,13 @@ type User struct {
 }
 
 type Supplier struct {
-	SupplierID          string
-	SupplierName        string
-	SupplierEmailID     string
-	SupplierPhNum       string
-	SupplierAddress     string
-	SupplierDescription string
-	SupplierTags        string
+	SupplierID          string `gorm:"type:varchar(32);PRIMARY_KEY" json:"supplier_id"`
+	SupplierName        string `gorm:"type:varchar(255)" json:"supplier_name"`
+	SupplierEmailID     string `gorm:"type:varchar(255)" json:"supplier_email_id"`
+	SupplierPhNum       string `gorm:"type:varchar(20)" json:"supplier_ph_num"`
+	SupplierAddress     string `gorm:"type:varchar(255)" json:"supplier_address"`
+	SupplierDescription string `gorm:"type:varchar(255)" json:"supplier_desc"`
+	SupplierTags        string `gorm:"type:varchar(255)" json:"supplier_tags"`
 }
 
 type Item struct {
