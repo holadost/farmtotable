@@ -87,12 +87,13 @@ func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
 	return
 }
 
-func (gandalf *Gandalf) RegisterItem(userID string, itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
+func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDesc string, itemQty uint32,
+	auctionStartTime time.Time, minPrice float32) error {
 	var dbc *gorm.DB
 	var err error
 	err = nil
 	item := &Item{
-		UserID:           userID,
+		SupplierID:       supplierID,
 		ItemName:         itemName,
 		ItemDescription:  itemDesc,
 		ItemQty:          itemQty,
@@ -113,9 +114,9 @@ func (gandalf *Gandalf) RegisterItem(userID string, itemName string, itemDesc st
 	return err
 }
 
-func (gandalf *Gandalf) GetUserItems(userID string) ([]Item, error) {
+func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]Item, error) {
 	var items []Item
-	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&items)
+	dbc := gandalf.Db.Where("supplier_id = ?", supplierID).Find(&items)
 	if dbc.Error != nil {
 		return items, dbc.Error
 	}
