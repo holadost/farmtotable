@@ -49,6 +49,11 @@ type RegisterItemRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
+// Remove item args and ret.
+type RemoveItemArg struct {
+	ItemID string `json:"item_id"`
+}
+
 type RemoveItemRet struct {
 	BaseAPIResponse
 	Data RegistrationStatusRet `json:"data"`
@@ -69,19 +74,30 @@ type RegisterSupplierRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
-// Get all suppliers.
+// Get all suppliers args and ret.
+type GetAllSuppliersArg struct {
+}
+
 type GetAllSuppliersRet struct {
 	BaseAPIResponse
 	Data []gandalf.Supplier `json:"data"`
 }
 
-// Get supplier ret.
+// Get supplier args and ret.
+type GetSupplierArg struct {
+	SupplierID string
+}
+
 type GetSupplierRet struct {
 	BaseAPIResponse
 	Data gandalf.Supplier `json:"data"`
 }
 
-//  Get supplier items.
+//  Get supplier items args and ret.
+type GetSupplierItemsArg struct {
+	GetSupplierArg
+}
+
 type GetSupplierItemsRet struct {
 	BaseAPIResponse
 	Data []gandalf.Item `json:"data"`
