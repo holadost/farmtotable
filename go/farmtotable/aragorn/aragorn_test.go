@@ -79,7 +79,6 @@ func TestAragornRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to get user. Error: %v", err)
 	}
-	fmt.Println(fmt.Sprintf("Resp Status Code: %d", resp.StatusCode))
 	fullResp, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		t.Fatalf("Failed to read response body")
@@ -96,5 +95,36 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("User ph num is wrong")
 	}
 
-	//
+	/************************************* Suppliers *******************************************/
+	// Register supplier
+	supplierArg := RegisterSupplierArg{
+		SupplierName:        "Supplier 1",
+		SupplierTags:        "Tag1, Tag2, Tag3",
+		SupplierDescription: "This is a BS supplier",
+		SupplierAddress:     "Tera Ghar",
+		SupplierPhNum:       "0001112223",
+		SupplierEmailID:     "teraghar@meraghar.com",
+	}
+	body, err = json.Marshal(&supplierArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal supplier args to JSON. Error: %v", err)
+	}
+	resp, err = http.Post(baseURL+"/suppliers/register", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to register supplier. Error: %v", err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("Error while registering supplier. Error Code: %d", resp.StatusCode)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	supplierRet := RegisterSupplierRet{}
+	err = json.Unmarshal(fullBody, &supplierRet)
+	if supplierRet.Status != http.StatusOK {
+		t.Fatalf("Unable to register supplier. Error Code: %d, Error Message: %s", supplierRet.Status, supplierRet.ErrorMsg)
+	}
+
 }
