@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net/http"
+	"time"
 )
 
 type Aragorn struct {
@@ -47,7 +48,6 @@ func (aragorn *Aragorn) Run() {
 	r.GET("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)               // Returns the max bids for all requested items so far.
 	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)               // Registers a new bid by the user.
 	r.POST("/api/v1/resources/auctions/fetch_user_bids/:user_id", aragorn.fetchUserBids) // Registers a new bid by the user.
-	// r.GET("/api/v1/resources/auctions/fetchuserauctions", aragorn.fetchUserAuctions) // Fetches all items on which the user had previously bid.
 
 	// Order APIs.
 	//r.GET("/api/v1/resources/orders/getUserOrders", aragorn.getUserOrders) // Administrator API.
@@ -57,7 +57,7 @@ func (aragorn *Aragorn) Run() {
 	//r.POST("/api/v1/resources/orders/updateOrder", aragorn.updateOrder) // Administrator API.
 
 	// Start router.
-	r.Run()
+	r.Run("localhost:8080")
 }
 
 //func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
@@ -119,6 +119,7 @@ func (aragorn *Aragorn) registerUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
+	startTime := time.Now()
 	err := aragorn.gandalf.RegisterUser(userArg.UserID, userArg.Name, userArg.EmailID, userArg.PhNum, userArg.Address)
 	if err != nil {
 		response.Status = http.StatusBadRequest
@@ -126,8 +127,13 @@ func (aragorn *Aragorn) registerUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
+	fmt.Println(fmt.Sprintf("Elapsed Time: %v", time.Since(startTime)))
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	response.Data = retData
 	c.JSON(http.StatusOK, response)
 }
 
