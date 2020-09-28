@@ -127,4 +127,59 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to register supplier. Error Code: %d, Error Message: %s", supplierRet.Status, supplierRet.ErrorMsg)
 	}
 
+	// Get All suppliers.
+	allSuppArg := GetAllSuppliersArg{}
+	body, err = json.Marshal(allSuppArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal get all suppliers arg")
+	}
+	resp, err = http.Post(baseURL+"/suppliers/fetch_all", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to get all suppliers. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	allSuppRet := GetAllSuppliersRet{}
+	err = json.Unmarshal(fullBody, &allSuppRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize suppliers ret. Error: %v", err)
+	}
+	if allSuppRet.Status != http.StatusOK {
+		t.Fatalf("Unable to register supplier. Error Code: %d, Error Message: %s", allSuppRet.Status, allSuppRet.ErrorMsg)
+	}
+	if len(allSuppRet.Data) != 1 {
+		t.Fatalf("Unable to get all suppliers as expected")
+	}
+
+	// Get Supplier
+	suppArg := GetSupplierArg{
+		SupplierID: allSuppRet.Data[0].SupplierID,
+	}
+	body, err = json.Marshal(suppArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal get all suppliers arg")
+	}
+	resp, err = http.Post(baseURL+"/suppliers/fetch", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to get all suppliers. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	suppRet := GetSupplierRet{}
+	err = json.Unmarshal(fullBody, &suppRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize suppliers ret. Error: %v", err)
+	}
+	if suppRet.Status != http.StatusOK {
+		t.Fatalf("Unable to register supplier. Error Code: %d, Error Message: %s", suppRet.Status, suppRet.ErrorMsg)
+	}
+	if suppRet.Data.SupplierID != allSuppRet.Data[0].SupplierID {
+		t.Fatalf("Failure while fetching required supplier")
+	}
 }
