@@ -3,11 +3,13 @@ package aragorn
 import (
 	"bytes"
 	"encoding/json"
+	"farmtotable/gandalf"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 	"testing"
 	"time"
 )
@@ -33,7 +35,7 @@ func cleanupSqliteDB() {
 
 func TestAragornRun(t *testing.T) {
 	cleanupSqliteDB()
-	startAragorn()
+	aragorn := startAragorn()
 	time.Sleep(100 * time.Millisecond)
 	baseURL := "http://localhost:8080/api/v1/resources"
 	/*************************** Users *************************/
@@ -275,5 +277,148 @@ func TestAragornRun(t *testing.T) {
 	}
 	if !removeItemRet.Data.RegistrationStatus {
 		t.Fatalf("Unable to delete item")
+	}
+
+	/********************** Auctions **************************/
+	fmt.Println("Adding new auctions to the database")
+	var auctions []gandalf.Auction
+	for ii := 0; ii < 5; ii++ {
+		itemName := "Item" + strconv.Itoa(ii)
+		itemDesc := itemName + ": Item description"
+		err := aragorn.gandalf.RegisterItem("supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii))
+		if err != nil {
+			t.Fatalf("Unable to register item")
+		}
+	}
+	items, err := aragorn.gandalf.GetSupplierItems("supplier1")
+	if err != nil || len(items) != 5 {
+		t.Fatalf("Unable to fetch items for user")
+	}
+	for ii := 0; ii < 5; ii++ {
+		auctions = append(auctions, gandalf.Auction{
+			ItemID:              items[ii].ItemID,
+			ItemQty:             items[ii].ItemQty,
+			AuctionStartTime:    items[ii].AuctionStartTime,
+			AuctionDurationSecs: 24 * 86400,
+			MaxBid:              items[ii].MinPrice,
+		})
+	}
+	err = aragorn.gandalf.RegisterAuctions(auctions)
+	if err != nil {
+		t.Fatalf("Unable to register auction")
+	}
+
+	// Get All auctions
+	fmt.Println("Getting all auctions")
+	allAucArg := FetchAllAuctionsArg{}
+	allAucArg.StartID = 0
+	allAucArg.NumAuctions = 5
+	body, err = json.Marshal(allAucArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal get all auctions arg")
+	}
+	resp, err = http.Post(baseURL+"/auctions/fetch_all", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to get supplier items. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	allAucRet := FetchAllAuctionsRet{}
+	err = json.Unmarshal(fullBody, &allAucRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize get supp items ret. Error: %v", err)
+	}
+	if allAucRet.Status != http.StatusOK {
+		t.Fatalf("Unable to get supp items. Error Code: %d, Error Message: %s", allAucRet.Status,
+			allAucRet.ErrorMsg)
+	}
+	if len(allAucRet.Data) != 5 {
+		t.Fatalf("Failure while fetching all auctions")
+	}
+
+	// Register bid
+	rbArg := RegisterBidArg{}
+	rbArg.ItemID = items[0].ItemID
+	rbArg.UserID = "nikhil.sriniva"
+	rbArg.BidQty = 10
+	rbArg.BidAmount = 1.5
+
+	body, err = json.Marshal(rbArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal register bid arg")
+	}
+	resp, err = http.Post(baseURL+"/auctions/register_bid", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to register bid. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	rbRet := RegisterBidRet{}
+	err = json.Unmarshal(fullBody, &rbRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize register bid ret. Error: %v", err)
+	}
+	if allAucRet.Status != http.StatusOK {
+		t.Fatalf("Unable to register bid. Error Code: %d, Error Message: %s", rbRet.Status,
+			rbRet.ErrorMsg)
+	}
+	if !rbRet.Data.RegistrationStatus {
+		t.Fatalf("Failure while registering bid")
+	}
+
+	// Fetch Max bids.
+	fmbArg := FetchMaxBidsArg{}
+	var tmpItemIds []string
+	for ii := 0; ii < 3; ii++ {
+		tmpItemIds = append(tmpItemIds, items[ii].ItemID)
+	}
+	fmbArg.ItemIDs = tmpItemIds
+	body, err = json.Marshal(fmbArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal fetch max bids arg")
+	}
+	resp, err = http.Post(baseURL+"/auctions/fetch_max_bids", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to fetch max bids. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	fmbRet := FetchMaxBidsRet{}
+	err = json.Unmarshal(fullBody, &fmbRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize fetch max bids ret. Error: %v", err)
+	}
+	if fmbRet.Status != http.StatusOK {
+		t.Fatalf("Unable to fetch max bids. Error Code: %d, Error Message: %s", fmbRet.Status,
+			fmbRet.ErrorMsg)
+	}
+	if len(fmbRet.Data) != 3 {
+		t.Fatalf("Failure while registering bid")
+	}
+	for ii := 0; ii < 3; ii++ {
+		if ii == 0 {
+			if fmbRet.Data[ii].MaxBid != 1.5 {
+				t.Fatalf("Incorrect max bid for item 0")
+			}
+		}
+		if ii == 1 {
+			if fmbRet.Data[ii].MaxBid != 1.0 {
+				t.Fatalf("Incorrect max bid for item 1")
+			}
+		}
+		if ii == 2 {
+			if fmbRet.Data[ii].MaxBid != 2.0 {
+				t.Fatalf("Incorrect max bid for item 2")
+			}
+		}
 	}
 }

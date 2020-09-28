@@ -14,7 +14,7 @@ type RegistrationStatusRet struct {
 	RegistrationStatus bool `json:"registration_status"`
 }
 
-// Get User Ret.
+// Get User Arg and Ret.
 type GetUserArg struct {
 	UserID string `json:"user_id"`
 }
