@@ -41,7 +41,7 @@ type RegisterItemArg struct {
 	ItemQty          uint32    `json:"item_qty"`
 	AuctionStartDate time.Time `json:"auction_start_date"`
 	MinPrice         float32   `json:"min_price"`
-	ItemTags         []string  `json:"item_tags"`
+	ItemTags         string    `json:"item_tags"`
 }
 
 type RegisterItemRet struct {
