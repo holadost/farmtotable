@@ -36,7 +36,7 @@ func TestAragornRun(t *testing.T) {
 	startAragorn()
 	time.Sleep(100 * time.Millisecond)
 	baseURL := "http://localhost:8080/api/v1/resources"
-
+	/*************************** Users *************************/
 	// Register new user.
 	userArg := RegisterUserArg{}
 	userArg.UserID = "nikhil.sriniva"
@@ -226,9 +226,9 @@ func TestAragornRun(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Unable to marshal get suppliter items arg")
 	}
-	resp, err = http.Post(baseURL+"/items/register", "application/json", bytes.NewBuffer(body))
+	resp, err = http.Post(baseURL+"/items/fetch", "application/json", bytes.NewBuffer(body))
 	if err != nil {
-		t.Fatalf("Unable to register item. Error: %v", err)
+		t.Fatalf("Unable to get supplier items. Error: %v", err)
 	}
 	fullBody, err = ioutil.ReadAll(resp.Body)
 	if err != nil {
@@ -238,13 +238,42 @@ func TestAragornRun(t *testing.T) {
 	getSuppItemsRet := GetSupplierItemsRet{}
 	err = json.Unmarshal(fullBody, &getSuppItemsRet)
 	if err != nil {
-		t.Fatalf("Unable to deserialize reg items ret. Error: %v", err)
+		t.Fatalf("Unable to deserialize get supp items ret. Error: %v", err)
 	}
 	if getSuppItemsRet.Status != http.StatusOK {
-		t.Fatalf("Unable to register item. Error Code: %d, Error Message: %s", getSuppItemsRet.Status,
+		t.Fatalf("Unable to get supp items. Error Code: %d, Error Message: %s", getSuppItemsRet.Status,
 			getSuppItemsRet.ErrorMsg)
 	}
 	if len(getSuppItemsRet.Data) != 1 {
 		t.Fatalf("Failure while fetching all supplier items")
+	}
+
+	// Remove Item
+	removeItemArg := RemoveItemArg{}
+	removeItemArg.ItemID = getSuppItemsRet.Data[0].ItemID
+	body, err = json.Marshal(removeItemArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal remove items arg")
+	}
+	resp, err = http.Post(baseURL+"/items/remove", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to remove items. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	removeItemRet := RemoveItemRet{}
+	err = json.Unmarshal(fullBody, &removeItemRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize remove items ret. Error: %v", err)
+	}
+	if getSuppItemsRet.Status != http.StatusOK {
+		t.Fatalf("Unable to remove items. Error Code: %d, Error Message: %s", removeItemRet.Status,
+			removeItemRet.ErrorMsg)
+	}
+	if !removeItemRet.Data.RegistrationStatus {
+		t.Fatalf("Unable to delete item")
 	}
 }
