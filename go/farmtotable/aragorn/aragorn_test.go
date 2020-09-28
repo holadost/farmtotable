@@ -421,4 +421,37 @@ func TestAragornRun(t *testing.T) {
 			}
 		}
 	}
+
+	// Get user bids
+	// Register bid
+	gubArg := GetUserBidsArg{}
+	gubArg.UserID = "nikhil.sriniva"
+	body, err = json.Marshal(gubArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal register bid arg")
+	}
+	resp, err = http.Post(baseURL+"/auctions/fetch_user_bids", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to get user bids. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	gubRet := GetUserBidsRet{}
+	err = json.Unmarshal(fullBody, &gubRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize get user bid ret. Error: %v", err)
+	}
+	if gubRet.Status != http.StatusOK {
+		t.Fatalf("Unable to get user bid. Error Code: %d, Error Message: %s", gubRet.Status,
+			gubRet.ErrorMsg)
+	}
+	if len(gubRet.Data) != 1 {
+		t.Fatalf("Failure while getting user bids")
+	}
+	if gubRet.Data[0].MaxBid != 1.5 {
+		t.Fatalf("Something went wrong")
+	}
 }

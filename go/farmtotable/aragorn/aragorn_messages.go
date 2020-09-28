@@ -141,3 +141,12 @@ type FetchAllAuctionsRet struct {
 	BaseAPIResponse
 	Data []gandalf.Auction
 }
+
+// User Bids
+type GetUserBidsArg struct {
+	GetUserArg
+}
+
+type GetUserBidsRet struct {
+	FetchAllAuctionsRet
+}

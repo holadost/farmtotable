@@ -241,13 +241,13 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 }
 
 /* Returns all the live auctions that the user has bid on. */
-func (gandalf *Gandalf) GetUserAuctions(userID string) ([]Auction, error) {
-	var auctions []Auction
-	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&auctions)
+func (gandalf *Gandalf) GetUserAuctions(userID string) ([]Bid, error) {
+	var bids []Bid
+	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&bids)
 	if dbc.Error != nil {
-		return auctions, dbc.Error
+		return bids, dbc.Error
 	}
-	return auctions, nil
+	return bids, nil
 }
 
 func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {

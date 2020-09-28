@@ -348,8 +348,8 @@ func (aragorn *Aragorn) registerBid(c *gin.Context) {
 }
 
 func (aragorn *Aragorn) fetchUserBids(c *gin.Context) {
-	var ret FetchAllAuctionsRet
-	var arg GetUserArg
+	var ret GetUserBidsRet
+	var arg GetUserBidsArg
 	if err := c.ShouldBindJSON(&arg); err != nil {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
