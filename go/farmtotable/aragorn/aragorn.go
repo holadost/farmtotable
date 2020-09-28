@@ -82,7 +82,6 @@ func (aragorn *Aragorn) Run() {
 //}
 /* User APIs. */
 func (aragorn *Aragorn) getUser(c *gin.Context) {
-	fmt.Println("Welcome to get user")
 	var response GetUserRet
 	var arg GetUserArg
 	if err := c.ShouldBindJSON(&arg); err != nil {
@@ -91,7 +90,6 @@ func (aragorn *Aragorn) getUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-	fmt.Println(fmt.Sprintf("Received User ID: %s", arg.UserID))
 	fullUser := aragorn.gandalf.GetUserByID(arg.UserID)
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
@@ -170,11 +168,17 @@ func (aragorn *Aragorn) getAllSuppliers(c *gin.Context) {
 
 func (aragorn *Aragorn) getSupplier(c *gin.Context) {
 	var ret GetSupplierRet
-	supplierID := c.Param("supplier_id")
-	supplier := aragorn.gandalf.GetSupplierByID(supplierID)
+	var arg GetSupplierArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	supplier := aragorn.gandalf.GetSupplierByID(arg.SupplierID)
 	if supplier.SupplierName == "" {
 		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier with ID: %s", supplierID)
+		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier with ID: %s", arg.SupplierID)
 		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
@@ -187,11 +191,17 @@ func (aragorn *Aragorn) getSupplier(c *gin.Context) {
 /* Item APIs. */
 func (aragorn *Aragorn) getSupplierItems(c *gin.Context) {
 	var ret GetSupplierItemsRet
-	supplierID := c.Param("supplier_id")
-	items, err := aragorn.gandalf.GetSupplierItems(supplierID)
+	var arg GetSupplierItemsArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	items, err := aragorn.gandalf.GetSupplierItems(arg.SupplierID)
 	if err != nil {
 		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier items for supplier: %s", supplierID)
+		ret.ErrorMsg = fmt.Sprintf("Error while fetching supplier items for supplier: %s", arg.SupplierID)
 		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
@@ -228,15 +238,21 @@ func (aragorn *Aragorn) registerItem(c *gin.Context) {
 
 func (aragorn *Aragorn) removeItem(c *gin.Context) {
 	var ret RemoveItemRet
-	itemID := c.Param("item_id")
-	item := aragorn.gandalf.GetItem(itemID)
+	var arg RemoveItemArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	item := aragorn.gandalf.GetItem(arg.ItemID)
 	if item.ItemName == "" {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Did not find item to delete")
 		c.JSON(http.StatusBadRequest, ret)
 		return
 	}
-	err := aragorn.gandalf.DeleteItem(itemID)
+	err := aragorn.gandalf.DeleteItem(arg.ItemID)
 	if err != nil {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Error while removing item: %v", err)
@@ -333,8 +349,14 @@ func (aragorn *Aragorn) registerBid(c *gin.Context) {
 
 func (aragorn *Aragorn) fetchUserBids(c *gin.Context) {
 	var ret FetchAllAuctionsRet
-	userID := c.Param("user_id")
-	auctions, err := aragorn.gandalf.GetUserAuctions(userID)
+	var arg GetUserArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	auctions, err := aragorn.gandalf.GetUserAuctions(arg.UserID)
 	if err != nil {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch user bids"
