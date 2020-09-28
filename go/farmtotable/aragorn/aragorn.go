@@ -30,7 +30,7 @@ func NewAragorn() *Aragorn {
 func (aragorn *Aragorn) Run() {
 	r := gin.Default()
 	// User APIs.
-	r.GET("/api/v1/resources/users/fetch/:user_id", aragorn.getUser)
+	r.POST("/api/v1/resources/users/fetch/", aragorn.getUser)
 	r.POST("/api/v1/resources/users/register", aragorn.registerUser)
 
 	// Supplier APIs.
@@ -82,28 +82,17 @@ func (aragorn *Aragorn) Run() {
 //}
 /* User APIs. */
 func (aragorn *Aragorn) getUser(c *gin.Context) {
+	fmt.Println("Welcome to get user")
 	var response GetUserRet
-	//if err != nil {
-	//	response.Status = http.StatusUnauthorized
-	//	response.ErrorMsg = "Invalid user"
-	//	c.JSON(http.StatusUnauthorized, response)
-	//	return
-	//}
-	var user gandalf.User
-	if err := c.ShouldBindJSON(&user); err != nil {
+	var arg GetUserArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-
-	if user.UserID == "" {
-		response.Status = http.StatusBadRequest
-		response.ErrorMsg = "User ID is incorrect"
-		c.JSON(http.StatusBadRequest, response)
-		return
-	}
-	fullUser := aragorn.gandalf.GetUserByID(user.UserID)
+	fmt.Println(fmt.Sprintf("Received User ID: %s", arg.UserID))
+	fullUser := aragorn.gandalf.GetUserByID(arg.UserID)
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
 	response.Data = fullUser

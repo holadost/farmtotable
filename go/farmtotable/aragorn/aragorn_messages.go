@@ -15,6 +15,9 @@ type RegistrationStatusRet struct {
 }
 
 // Get User Ret.
+type GetUserArg struct {
+	UserID string `json:"user_id"`
+}
 type GetUserRet struct {
 	BaseAPIResponse
 	Data gandalf.User `json:"data"`
