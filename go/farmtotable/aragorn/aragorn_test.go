@@ -213,9 +213,38 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to deserialize reg items ret. Error: %v", err)
 	}
 	if regItemRet.Status != http.StatusOK {
-		t.Fatalf("Unable to register item. Error Code: %d, Error Message: %s", suppRet.Status, suppRet.ErrorMsg)
+		t.Fatalf("Unable to register item. Error Code: %d, Error Message: %s", regItemRet.Status, regItemRet.ErrorMsg)
 	}
 	if !regItemRet.Data.RegistrationStatus {
 		t.Fatalf("Failure while registering item")
+	}
+
+	// Get supplier items.
+	getSupplierItemsArg := GetSupplierItemsArg{}
+	getSupplierItemsArg.SupplierID = "Supplier 1"
+	body, err = json.Marshal(getSupplierItemsArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal get suppliter items arg")
+	}
+	resp, err = http.Post(baseURL+"/items/register", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to register item. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	if err != nil {
+		t.Fatalf("Unable to read body")
+	}
+	resp.Body.Close()
+	getSuppItemsRet := GetSupplierItemsRet{}
+	err = json.Unmarshal(fullBody, &getSuppItemsRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize reg items ret. Error: %v", err)
+	}
+	if getSuppItemsRet.Status != http.StatusOK {
+		t.Fatalf("Unable to register item. Error Code: %d, Error Message: %s", getSuppItemsRet.Status,
+			getSuppItemsRet.ErrorMsg)
+	}
+	if len(getSuppItemsRet.Data) != 1 {
+		t.Fatalf("Failure while fetching all supplier items")
 	}
 }
