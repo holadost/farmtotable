@@ -58,7 +58,7 @@ func (aragorn *Aragorn) Run() {
 	//r.POST("/api/v1/resources/orders/update_order", aragorn.updateOrder) // Administrator API.
 
 	// Start router.
-	r.Run("localhost:8080")
+	r.Run(":8080")
 }
 
 //func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
