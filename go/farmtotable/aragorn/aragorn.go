@@ -29,6 +29,7 @@ func NewAragorn() *Aragorn {
 
 func (aragorn *Aragorn) Run() {
 	r := gin.Default()
+	r.GET("/", aragorn.getUser)
 	// User APIs.
 	r.POST("/api/v1/resources/users/fetch", aragorn.getUser)
 	r.POST("/api/v1/resources/users/register", aragorn.registerUser)
@@ -348,26 +349,26 @@ func (aragorn *Aragorn) registerBid(c *gin.Context) {
 }
 
 func (aragorn *Aragorn) fetchUserBids(c *gin.Context) {
-	var ret GetUserBidsRet
-	var arg GetUserBidsArg
-	if err := c.ShouldBindJSON(&arg); err != nil {
-		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = "Invalid input JSON"
-		c.JSON(http.StatusBadRequest, ret)
-		return
-	}
-	auctions, err := aragorn.gandalf.GetUserAuctions(arg.UserID)
-	if err != nil {
-		ret.Status = http.StatusInternalServerError
-		ret.ErrorMsg = "Unable to fetch user bids"
-		c.JSON(http.StatusInternalServerError, ret)
-		return
-	}
-	ret.Status = http.StatusOK
-	ret.ErrorMsg = ""
-	ret.Data = auctions
-	c.JSON(http.StatusOK, ret)
-	return
+	//var ret GetUserBidsRet
+	//var arg GetUserBidsArg
+	//if err := c.ShouldBindJSON(&arg); err != nil {
+	//	ret.Status = http.StatusBadRequest
+	//	ret.ErrorMsg = "Invalid input JSON"
+	//	c.JSON(http.StatusBadRequest, ret)
+	//	return
+	//}
+	//auctions, err := aragorn.gandalf.GetUserAuctions(arg.UserID)
+	//if err != nil {
+	//	ret.Status = http.StatusInternalServerError
+	//	ret.ErrorMsg = "Unable to fetch user bids"
+	//	c.JSON(http.StatusInternalServerError, ret)
+	//	return
+	//}
+	//ret.Status = http.StatusOK
+	//ret.ErrorMsg = ""
+	//// ret.Data = auctions
+	//c.JSON(http.StatusOK, ret)
+	//return
 }
 
 /* Order APIs. */
