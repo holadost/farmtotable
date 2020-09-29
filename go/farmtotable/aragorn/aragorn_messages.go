@@ -85,7 +85,7 @@ type GetAllSuppliersRet struct {
 
 // Get supplier args and ret.
 type GetSupplierArg struct {
-	SupplierID string
+	SupplierID string `json:"supplier_id"`
 }
 
 type GetSupplierRet struct {
@@ -139,7 +139,7 @@ type FetchAllAuctionsArg struct {
 
 type FetchAllAuctionsRet struct {
 	BaseAPIResponse
-	Data []gandalf.Auction
+	Data []gandalf.Auction `json:"data"`
 }
 
 // User Bids
