@@ -29,33 +29,33 @@ func NewAragorn() *Aragorn {
 
 func (aragorn *Aragorn) Run() {
 	r := gin.Default()
-	r.GET("/", aragorn.getUser)
+	r.POST("/", aragorn.getUser)
 	// User APIs.
-	r.GET("/api/v1/resources/users/fetch", aragorn.getUser)
+	r.POST("/api/v1/resources/users/fetch", aragorn.getUser)
 	r.POST("/api/v1/resources/users/register", aragorn.registerUser)
 
 	// Supplier APIs.
-	r.GET("/api/v1/resources/suppliers/fetch_all", aragorn.getAllSuppliers)  // Administrator API. Returns all the suppliers.
+	r.POST("/api/v1/resources/suppliers/fetch_all", aragorn.getAllSuppliers) // Administrator API. Returns all the suppliers.
 	r.POST("/api/v1/resources/suppliers/register", aragorn.registerSupplier) // Administrator API. // Register Supplier.
-	r.GET("/api/v1/resources/suppliers/fetch", aragorn.getSupplier)          // Administrator API. Gets the supplier info.
+	r.POST("/api/v1/resources/suppliers/fetch", aragorn.getSupplier)         // Administrator API. Gets the supplier info.
 
 	// Item APIs.
-	r.GET("/api/v1/resources/items/fetch", aragorn.getSupplierItems) // Administrator API. Gets all items by a supplier.
-	r.POST("/api/v1/resources/items/register", aragorn.registerItem) // Administrator API. Registers item.
-	r.POST("/api/v1/resources/items/remove", aragorn.removeItem)     // Administrator API. Removes item
+	r.POST("/api/v1/resources/items/fetch", aragorn.getSupplierItems) // Administrator API. Gets all items by a supplier.
+	r.POST("/api/v1/resources/items/register", aragorn.registerItem)  // Administrator API. Registers item.
+	r.POST("/api/v1/resources/items/remove", aragorn.removeItem)      // Administrator API. Removes item
 
 	// Auction APIs.
-	r.GET("/api/v1/resources/auctions/fetch_all", aragorn.getAllAuctions)      // Returns all the live auctions.
-	r.GET("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)     // Returns the max bids for all requested items so far.
-	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)     // Registers a new bid by the user.
-	r.GET("/api/v1/resources/auctions/fetch_user_bids", aragorn.fetchUserBids) // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.getAllAuctions)      // Returns all the live auctions.
+	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)     // Returns the max bids for all requested items so far.
+	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)      // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/fetch_user_bids", aragorn.fetchUserBids) // Registers a new bid by the user.
 
 	// Order APIs.
-	//r.GET("/api/v1/resources/orders/get_user_orders", aragorn.getUserOrders) // Administrator API.
-	//r.GET("/api/v1/resources/orders/get_payment_pending_orders", aragorn.getPaymentPendingOrders) // Administrator API.
-	//r.GET("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.getDeliveryPendingOrders) // Administrator API.
-	//r.GET("/api/v1/resources/orders/get_order", aragorn.getOrder) // Administrator API.
-	//r.GET("/api/v1/resources/orders/update_order", aragorn.updateOrder) // Administrator API.
+	//r.POST("/api/v1/resources/orders/get_user_orders", aragorn.getUserOrders) // Administrator API.
+	//r.POST("/api/v1/resources/orders/get_payment_pending_orders", aragorn.getPaymentPendingOrders) // Administrator API.
+	//r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.getDeliveryPendingOrders) // Administrator API.
+	//r.POST("/api/v1/resources/orders/get_order", aragorn.getOrder) // Administrator API.
+	//r.POST("/api/v1/resources/orders/update_order", aragorn.updateOrder) // Administrator API.
 
 	// Start router.
 	r.Run("localhost:8080")
