@@ -45,17 +45,18 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/items/remove", aragorn.removeItem)      // Administrator API. Removes item
 
 	// Auction APIs.
-	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.getAllAuctions)      // Returns all the live auctions.
-	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)     // Returns the max bids for all requested items so far.
-	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)      // Registers a new bid by the user.
-	r.POST("/api/v1/resources/auctions/fetch_user_bids", aragorn.fetchUserBids) // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.getAllAuctions)             // Returns all the live auctions.
+	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.getMaxBids)            // Returns the max bids for all requested items so far.
+	r.POST("/api/v1/resources/auctions/register_bid", aragorn.registerBid)             // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/fetch_all_user_bids", aragorn.fetchAllUserBids) // Fetches all the user bids.
+	r.POST("/api/v1/resources/auctions/fetch_user_bids", aragorn.fetchUserBidsForItem) // Fetches user bids for an item
 
 	// Order APIs.
-	//r.POST("/api/v1/resources/orders/get_user_orders", aragorn.getUserOrders) // Administrator API.
-	//r.POST("/api/v1/resources/orders/get_payment_pending_orders", aragorn.getPaymentPendingOrders) // Administrator API.
-	//r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.getDeliveryPendingOrders) // Administrator API.
-	//r.POST("/api/v1/resources/orders/get_order", aragorn.getOrder) // Administrator API.
-	//r.POST("/api/v1/resources/orders/update_order", aragorn.updateOrder) // Administrator API.
+	r.POST("/api/v1/resources/orders/get_user_orders", aragorn.getUserOrders)                            // Administrator API.
+	r.POST("/api/v1/resources/orders/get_payment_pending_orders", aragorn.getUserPaymentPendingOrders)   // Administrator API.
+	r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.getUserDeliveryPendingOrders) // Administrator API.
+	r.POST("/api/v1/resources/orders/get_order", aragorn.getOrder)                                       // Administrator API.
+	r.POST("/api/v1/resources/orders/update_order", aragorn.updateOrder)                                 // Administrator API.
 
 	// Start router.
 	r.Run(":8080")
@@ -348,27 +349,173 @@ func (aragorn *Aragorn) registerBid(c *gin.Context) {
 	return
 }
 
-func (aragorn *Aragorn) fetchUserBids(c *gin.Context) {
-	//var ret GetUserBidsRet
-	//var arg GetUserBidsArg
-	//if err := c.ShouldBindJSON(&arg); err != nil {
-	//	ret.Status = http.StatusBadRequest
-	//	ret.ErrorMsg = "Invalid input JSON"
-	//	c.JSON(http.StatusBadRequest, ret)
-	//	return
-	//}
-	//auctions, err := aragorn.gandalf.GetUserAuctions(arg.UserID)
-	//if err != nil {
-	//	ret.Status = http.StatusInternalServerError
-	//	ret.ErrorMsg = "Unable to fetch user bids"
-	//	c.JSON(http.StatusInternalServerError, ret)
-	//	return
-	//}
-	//ret.Status = http.StatusOK
-	//ret.ErrorMsg = ""
-	//// ret.Data = auctions
-	//c.JSON(http.StatusOK, ret)
-	//return
+func (aragorn *Aragorn) fetchUserBidsForItem(c *gin.Context) {
+	var ret GetUserBidsRet
+	var arg GetUserBidsForItemArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	bids, err := aragorn.gandalf.GetUserBids(arg.UserID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user bids"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	var itemBids []gandalf.Bid
+	for ii := 0; ii < len(bids); ii++ {
+		if bids[ii].ItemID == arg.ItemID {
+			itemBids = append(itemBids, bids[ii])
+		}
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = itemBids
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+func (aragorn *Aragorn) fetchAllUserBids(c *gin.Context) {
+	var ret GetUserBidsRet
+	var arg GetAllUserBidsArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	bids, err := aragorn.gandalf.GetUserBids(arg.UserID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user bids"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = bids
+	c.JSON(http.StatusOK, ret)
+	return
 }
 
 /* Order APIs. */
+func (aragorn *Aragorn) getUserOrders(c *gin.Context) {
+	var ret GetUserOrdersRet
+	var arg GetUserOrdersArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	orders, err := aragorn.gandalf.GetUserOrders(arg.UserID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = orders
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+func (aragorn *Aragorn) getUserPaymentPendingOrders(c *gin.Context) {
+	var ret GetUserOrdersRet
+	var arg GetUserOrdersArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	orders, err := aragorn.gandalf.GetUserPaymentPendingOrders(arg.UserID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = orders
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+func (aragorn *Aragorn) getUserDeliveryPendingOrders(c *gin.Context) {
+	var ret GetUserOrdersRet
+	var arg GetUserOrdersArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	orders, err := aragorn.gandalf.GetUserDeliveryPendingOrders(arg.UserID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = orders
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+func (aragorn *Aragorn) getOrder(c *gin.Context) {
+	var ret GetOrderRet
+	var arg GetOrderArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	order, err := aragorn.gandalf.GetOrder(arg.OrderID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user bids"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = order
+	c.JSON(http.StatusOK, ret)
+	return
+}
+
+func (aragorn *Aragorn) updateOrder(c *gin.Context) {
+	var ret UpdateOrderRet
+	var arg UpdateOrderArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	err := aragorn.gandalf.UpdateOrderStatus(arg.OrderID, arg.Status)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to update order"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
+	return
+}

@@ -143,10 +143,68 @@ type FetchAllAuctionsRet struct {
 }
 
 // User Bids
-type GetUserBidsArg struct {
+type GetAllUserBidsArg struct {
 	GetUserArg
 }
 
+type GetUserBidsForItemArg struct {
+	UserID string `json:"user_id"`
+	ItemID string `json:"item_id"`
+}
+
 type GetUserBidsRet struct {
-	FetchAllAuctionsRet
+	BaseAPIResponse
+	Data []gandalf.Bid `json:"data"`
+}
+
+type GetOrderArg struct {
+	OrderID string `json:"order_id"`
+}
+
+type GetOrderRet struct {
+	BaseAPIResponse
+	Data gandalf.Order
+}
+
+type UpdateOrderArg struct {
+	OrderID string `json:"order_id"`
+	Status  uint32 `json:"status"`
+}
+
+type UpdateOrderRet struct {
+	BaseAPIResponse
+	Data RegistrationStatusRet `json:"data"`
+}
+
+type GetUserOrdersArg struct {
+	GetUserArg
+}
+
+type GetUserOrdersRet struct {
+	BaseAPIResponse
+	Data []gandalf.Order `json:"data"`
+}
+
+type GetUserPaymentPendingOrdersArg struct {
+	GetUserArg
+}
+
+type GetUserPaymentPendingOrdersRet struct {
+	GetUserOrdersRet
+}
+
+type GetUserDeliveryPendingOrdersArg struct {
+	GetUserArg
+}
+
+type GetUserDeliveryPendingOrdersRet struct {
+	GetUserOrdersRet
+}
+
+type GetUserCancelledOrdersArg struct {
+	GetUserArg
+}
+
+type GetUserCancelledOrdersRet struct {
+	GetUserOrdersRet
 }
