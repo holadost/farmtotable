@@ -184,41 +184,10 @@ type UpdateOrderRet struct {
 
 type GetUserOrdersArg struct {
 	GetUserArg
+	Status string `json:"status"`
 }
 
 type GetUserOrdersRet struct {
 	BaseAPIResponse
 	Data []OrderRet `json:"data"`
-}
-
-type GetUserPaymentPendingOrdersArg struct {
-	GetUserArg
-}
-
-type GetUserPaymentPendingOrdersRet struct {
-	GetUserOrdersRet
-}
-
-type GetUserDeliveryPendingOrdersArg struct {
-	GetUserArg
-}
-
-type GetUserDeliveryPendingOrdersRet struct {
-	GetUserOrdersRet
-}
-
-type GetUserCancelledOrdersArg struct {
-	GetUserArg
-}
-
-type GetUserCancelledOrdersRet struct {
-	GetUserOrdersRet
-}
-
-type GetUserCompletedOrdersArg struct {
-	GetUserArg
-}
-
-type GetUserCompletedOrdersRet struct {
-	GetUserOrdersRet
 }
