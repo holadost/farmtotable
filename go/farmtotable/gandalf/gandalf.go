@@ -255,6 +255,28 @@ func (gandalf *Gandalf) GetUserBids(userID string) ([]Bid, error) {
 	return bids, nil
 }
 
+/* Returns the bids for a given item starting from 'start' row upto numBids rows. */
+func (gandalf *Gandalf) ScanItemBids(itemID string, start uint64, numBids uint64) ([]Bid, error) {
+	var bids []Bid
+	dbc := gandalf.Db.Where("item_id = ?", itemID).Find(&bids)
+	if dbc.Error != nil {
+		return bids, dbc.Error
+	}
+	return bids, nil
+}
+
+/* Returns all the bids for a given item. This method must be used with care as there could potentially be
+millions of such records. */
+func (gandalf *Gandalf) GetAllItemBids(itemID string) ([]Bid, error) {
+	var bids []Bid
+	dbc := gandalf.Db.Where("item_id = ?", itemID).Find(&bids)
+	if dbc.Error != nil {
+		return bids, dbc.Error
+	}
+	return bids, nil
+}
+
+/* Fetches the max bids for the given items. */
 func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {
 	var auctions []Auction
 	dbc := gandalf.Db.Where("item_id IN (?)", itemIDs).Find(&auctions)
@@ -264,6 +286,7 @@ func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {
 	return auctions, nil
 }
 
+/* Fetches all the auctions starting from start index upto numAuctions. */
 func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([]Auction, error) {
 	var auctions []Auction
 	dbc := gandalf.Db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
@@ -273,11 +296,13 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 	return auctions, nil
 }
 
+/* Adds the given orders to the backend. */
 func (gandalf *Gandalf) AddOrders(orders []Order) error {
 	// Adds the given orders to the database.
 	return nil
 }
 
+/* Gets all user orders. */
 func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 	var orders []Order
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&orders)
@@ -287,6 +312,7 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 	return orders, nil
 }
 
+/* Gets all user orders whose payment is pending. */
 func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, error) {
 	var orders []Order
 	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderPaymentPending).Find(&orders)
