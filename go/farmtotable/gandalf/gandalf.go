@@ -322,6 +322,10 @@ func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, err
 	return orders, nil
 }
 
+/*
+Gets all orders whose payment is pending. This method must be used with care as it could potentially end up
+returning 100,000 of rows.
+*/
 func (gandalf *Gandalf) GetAllPaymentPendingOrders() ([]Order, error) {
 	var orders []Order
 	dbc := gandalf.Db.Where("status = ?", KOrderPaymentPending).Find(&orders)
@@ -331,6 +335,7 @@ func (gandalf *Gandalf) GetAllPaymentPendingOrders() ([]Order, error) {
 	return orders, nil
 }
 
+/* Gets all user orders whose delivery is pending. */
 func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, error) {
 	var orders []Order
 	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderDeliveryPending).Find(&orders)
@@ -340,6 +345,7 @@ func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, er
 	return orders, nil
 }
 
+/* Gets all orders whose delivery is pending. */
 func (gandalf *Gandalf) GetAllDeliveryPendingOrders() ([]Order, error) {
 	var orders []Order
 	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Find(&orders)
@@ -349,24 +355,27 @@ func (gandalf *Gandalf) GetAllDeliveryPendingOrders() ([]Order, error) {
 	return orders, nil
 }
 
+/* Gets all user orders that are complete */
 func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderDelivered).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderComplete).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
 	return orders, nil
 }
 
+/* Get order information */
 func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 	var order Order
-	dbc := gandalf.Db.Where("order_id = ?", orderID, KOrderDelivered).First(&order)
+	dbc := gandalf.Db.Where("order_id = ?", orderID, KOrderComplete).First(&order)
 	if dbc.Error != nil {
 		return order, dbc.Error
 	}
 	return order, nil
 }
 
+/* Update order status. */
 func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
 	var order Order
 	dbc := gandalf.Db.Model(&order).Where("order_id = ?", status).Update("status", status)
