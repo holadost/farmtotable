@@ -170,6 +170,11 @@ func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
 	return
 }
 
+func (gandalf *Gandalf) GetItems(itemIDs []string) (items []Item) {
+	gandalf.Db.Where("item_id IN ?", itemIDs).Find(&items)
+	return
+}
+
 func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
 	item := Item{
 		ItemID:           itemID,
