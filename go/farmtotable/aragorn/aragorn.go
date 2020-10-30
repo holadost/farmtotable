@@ -1,6 +1,7 @@
 package aragorn
 
 import (
+	"errors"
 	"farmtotable/gandalf"
 	"firebase.google.com/go"
 	"fmt"
@@ -57,6 +58,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.getUserDeliveryPendingOrders) // Administrator API.
 	r.POST("/api/v1/resources/orders/get_order", aragorn.getOrder)                                       // Administrator API.
 	r.POST("/api/v1/resources/orders/update_order", aragorn.updateOrder)                                 // Administrator API.
+	r.POST("/api/v1/resources/orders/purchase", aragorn.purchaseOrder)                                   // Administrator API.
 
 	// Start router.
 	r.Run(":8080")
@@ -418,9 +420,16 @@ func (aragorn *Aragorn) getUserOrders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ret)
 		return
 	}
+	orderRets, err := aragorn.internalJoinOrderWithItemInfo(orders)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
 	ret.Status = http.StatusOK
 	ret.ErrorMsg = ""
-	ret.Data = orders
+	ret.Data = orderRets
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -441,9 +450,16 @@ func (aragorn *Aragorn) getUserPaymentPendingOrders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ret)
 		return
 	}
+	orderRets, err := aragorn.internalJoinOrderWithItemInfo(orders)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
 	ret.Status = http.StatusOK
 	ret.ErrorMsg = ""
-	ret.Data = orders
+	ret.Data = orderRets
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -464,9 +480,16 @@ func (aragorn *Aragorn) getUserDeliveryPendingOrders(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ret)
 		return
 	}
+	orderRets, err := aragorn.internalJoinOrderWithItemInfo(orders)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
 	ret.Status = http.StatusOK
 	ret.ErrorMsg = ""
-	ret.Data = orders
+	ret.Data = orderRets
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -487,9 +510,18 @@ func (aragorn *Aragorn) getOrder(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, ret)
 		return
 	}
+	var orders []gandalf.Order
+	orders = append(orders, order)
+	orderRets, err := aragorn.internalJoinOrderWithItemInfo(orders)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to fetch user orders"
+		c.JSON(http.StatusInternalServerError, ret)
+		return
+	}
 	ret.Status = http.StatusOK
 	ret.ErrorMsg = ""
-	ret.Data = order
+	ret.Data = orderRets[0]
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -518,4 +550,34 @@ func (aragorn *Aragorn) updateOrder(c *gin.Context) {
 	ret.Data = retData
 	c.JSON(http.StatusOK, ret)
 	return
+}
+
+func (aragorn *Aragorn) purchaseOrder(c *gin.Context) {
+	// TODO: Still needs to be implemented
+	return
+}
+
+func (aragorn *Aragorn) internalJoinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRet, error) {
+	var itemIDs []string
+	var orderItems []OrderRet
+	for ii := 0; ii < len(orders); ii++ {
+		itemIDs = append(itemIDs, orders[ii].ItemID)
+	}
+	items := aragorn.gandalf.GetItems(itemIDs)
+	if len(items) != len(orders) {
+		return orderItems, errors.New("unable to get item info for all orders")
+	}
+	for ii := 0; ii < len(orders); ii++ {
+		var orderRet OrderRet
+		orderRet.OrderID = orders[ii].OrderID
+		orderRet.ItemID = orders[ii].ItemID
+		orderRet.ItemName = items[ii].ItemName
+		orderRet.ItemDescription = items[ii].ItemDescription
+		orderRet.UserID = orders[ii].UserID
+		orderRet.ItemQty = orders[ii].ItemQty
+		orderRet.ItemPrice = orders[ii].ItemPrice
+		orderRet.Status = orders[ii].Status
+		orderItems = append(orderItems, orderRet)
+	}
+	return orderItems, nil
 }

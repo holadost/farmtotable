@@ -157,13 +157,19 @@ type GetUserBidsRet struct {
 	Data []gandalf.Bid `json:"data"`
 }
 
+type OrderRet struct {
+	gandalf.Order
+	ItemName        string `json:"item_name"`
+	ItemDescription string `json:"item_description"`
+}
+
 type GetOrderArg struct {
 	OrderID string `json:"order_id"`
 }
 
 type GetOrderRet struct {
 	BaseAPIResponse
-	Data gandalf.Order
+	Data OrderRet
 }
 
 type UpdateOrderArg struct {
@@ -182,7 +188,7 @@ type GetUserOrdersArg struct {
 
 type GetUserOrdersRet struct {
 	BaseAPIResponse
-	Data []gandalf.Order `json:"data"`
+	Data []OrderRet `json:"data"`
 }
 
 type GetUserPaymentPendingOrdersArg struct {
@@ -206,5 +212,13 @@ type GetUserCancelledOrdersArg struct {
 }
 
 type GetUserCancelledOrdersRet struct {
+	GetUserOrdersRet
+}
+
+type GetUserCompletedOrdersArg struct {
+	GetUserArg
+}
+
+type GetUserCompletedOrdersRet struct {
 	GetUserOrdersRet
 }
