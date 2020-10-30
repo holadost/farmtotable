@@ -11,3 +11,14 @@ const (
 const (
 	SQLiteDBPath = "/tmp/gandalf.db"
 )
+
+const (
+	KOrderPaymentPending     = 0
+	KOrderPaymentPendingStr  = "KOrderPaymentPending"
+	KOrderDeliveryPending    = 1
+	KOrderDeliveryPendingStr = "KOrderDeliveryPending"
+	KOrderComplete           = 2
+	KOrderCompleteStr        = "KOrderComplete"
+	KOrderCancelled          = 3
+	KOrderCancelledStr       = "KOrderCancelled"
+)
