@@ -2,7 +2,6 @@ package new_auction_job
 
 import (
 	"farmtotable/gandalf"
-	"time"
 )
 
 /*
@@ -12,10 +11,10 @@ This job performs the following tasks:
 */
 
 type PopulateNewAuctionsJob struct {
-	gandalf *gandalf.Gandalf
+	gandalf   *gandalf.Gandalf
 	currIndex uint64
 	batchSize uint64
-	jobPath string
+	jobPath   string
 }
 
 func NewPopulateNewAuctionsJob(g *gandalf.Gandalf) *PopulateNewAuctionsJob {
@@ -45,10 +44,6 @@ func (pnaj *PopulateNewAuctionsJob) populateAuctionableItems() {
 		items := pnaj.fetchNextBatch()
 		if len(items) == 0 {
 			break
-		}
-		for _, item := range items {
-			currTime := time.Now()
-			if currTime >
 		}
 	}
 }
