@@ -10,3 +10,17 @@ This job performs the following tasks:
 
 type AuctionWinnerJob struct {
 }
+
+func NewAuctionWinnerJob() (awj *AuctionWinnerJob) {
+	return
+}
+
+/* Starts the job. This method satisfies the LegolasJob interface. */
+func (awj *AuctionWinnerJob) Start() {
+
+}
+
+/* Stops the job. This method satisfies the LegolasJob interface. */
+func (awj *AuctionWinnerJob) Stop() {
+
+}
