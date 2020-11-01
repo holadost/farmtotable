@@ -41,7 +41,8 @@ type Bid struct {
 }
 
 type Auction struct {
-	ItemID              string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
+	ID                  uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
+	ItemID              string    `gorm:"type:varchar(32)" json:"item_id"`
 	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"`
 	ItemQty             uint32    `json:"item_qty"`
 	AuctionStartTime    time.Time `json:"auction_start_time"`

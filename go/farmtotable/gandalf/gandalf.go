@@ -7,6 +7,7 @@ import (
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
 	"github.com/rs/xid"
 	bulk "github.com/sunary/gorm-bulk-insert"
+	"os"
 	"time"
 )
 
@@ -37,6 +38,18 @@ func NewPostgresGandalf() *Gandalf {
 	gandalf.Db = db
 	gandalf.Initialize()
 	return gandalf
+}
+
+func NewGandalf() *Gandalf {
+	value, exists := os.LookupEnv("FTT_GANDALF_BACKEND")
+	if !exists {
+		return NewSqliteGandalf()
+	}
+	if value == "POSTGRES" {
+		return NewPostgresGandalf()
+	} else {
+		return NewSqliteGandalf()
+	}
 }
 
 func (gandalf *Gandalf) Initialize() error {
@@ -175,6 +188,15 @@ func (gandalf *Gandalf) GetItems(itemIDs []string) (items []Item) {
 	return
 }
 
+func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]Item, error) {
+	var items []Item
+	dbc := gandalf.Db.Offset(startIndex).Limit(numItems).Find(&items)
+	if dbc.Error != nil {
+		return items, dbc.Error
+	}
+	return items, nil
+}
+
 func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
 	item := Item{
 		ItemID:           itemID,
@@ -256,9 +278,9 @@ func (gandalf *Gandalf) GetUserBids(userID string) ([]Bid, error) {
 }
 
 /* Returns the bids for a given item starting from 'start' row upto numBids rows. */
-func (gandalf *Gandalf) ScanItemBids(itemID string, start uint64, numBids uint64) ([]Bid, error) {
+func (gandalf *Gandalf) ScanItemBids(itemID string, startIndex uint64, numBids uint64) ([]Bid, error) {
 	var bids []Bid
-	dbc := gandalf.Db.Where("item_id = ?", itemID).Find(&bids)
+	dbc := gandalf.Db.Where("item_id = ?", itemID).Offset(startIndex).Limit(numBids).Find(&bids)
 	if dbc.Error != nil {
 		return bids, dbc.Error
 	}
