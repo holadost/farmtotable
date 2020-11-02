@@ -3,7 +3,7 @@ package aragorn
 import (
 	"errors"
 	"farmtotable/gandalf"
-	"farmtotable/misc"
+	"farmtotable/util"
 	"firebase.google.com/go"
 	"fmt"
 	"github.com/gin-gonic/gin"
@@ -28,11 +28,12 @@ func NewAragorn() *Aragorn {
 	//}
 	// TODO: Pick the backend type based on env. For now hardcode to sqlite.
 	aragorn.gandalf = gandalf.NewSqliteGandalf()
-	aragorn.logger = misc.NewLogger()
+	aragorn.logger = util.NewLogger()
 	return aragorn
 }
 
 func (aragorn *Aragorn) Run() {
+	aragorn.logger.Info("Starting Aragorn")
 	r := gin.Default()
 	r.POST("/", aragorn.GetUser)
 	// User APIs.
