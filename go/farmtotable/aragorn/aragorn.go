@@ -43,7 +43,6 @@ func (aragorn *Aragorn) Run() {
 		MaxAge:       12 * time.Hour,
 	}))
 
-	r.POST("/", aragorn.GetUser)
 	// User APIs.
 	r.POST("/api/v1/resources/users/fetch", aragorn.GetUser)
 	r.POST("/api/v1/resources/users/register", aragorn.RegisterUser)
