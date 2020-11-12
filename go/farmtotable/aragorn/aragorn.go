@@ -6,6 +6,7 @@ import (
 	"farmtotable/util"
 	"firebase.google.com/go"
 	"fmt"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
 	"net/http"
@@ -35,6 +36,13 @@ func NewAragorn() *Aragorn {
 func (aragorn *Aragorn) Run() {
 	aragorn.logger.Info("Starting Aragorn")
 	r := gin.Default()
+	r.Use(cors.New(cors.Config{
+		AllowOrigins: []string{"*"},
+		AllowMethods: []string{"PUT", "POST", "GET"},
+		AllowHeaders: []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization", "Cache-Control"},
+		MaxAge:       12 * time.Hour,
+	}))
+
 	r.POST("/", aragorn.GetUser)
 	// User APIs.
 	r.POST("/api/v1/resources/users/fetch", aragorn.GetUser)
