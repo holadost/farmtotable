@@ -267,7 +267,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 	return nil
 }
 
-/* Returns all the live auctions that the user has bid on. */
+/* Returns all the auctions/items that the user has bid on. */
 func (gandalf *Gandalf) GetUserBids(userID string) ([]Bid, error) {
 	var bids []Bid
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&bids)
@@ -390,7 +390,7 @@ func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
 /* Get order information */
 func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 	var order Order
-	dbc := gandalf.Db.Where("order_id = ?", orderID, KOrderComplete).First(&order)
+	dbc := gandalf.Db.Where("order_id = ?", orderID).First(&order)
 	if dbc.Error != nil {
 		return order, dbc.Error
 	}

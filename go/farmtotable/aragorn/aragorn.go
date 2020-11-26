@@ -315,9 +315,19 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		aragorn.logger.Error(response.ErrorMsg)
 		return
 	}
+	var retAuctions []gandalf.Auction
+	for _, auction := range auctions {
+		deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(int64(auction.AuctionDurationSecs)))
+		if deadline.Before(time.Now()) {
+			// The deadline has expired. Skip this auction.
+			continue
+		}
+		retAuctions = append(retAuctions, auction)
+	}
+
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
-	response.Data = auctions
+	response.Data = retAuctions
 	c.JSON(http.StatusOK, response)
 }
 
