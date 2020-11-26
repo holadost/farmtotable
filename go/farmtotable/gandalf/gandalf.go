@@ -1,6 +1,7 @@
 package gandalf
 
 import (
+	"errors"
 	"fmt"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
@@ -237,33 +238,57 @@ func (gandalf *Gandalf) RegisterAuctions(auctions []Auction) error {
 }
 
 func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
-	// Registers the user bid.
-	bid := Bid{
-		ItemID:    itemID,
-		UserID:    userID,
-		BidAmount: bidAmount,
-		BidQty:    bidQty,
-	}
-	dbc := gandalf.Db.Create(&bid)
+	// TODO: This is a massive transaction in the critical path. This will eventually slow the entire auction system
+	// TODO: down. We should move the auctions and bids to faster key value store like redis or remote-badger.
+	// Check if a bid has already been made by the user.
+	tx := gandalf.Db.Begin()
+	var currBid Bid
+	dbc := tx.Where("item_id = ? AND user_id = ?", itemID, userID).First(&currBid)
 	if dbc.Error != nil {
+		tx.Rollback()
 		return dbc.Error
 	}
-
-	// Update the max bid.
-	auction := Auction{}
-	tx := gandalf.Db.Begin()
-	tx.Where("item_id = ?", itemID).First(&auction)
-	if auction.MaxBid < bidAmount {
-		auction.MaxBid = bidAmount
-		dbc := tx.Model(&auction).Updates(&auction)
+	if currBid.ItemID == "" {
+		dbc := tx.Create(&Bid{
+			ItemID:    itemID,
+			UserID:    userID,
+			BidAmount: bidAmount,
+			BidQty:    bidQty,
+		})
 		if dbc.Error != nil {
 			tx.Rollback()
 			return dbc.Error
 		}
-		tx.Commit()
+	} else {
+		// Only update the current bid if the new bid is higher.
+		if currBid.BidAmount >= bidAmount {
+			tx.Rollback()
+			return errors.New(fmt.Sprintf("current bid(%f) is lower than previous bid(%f)",
+				bidAmount, currBid.BidAmount))
+		}
+		currBid.BidAmount = bidAmount
+		currBid.BidQty = bidQty
+		dbc := tx.Save(currBid)
+		if dbc.Error != nil {
+			tx.Rollback()
+			return dbc.Error
+		}
+	}
+
+	// Update the max bid.
+	auction := Auction{}
+	tx.Where("item_id = ?", itemID).First(&auction)
+	if auction.MaxBid < bidAmount {
+		auction.MaxBid = bidAmount
+		dbc := tx.Save(&auction)
+		if dbc.Error != nil {
+			tx.Rollback()
+			return dbc.Error
+		}
 	} else {
 		tx.Rollback()
 	}
+	tx.Commit()
 	return nil
 }
 
