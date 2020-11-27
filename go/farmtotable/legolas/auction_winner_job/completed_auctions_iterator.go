@@ -2,6 +2,7 @@ package auction_winner_job
 
 import (
 	"farmtotable/gandalf"
+	"sync"
 	"time"
 )
 
@@ -11,6 +12,7 @@ type CompletedAuctionsIterator struct {
 	scanSize     uint64
 	gandalf      *gandalf.Gandalf
 	scanComplete bool
+	mu           sync.Mutex
 }
 
 func NewCompletedAuctionsIterator(gandalf *gandalf.Gandalf, scanSize uint64) *CompletedAuctionsIterator {
@@ -21,6 +23,8 @@ func NewCompletedAuctionsIterator(gandalf *gandalf.Gandalf, scanSize uint64) *Co
 }
 
 func (it *CompletedAuctionsIterator) Next() (gandalf.Auction, bool /* Scan complete */, error /* scan errors */) {
+	it.mu.Lock()
+	defer it.mu.Unlock()
 	if it.scanComplete {
 		return gandalf.Auction{}, true, nil
 	}
