@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-func NewLogger() *zap.Logger {
+func NewJSONLogger() *zap.Logger {
 	// TODO: Get the correct log level here.
 	rawJSON := []byte(`{
 	  "level": "info",
