@@ -1,6 +1,7 @@
 package gandalf
 
 import (
+	"github.com/jinzhu/gorm"
 	"time"
 )
 
@@ -34,6 +35,7 @@ type Item struct {
 }
 
 type Bid struct {
+	gorm.Model
 	ItemID    string  `gorm:"type:varchar(32);index" json:"item_id"`
 	UserID    string  `gorm:"type:varchar(100);index" json:"user_id"`
 	BidAmount float32 `json:"bid_amount"`
