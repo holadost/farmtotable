@@ -5,11 +5,12 @@ import (
 	"farmtotable/gandalf"
 	"fmt"
 	"github.com/golang/glog"
+	"sort"
 )
 
 /*
 This job performs the following tasks:
-	1. Finds which auctions have expired and removes them from the main auctions table.
+	1. Finds which auctions have expired.
 	2. Determines winners for the completed auctions.
 	3. Places new orders for the winners.
 	4. Notifies the winners via email.
@@ -40,11 +41,11 @@ func (awj *AuctionWinnerJob) Stop() {
 
 /*********************** INTERNAL HELPERS ******************************/
 type _Worker struct {
-	it      *CompletedAuctionsScanner
+	it      *gandalf.AuctionsScanner
 	gandalf *gandalf.Gandalf
 }
 
-func newWorker(gandalf *gandalf.Gandalf, it *CompletedAuctionsScanner) *_Worker {
+func newWorker(gandalf *gandalf.Gandalf, it *gandalf.AuctionsScanner) *_Worker {
 	worker := _Worker{}
 	worker.it = it
 	worker.gandalf = gandalf
@@ -66,11 +67,27 @@ func (worker *_Worker) run() error {
 }
 
 func (worker *_Worker) pickWinners(auction gandalf.Auction) {
-	glog.Infof("Choosing winners for auction: %v", auction)
+	glog.Infof("Processing winners for auction: %v", auction)
+	bidScanner := gandalf.NewItemsBidScanner(worker.gandalf, auction.ItemID, 1024)
+	topBids := make([]gandalf.Bid, 0, 2*KNumWinnersPerItem)
 	for {
-
+		batch, finished, err := bidScanner.NextN(KNumWinnersPerItem)
+		if err != nil {
+			glog.Errorf("Unable to process winners for auction: %v due to err: %v", auction, err)
+			return
+		}
+		if (!finished) || (finished && (len(batch) > 0)) {
+			topBids = append(topBids, batch...)
+			sort.Sort(sortByBidAmount(topBids))
+			topBids = topBids[0:KNumWinnersPerItem]
+			continue
+		}
+		if finished {
+			topBids = topBids[0:KNumWinnersPerItem]
+			break
+		}
 	}
-
+	// We now have the winners of the auction in topBids.
 }
 
 /* Sorting interface to sort the bids by Bid amount. */

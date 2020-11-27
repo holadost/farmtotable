@@ -90,3 +90,25 @@ func (it *ItemBidsScanner) NextBatch() ([]Bid, bool /* Scan complete */, error /
 	it.currBatch = it.currBatch[:0]
 	return items, it.scanComplete, it.scanErr
 }
+
+func (it *ItemBidsScanner) NextN(n uint) ([]Bid, bool /* Scan complete */, error /* scan errors */) {
+	it.mu.Lock()
+	defer it.mu.Unlock()
+	it.maybeScanNextBatch()
+	if it.scanComplete {
+		return []Bid{}, it.scanComplete, it.scanErr
+	}
+	if len(it.currBatch) == 0 {
+		glog.Fatalf("currBatch is empty even though scanner is not complete")
+	}
+	items := make([]Bid, 0, n)
+	for ii, bid := range it.currBatch {
+		if uint(ii) == n {
+			break
+		}
+		items = append(items, bid)
+	}
+	// Clear the currBatch but keep the underlying memory.
+	it.currBatch = it.currBatch[n:]
+	return items, it.scanComplete, it.scanErr
+}
