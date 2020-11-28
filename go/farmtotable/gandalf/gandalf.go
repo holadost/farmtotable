@@ -186,9 +186,20 @@ func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
 	return
 }
 
-func (gandalf *Gandalf) GetItems(itemIDs []string) (items []Item) {
-	gandalf.Db.Where("item_id IN ?", itemIDs).Find(&items)
-	return
+func (gandalf *Gandalf) GetItems(itemIDs []string) ([]Item, error) {
+	var items []Item
+	var args []interface{}
+	for _, itemID := range itemIDs {
+		args = append(args, itemID)
+	}
+	// For some reason, gorm WHERE query with IN clause was failing. So we go with a raw query.
+	query := "SELECT * FROM items WHERE item_id IN (?" + strings.Repeat(",?", len(args)-1) + ")"
+	dbc := gandalf.Db.Raw(query, args...).Scan(&items)
+	if dbc.Error != nil {
+		glog.Errorf("Unable to query items due to error: %v", dbc.Error)
+		return items, dbc.Error
+	}
+	return items, nil
 }
 
 func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]Item, error) {

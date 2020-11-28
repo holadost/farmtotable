@@ -426,10 +426,14 @@ func TestAragornRun(t *testing.T) {
 	/********************** Orders **************************/
 	glog.Info("Adding new orders to the database")
 	numOrders := 5
+	items, err = aragorn.gandalf.GetSupplierItems("supplier1")
+	if err != nil {
+		t.Fatalf("Unable to get supplier items")
+	}
+	glog.Errorf("Using Item ID: %s", items[0].ItemID)
 	for ii := 0; ii < numOrders; ii++ {
 		var order AddOrderArg
-		itemID := "Item_" + strconv.Itoa(ii)
-		order.ItemID = itemID
+		order.ItemID = items[0].ItemID
 		order.ItemPrice = 7.0 * float32(ii+1)
 		order.ItemQty = uint32(5 * (ii + 1))
 		if ii%2 == 0 {
@@ -477,7 +481,6 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to get user orders. Error: %v", err)
 	}
 	fullBody, err = ioutil.ReadAll(resp.Body)
-	glog.Errorf("Response: %v", fullBody)
 	if err != nil {
 		t.Fatalf("Unable to read add order ret")
 	}

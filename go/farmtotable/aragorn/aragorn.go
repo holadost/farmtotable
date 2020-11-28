@@ -1,7 +1,6 @@
 package aragorn
 
 import (
-	"encoding/json"
 	"errors"
 	"farmtotable/gandalf"
 	"farmtotable/util"
@@ -125,7 +124,6 @@ func (aragorn *Aragorn) RegisterUser(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, response)
 		return
 	}
-	startTime := time.Now()
 	err := aragorn.gandalf.RegisterUser(userArg.UserID, userArg.Name, userArg.EmailID, userArg.PhNum, userArg.Address)
 	if err != nil {
 		response.Status = http.StatusBadRequest
@@ -134,7 +132,6 @@ func (aragorn *Aragorn) RegisterUser(c *gin.Context) {
 		aragorn.apiLogger.Error(response.ErrorMsg)
 		return
 	}
-	fmt.Println(fmt.Sprintf("Elapsed Time: %v", time.Since(startTime)))
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
 	retData := RegistrationStatusRet{
@@ -404,7 +401,6 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 
 /* Order APIs. */
 func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
-	fmt.Println("Fetching user orders")
 	var ret GetOrdersRet
 	var arg GetUserOrdersArg
 	if err := c.ShouldBindJSON(&arg); err != nil {
@@ -436,8 +432,6 @@ func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 		Orders: orderRets,
 		NextID: 0,
 	}
-	body, err := json.Marshal(ret)
-	fmt.Println(fmt.Sprintf("Order Ret Body: %v", body))
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -634,21 +628,31 @@ func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRe
 	for ii := 0; ii < len(orders); ii++ {
 		itemIDs = append(itemIDs, orders[ii].ItemID)
 	}
-	items := aragorn.gandalf.GetItems(itemIDs)
-	if len(items) != len(orders) {
-		return orderItems, errors.New("unable to get item info for all orders")
+	items, err := aragorn.gandalf.GetItems(itemIDs)
+	if err != nil {
+		glog.Errorf("Unable to get item IDs for orders due to error: %v", err)
+	}
+	itemSet := make(map[string]gandalf.Item)
+	for _, item := range items {
+		itemSet[item.ItemID] = item
 	}
 	for ii := 0; ii < len(orders); ii++ {
 		var orderRet OrderRet
 		orderRet.OrderID = orders[ii].OrderID
 		orderRet.ItemID = orders[ii].ItemID
-		orderRet.ItemName = items[ii].ItemName
-		orderRet.ItemDescription = items[ii].ItemDescription
+		item, err := itemSet[orders[ii].ItemID]
+		if !err {
+			glog.Errorf("Unable to get item information for item: %s", orders[ii].ItemID)
+			return orderItems, errors.New("unable to find item for order")
+		}
+		orderRet.ItemName = item.ItemName
+		orderRet.ItemDescription = item.ItemDescription
 		orderRet.UserID = orders[ii].UserID
 		orderRet.ItemQty = orders[ii].ItemQty
 		orderRet.ItemPrice = orders[ii].ItemPrice
 		orderRet.Status = orders[ii].Status
 		orderItems = append(orderItems, orderRet)
 	}
+
 	return orderItems, nil
 }
