@@ -147,7 +147,7 @@ type FetchAllAuctionsRet struct {
 	Data FetchAllAuctionsRetData `json:"data"`
 }
 
-// User Bids
+// User bids messages.
 type GetAllUserBidsArg struct {
 	GetUserArg
 }
@@ -162,6 +162,7 @@ type GetUserBidsRet struct {
 	Data []gandalf.Bid `json:"data"`
 }
 
+// Order messages.
 type OrderRet struct {
 	gandalf.Order
 	ItemName        string `json:"item_name"`
