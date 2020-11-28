@@ -316,6 +316,17 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		return
 	}
 	var retAuctions []gandalf.Auction
+	if len(auctions) == 0 {
+		response.Status = http.StatusOK
+		response.ErrorMsg = ""
+		response.Data = FetchAllAuctionsRetData{
+			Auctions: auctions,
+			NextID:   -1,
+		}
+		c.JSON(http.StatusOK, response)
+		return
+	}
+
 	var maxID uint
 	maxID = 0
 	for _, auction := range auctions {
@@ -334,7 +345,7 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 	response.ErrorMsg = ""
 	response.Data = FetchAllAuctionsRetData{
 		Auctions: retAuctions,
-		NextID:   uint64(maxID + 1),
+		NextID:   int64(maxID + 1),
 	}
 	c.JSON(http.StatusOK, response)
 }
@@ -454,7 +465,18 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 		aragorn.apiLogger.Error(ret.ErrorMsg)
 		return
 	}
-	orderRets, err := aragorn.joinOrderWithItemInfo(orders)
+	var orderRets []OrderRet
+	if len(orders) == 0 {
+		ret.Status = http.StatusOK
+		ret.ErrorMsg = ""
+		ret.Data = GetOrdersRetData{
+			Orders: orderRets,
+			NextID: -1,
+		}
+		c.JSON(http.StatusOK, ret)
+		return
+	}
+	orderRets, err = aragorn.joinOrderWithItemInfo(orders)
 	if err != nil {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch payment pending orders"
@@ -466,7 +488,7 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 	ret.ErrorMsg = ""
 	ret.Data = GetOrdersRetData{
 		Orders: orderRets,
-		NextID: uint64(orders[len(orders)-1].ID + 1),
+		NextID: int64(orders[len(orders)-1].ID),
 	}
 	c.JSON(http.StatusOK, ret)
 	return
@@ -490,7 +512,20 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 		aragorn.apiLogger.Error(ret.ErrorMsg)
 		return
 	}
-	orderRets, err := aragorn.joinOrderWithItemInfo(orders)
+
+	var orderRets []OrderRet
+	if len(orders) == 0 {
+		ret.Status = http.StatusOK
+		ret.ErrorMsg = ""
+		ret.Data = GetOrdersRetData{
+			Orders: orderRets,
+			NextID: -1,
+		}
+		c.JSON(http.StatusOK, ret)
+		return
+	}
+
+	orderRets, err = aragorn.joinOrderWithItemInfo(orders)
 	if err != nil {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch delivery pending orders"
@@ -502,7 +537,7 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 	ret.ErrorMsg = ""
 	ret.Data = GetOrdersRetData{
 		Orders: orderRets,
-		NextID: uint64(orders[len(orders)-1].ID + 1),
+		NextID: int64(orders[len(orders)-1].ID),
 	}
 	c.JSON(http.StatusOK, ret)
 	return
@@ -653,6 +688,5 @@ func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRe
 		orderRet.Status = orders[ii].Status
 		orderItems = append(orderItems, orderRet)
 	}
-
 	return orderItems, nil
 }

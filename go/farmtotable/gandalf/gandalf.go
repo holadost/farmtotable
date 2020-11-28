@@ -187,6 +187,9 @@ func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
 }
 
 func (gandalf *Gandalf) GetItems(itemIDs []string) ([]Item, error) {
+	if len(itemIDs) == 0 {
+		return []Item{}, nil
+	}
 	var items []Item
 	var args []interface{}
 	for _, itemID := range itemIDs {

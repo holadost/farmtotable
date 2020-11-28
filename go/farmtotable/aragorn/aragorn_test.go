@@ -433,13 +433,14 @@ func TestAragornRun(t *testing.T) {
 	glog.Errorf("Using Item ID: %s", items[0].ItemID)
 	for ii := 0; ii < numOrders; ii++ {
 		var order AddOrderArg
-		order.ItemID = items[0].ItemID
 		order.ItemPrice = 7.0 * float32(ii+1)
 		order.ItemQty = uint32(5 * (ii + 1))
 		if ii%2 == 0 {
 			order.UserID = "nikhil_0"
+			order.ItemID = items[0].ItemID
 		} else {
 			order.UserID = "nikhil_1"
+			order.ItemID = items[1].ItemID
 		}
 		body, err = json.Marshal(order)
 		if err != nil {
@@ -495,4 +496,79 @@ func TestAragornRun(t *testing.T) {
 	if len(ordersRet.Data.Orders) != 3 {
 		t.Fatalf("Expected 3 records for user nikhil_0. Got: %d", len(ordersRet.Data.Orders))
 	}
+
+	// Get payment pending orders.
+	glog.Errorf("Scanning orders")
+	var ordersArg ScanOrdersArg
+	ordersArg.StartID = 0
+	ordersArg.NumOrders = 2
+	for ii := 0; ii < 5; ii++ {
+		body, err = json.Marshal(ordersArg)
+		if err != nil {
+			t.Fatalf("Unable to marshal user order arg")
+		}
+		resp, err = http.Post(baseURL+"/orders/get_payment_pending_orders", "application/json", bytes.NewBuffer(body))
+		if err != nil {
+			t.Fatalf("Unable to get user orders. Error: %v", err)
+		}
+		fullBody, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Unable to read add order ret")
+		}
+		resp.Body.Close()
+		err = json.Unmarshal(fullBody, &ordersRet)
+		if err != nil {
+			t.Fatalf("Unable to deserialize user orders ret. Error: %v", err)
+		}
+		if ordersRet.Status != http.StatusOK {
+			t.Fatalf("Unable to get user orders due to error: %v", ret.ErrorMsg)
+		}
+		// This assumes that numOrders defined earlier is 5.
+		if ii == 0 || ii == 1 {
+			if len(ordersRet.Data.Orders) != int(ordersArg.NumOrders) {
+				t.Fatalf("Expected %d records. Got: %d",
+					ordersArg.NumOrders, len(ordersRet.Data.Orders))
+			}
+		} else if ii == 2 {
+			if len(ordersRet.Data.Orders) != 1 {
+				t.Fatalf("Expected 1 records. Got: %d", len(ordersRet.Data.Orders))
+			}
+		} else {
+			if ordersRet.Data.NextID != -1 {
+				t.Fatalf("Scan should have finished but it hasn't")
+			}
+			break
+		}
+		// Update the start ID for the next scan.
+		ordersArg.StartID = uint64(ordersRet.Data.NextID)
+	}
+
+	// Update order status.
+
+	// Get delivery pending orders.
+	//ordersArg.UserID = "nikhil_0"
+	//
+	//body, err = json.Marshal(ordersArg)
+	//if err != nil {
+	//	t.Fatalf("Unable to marshal user order arg")
+	//}
+	//resp, err = http.Post(baseURL+"/orders/get_user_orders", "application/json", bytes.NewBuffer(body))
+	//if err != nil {
+	//	t.Fatalf("Unable to get user orders. Error: %v", err)
+	//}
+	//fullBody, err = ioutil.ReadAll(resp.Body)
+	//if err != nil {
+	//	t.Fatalf("Unable to read add order ret")
+	//}
+	//resp.Body.Close()
+	//err = json.Unmarshal(fullBody, &ordersRet)
+	//if err != nil {
+	//	t.Fatalf("Unable to deserialize user orders ret. Error: %v", err)
+	//}
+	//if ordersRet.Status != http.StatusOK {
+	//	t.Fatalf("Unable to get user orders due to error: %v", ret.ErrorMsg)
+	//}
+	//if len(ordersRet.Data.Orders) != 3 {
+	//	t.Fatalf("Expected 3 records for user nikhil_0. Got: %d", len(ordersRet.Data.Orders))
+	//}
 }

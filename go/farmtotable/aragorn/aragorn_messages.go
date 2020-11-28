@@ -139,7 +139,7 @@ type FetchAllAuctionsArg struct {
 
 type FetchAllAuctionsRetData struct {
 	Auctions []gandalf.Auction `json:"auctions"`
-	NextID   uint64            `json:"next_id"`
+	NextID   int64             `json:"next_id"`
 }
 
 type FetchAllAuctionsRet struct {
@@ -194,7 +194,7 @@ type GetUserOrdersArg struct {
 
 type GetOrdersRetData struct {
 	Orders []OrderRet `json:"orders"`
-	NextID uint64     `json:"next_id"`
+	NextID int64      `json:"next_id"`
 }
 
 type GetOrdersRet struct {
