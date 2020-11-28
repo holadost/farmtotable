@@ -207,3 +207,15 @@ type ScanOrdersArg struct {
 	NumOrders   uint64              `json:"num_orders"`
 	OrderStatus gandalf.OrderStatus `json:"order_status"`
 }
+
+type AddOrderArg struct {
+	UserID    string  `json:"user_id"`
+	ItemID    string  `json:"item_id"`
+	ItemQty   uint32  `json:"item_qty"`
+	ItemPrice float32 `json:"item_price"`
+}
+
+type AddOrderRet struct {
+	BaseAPIResponse
+	Data RegistrationStatusRet `json:"data"`
+}

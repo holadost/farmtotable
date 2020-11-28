@@ -39,7 +39,7 @@ func (aragorn *Aragorn) Run() {
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
-		AllowMethods: []string{"PUT", "POST", "GET"},
+		AllowMethods: []string{"POST", "GET"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization", "Cache-Control"},
 		MaxAge:       12 * time.Hour,
 	}))
@@ -70,6 +70,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.GetDeliveryPendingOrders) // Administrator API.
 	r.POST("/api/v1/resources/orders/update_order", aragorn.UpdateOrder)                             // Administrator API.
 	r.POST("/api/v1/resources/orders/purchase", aragorn.PurchaseOrder)                               // User API.
+	r.POST("/api/v1/resources/test/orders/test_only_add_order", aragorn.TestOnlyAddOrder)            // Test API.
 
 	// Start router.
 	r.Run(":8080")
@@ -584,6 +585,42 @@ func (aragorn *Aragorn) UpdateOrder(c *gin.Context) {
 
 func (aragorn *Aragorn) PurchaseOrder(c *gin.Context) {
 	// TODO: Still needs to be implemented
+	return
+}
+
+func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
+	// This is a test API. This must not be used for any other reason.
+	var ret AddOrderRet
+	var arg AddOrderArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(ret.ErrorMsg)
+		return
+	}
+	var orders []gandalf.Order
+	var order gandalf.Order
+	order.ItemID = arg.ItemID
+	order.UserID = arg.UserID
+	order.ItemPrice = arg.ItemPrice
+	order.ItemQty = arg.ItemQty
+	orders = append(orders, order)
+	err := aragorn.gandalf.AddOrders(orders)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = "Unable to add order"
+		c.JSON(http.StatusInternalServerError, ret)
+		aragorn.apiLogger.Error("Unable to add order")
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
 	return
 }
 

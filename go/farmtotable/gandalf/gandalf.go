@@ -3,6 +3,7 @@ package gandalf
 import (
 	"errors"
 	"fmt"
+	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
 	_ "github.com/jinzhu/gorm/dialects/postgres"
 	_ "github.com/jinzhu/gorm/dialects/sqlite"
@@ -347,6 +348,27 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 /* Adds the given orders to the backend. */
 func (gandalf *Gandalf) AddOrders(orders []Order) error {
 	// Adds the given orders to the database.
+	var dbc *gorm.DB
+	var err error
+	for _, order := range orders {
+		err = nil
+		for ii := 0; ii < 5; ii++ {
+			order.OrderID = xid.New().String()
+			dbc = gandalf.Db.Create(&order)
+			if dbc.Error != nil {
+				// TODO: Check if it is a unique ID error before retrying.
+				// Retry with a new order ID.
+				err = dbc.Error
+				continue
+			} else {
+				break
+			}
+		}
+		if err != nil {
+			glog.Errorf("Unable to add order: %v to backend due to err: %v", order, err)
+			return err
+		}
+	}
 	return nil
 }
 
