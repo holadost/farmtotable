@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"farmtotable/gandalf"
 	"fmt"
+	"github.com/golang/glog"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -16,7 +17,7 @@ import (
 
 func startAragorn() *Aragorn {
 	aragorn := NewAragorn()
-	fmt.Println("Starting aragorn service in a background go routine")
+	glog.Info("Starting aragorn service in a background go routine")
 	go aragorn.Run()
 	return aragorn
 }
@@ -280,7 +281,7 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	/********************** Auctions **************************/
-	fmt.Println("Adding new auctions to the database")
+	glog.Info("Adding new auctions to the database")
 	var auctions []gandalf.Auction
 	for ii := 0; ii < 5; ii++ {
 		itemName := "Item" + strconv.Itoa(ii)
@@ -309,7 +310,7 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	// Get All auctions
-	fmt.Println("Getting all auctions")
+	glog.Info("Getting all auctions")
 	allAucArg := FetchAllAuctionsArg{}
 	allAucArg.StartID = 0
 	allAucArg.NumAuctions = 5
@@ -335,7 +336,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to get supp items. Error Code: %d, Error Message: %s", allAucRet.Status,
 			allAucRet.ErrorMsg)
 	}
-	if len(allAucRet.Data) != 5 {
+	if len(allAucRet.Data.Auctions) != 5 {
 		t.Fatalf("Failure while fetching all auctions")
 	}
 
@@ -422,34 +423,73 @@ func TestAragornRun(t *testing.T) {
 		}
 	}
 
-	// Get user bids
-	// Register bid
-	gubArg := GetAllUserBidsArg{}
-	gubArg.UserID = "nikhil.sriniva"
-	body, err = json.Marshal(gubArg)
-	if err != nil {
-		t.Fatalf("Unable to marshal register bid arg")
-	}
-	resp, err = http.Post(baseURL+"/auctions/fetch_all_user_bids", "application/json", bytes.NewBuffer(body))
-	if err != nil {
-		t.Fatalf("Unable to get user bids. Error: %v", err)
-	}
-	fullBody, err = ioutil.ReadAll(resp.Body)
-	if err != nil {
-		t.Fatalf("Unable to read body")
-	}
-	resp.Body.Close()
-	gubRet := GetUserBidsRet{}
-	err = json.Unmarshal(fullBody, &gubRet)
-	if err != nil {
-		t.Fatalf("Unable to deserialize get user bid ret. Error: %v", err)
-	}
-	if gubRet.Status != http.StatusOK {
-		t.Fatalf("Unable to get user bid. Error Code: %d, Error Message: %s", gubRet.Status,
-			gubRet.ErrorMsg)
-	}
-	if len(gubRet.Data) != 1 {
-		t.Fatalf("Failure while getting user bids")
+	/********************** Orders **************************/
+	glog.Info("Adding new orders to the database")
+	numOrders := 5
+	for ii := 0; ii < numOrders; ii++ {
+		var order AddOrderArg
+		itemID := "Item_" + strconv.Itoa(ii)
+		order.ItemID = itemID
+		order.ItemPrice = 7.0 * float32(ii+1)
+		order.ItemQty = uint32(5 * (ii + 1))
+		if ii%2 == 0 {
+			order.UserID = "nikhil_0"
+		} else {
+			order.UserID = "nikhil_1"
+		}
+		body, err = json.Marshal(order)
+		if err != nil {
+			t.Fatalf("Unable to marshal add order arg")
+		}
+		resp, err = http.Post(baseURL+"/test/orders/test_only_add_order", "application/json", bytes.NewBuffer(body))
+		if err != nil {
+			t.Fatalf("Unable to add order. Error: %v", err)
+		}
+		fullBody, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Unable to read add order ret")
+		}
+		resp.Body.Close()
+		var ret AddOrderRet
+		err = json.Unmarshal(fullBody, &ret)
+		if err != nil {
+			t.Fatalf("Unable to deserialize add order ret. Error: %v", err)
+		}
+		if ret.Status != http.StatusOK {
+			t.Fatalf("Unable to add orders due to error: %v", ret.ErrorMsg)
+		}
+		if !ret.Data.RegistrationStatus {
+			t.Fatalf("Unable to add order due to error: %v", ret.ErrorMsg)
+		}
 	}
 
+	// Get user orders.
+	var ordersRet GetOrdersRet
+	var userOrdersArg GetUserOrdersArg
+	userOrdersArg.UserID = "nikhil_0"
+
+	body, err = json.Marshal(userOrdersArg)
+	if err != nil {
+		t.Fatalf("Unable to marshal user order arg")
+	}
+	resp, err = http.Post(baseURL+"/orders/get_user_orders", "application/json", bytes.NewBuffer(body))
+	if err != nil {
+		t.Fatalf("Unable to get user orders. Error: %v", err)
+	}
+	fullBody, err = ioutil.ReadAll(resp.Body)
+	glog.Errorf("Response: %v", fullBody)
+	if err != nil {
+		t.Fatalf("Unable to read add order ret")
+	}
+	resp.Body.Close()
+	err = json.Unmarshal(fullBody, &ordersRet)
+	if err != nil {
+		t.Fatalf("Unable to deserialize user orders ret. Error: %v", err)
+	}
+	if ordersRet.Status != http.StatusOK {
+		t.Fatalf("Unable to get user orders due to error: %v", ret.ErrorMsg)
+	}
+	if len(ordersRet.Data.Orders) != 3 {
+		t.Fatalf("Expected 3 records for user nikhil_0. Got: %d", len(ordersRet.Data.Orders))
+	}
 }

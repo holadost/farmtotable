@@ -168,11 +168,6 @@ type OrderRet struct {
 	ItemDescription string `json:"item_description"`
 }
 
-type GetOrdersRetData struct {
-	Orders []OrderRet `json:"orders"`
-	NextID uint64     `json:"next_id"`
-}
-
 type GetOrderArg struct {
 	OrderID string `json:"order_id"`
 }
@@ -195,6 +190,11 @@ type UpdateOrderRet struct {
 type GetUserOrdersArg struct {
 	GetUserArg
 	Status string `json:"status"`
+}
+
+type GetOrdersRetData struct {
+	Orders []OrderRet `json:"orders"`
+	NextID uint64     `json:"next_id"`
 }
 
 type GetOrdersRet struct {

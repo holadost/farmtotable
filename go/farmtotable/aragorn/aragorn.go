@@ -1,6 +1,7 @@
 package aragorn
 
 import (
+	"encoding/json"
 	"errors"
 	"farmtotable/gandalf"
 	"farmtotable/util"
@@ -403,6 +404,7 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 
 /* Order APIs. */
 func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
+	fmt.Println("Fetching user orders")
 	var ret GetOrdersRet
 	var arg GetUserOrdersArg
 	if err := c.ShouldBindJSON(&arg); err != nil {
@@ -434,6 +436,8 @@ func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 		Orders: orderRets,
 		NextID: 0,
 	}
+	body, err := json.Marshal(ret)
+	fmt.Println(fmt.Sprintf("Order Ret Body: %v", body))
 	c.JSON(http.StatusOK, ret)
 	return
 }
