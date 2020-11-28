@@ -40,6 +40,7 @@ func TestAragornRun(t *testing.T) {
 	time.Sleep(100 * time.Millisecond)
 	baseURL := "http://localhost:8080/api/v1/resources"
 	/*************************** Users *************************/
+	glog.Info("Testing aragorn users APIs")
 	// Register new user.
 	userArg := RegisterUserArg{}
 	userArg.UserID = "nikhil.sriniva"
@@ -99,6 +100,7 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	/************************************* Suppliers *******************************************/
+	glog.Info("Testing aragorn suppliers APIs")
 	// Register supplier
 	supplierArg := RegisterSupplierArg{
 		SupplierName:        "Supplier 1",
@@ -187,6 +189,7 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	/************************** Items *********************************/
+	glog.Info("Testing aragorn items APIs")
 	// Register Item
 	regItemArg := RegisterItemArg{
 		ItemName:         "Item 1",
@@ -281,7 +284,7 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	/********************** Auctions **************************/
-	glog.Info("Adding new auctions to the database")
+	glog.Info("Testing aragorn auctions APIs")
 	var auctions []gandalf.Auction
 	for ii := 0; ii < 5; ii++ {
 		itemName := "Item" + strconv.Itoa(ii)
@@ -424,13 +427,12 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	/********************** Orders **************************/
-	glog.Info("Adding new orders to the database")
+	glog.Info("Testing aragorn orders APIs")
 	numOrders := 5
 	items, err = aragorn.gandalf.GetSupplierItems("supplier1")
 	if err != nil {
 		t.Fatalf("Unable to get supplier items")
 	}
-	glog.Errorf("Using Item ID: %s", items[0].ItemID)
 	for ii := 0; ii < numOrders; ii++ {
 		var order AddOrderArg
 		order.ItemPrice = 7.0 * float32(ii+1)
@@ -498,8 +500,8 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	// Get payment pending orders.
-	glog.Errorf("Scanning orders")
 	var ordersArg ScanOrdersArg
+	var orderIDs []string
 	ordersArg.StartID = 0
 	ordersArg.NumOrders = 2
 	for ii := 0; ii < 5; ii++ {
@@ -529,10 +531,14 @@ func TestAragornRun(t *testing.T) {
 				t.Fatalf("Expected %d records. Got: %d",
 					ordersArg.NumOrders, len(ordersRet.Data.Orders))
 			}
+			for _, xx := range ordersRet.Data.Orders {
+				orderIDs = append(orderIDs, xx.OrderID)
+			}
 		} else if ii == 2 {
 			if len(ordersRet.Data.Orders) != 1 {
 				t.Fatalf("Expected 1 records. Got: %d", len(ordersRet.Data.Orders))
 			}
+			orderIDs = append(orderIDs, ordersRet.Data.Orders[0].OrderID)
 		} else {
 			if ordersRet.Data.NextID != -1 {
 				t.Fatalf("Scan should have finished but it hasn't")
@@ -544,31 +550,80 @@ func TestAragornRun(t *testing.T) {
 	}
 
 	// Update order status.
+	for _, orderID := range orderIDs {
+		var updateOrderArg UpdateOrderArg
+		var updateOrderRet UpdateOrderRet
+		updateOrderArg.OrderID = orderID
+		updateOrderArg.Status = "KOrderDeliveryPending"
+		body, err = json.Marshal(updateOrderArg)
+		if err != nil {
+			t.Fatalf("Unable to marshal user order arg")
+		}
+		resp, err = http.Post(baseURL+"/orders/update_order", "application/json", bytes.NewBuffer(body))
+		if err != nil {
+			t.Fatalf("Unable to get user orders. Error: %v", err)
+		}
+		fullBody, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Unable to read add order ret")
+		}
+		resp.Body.Close()
+		err = json.Unmarshal(fullBody, &updateOrderRet)
+		if err != nil {
+			t.Fatalf("Unable to deserialize update order ret. Error: %v", err)
+		}
+		if updateOrderRet.Status != http.StatusOK {
+			t.Fatalf("Unable to update order due to error: %v", ret.ErrorMsg)
+		}
+		if !updateOrderRet.Data.RegistrationStatus {
+			t.Fatalf("Unable to update order status for order ID: %s", orderID)
+		}
+	}
 
-	// Get delivery pending orders.
-	//ordersArg.UserID = "nikhil_0"
-	//
-	//body, err = json.Marshal(ordersArg)
-	//if err != nil {
-	//	t.Fatalf("Unable to marshal user order arg")
-	//}
-	//resp, err = http.Post(baseURL+"/orders/get_user_orders", "application/json", bytes.NewBuffer(body))
-	//if err != nil {
-	//	t.Fatalf("Unable to get user orders. Error: %v", err)
-	//}
-	//fullBody, err = ioutil.ReadAll(resp.Body)
-	//if err != nil {
-	//	t.Fatalf("Unable to read add order ret")
-	//}
-	//resp.Body.Close()
-	//err = json.Unmarshal(fullBody, &ordersRet)
-	//if err != nil {
-	//	t.Fatalf("Unable to deserialize user orders ret. Error: %v", err)
-	//}
-	//if ordersRet.Status != http.StatusOK {
-	//	t.Fatalf("Unable to get user orders due to error: %v", ret.ErrorMsg)
-	//}
-	//if len(ordersRet.Data.Orders) != 3 {
-	//	t.Fatalf("Expected 3 records for user nikhil_0. Got: %d", len(ordersRet.Data.Orders))
-	//}
+	ordersArg.StartID = 0
+	ordersArg.NumOrders = 2
+	for ii := 0; ii < 5; ii++ {
+		body, err = json.Marshal(ordersArg)
+		if err != nil {
+			t.Fatalf("Unable to marshal scan order arg")
+		}
+		resp, err = http.Post(baseURL+"/orders/get_delivery_pending_orders", "application/json", bytes.NewBuffer(body))
+		if err != nil {
+			t.Fatalf("Unable to get user orders. Error: %v", err)
+		}
+		fullBody, err = ioutil.ReadAll(resp.Body)
+		if err != nil {
+			t.Fatalf("Unable to read add order ret")
+		}
+		resp.Body.Close()
+		err = json.Unmarshal(fullBody, &ordersRet)
+		if err != nil {
+			t.Fatalf("Unable to deserialize scan orders ret. Error: %v", err)
+		}
+		if ordersRet.Status != http.StatusOK {
+			t.Fatalf("Unable to scan orders due to error: %v", ret.ErrorMsg)
+		}
+		// This assumes that numOrders defined earlier is 5.
+		if ii == 0 || ii == 1 {
+			if len(ordersRet.Data.Orders) != int(ordersArg.NumOrders) {
+				t.Fatalf("Expected %d records. Got: %d",
+					ordersArg.NumOrders, len(ordersRet.Data.Orders))
+			}
+			for _, xx := range ordersRet.Data.Orders {
+				orderIDs = append(orderIDs, xx.OrderID)
+			}
+		} else if ii == 2 {
+			if len(ordersRet.Data.Orders) != 1 {
+				t.Fatalf("Expected 1 records. Got: %d", len(ordersRet.Data.Orders))
+			}
+			orderIDs = append(orderIDs, ordersRet.Data.Orders[0].OrderID)
+		} else {
+			if ordersRet.Data.NextID != -1 {
+				t.Fatalf("Scan should have finished but it hasn't")
+			}
+			break
+		}
+		// Update the start ID for the next scan.
+		ordersArg.StartID = uint64(ordersRet.Data.NextID)
+	}
 }
