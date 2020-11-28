@@ -137,9 +137,14 @@ type FetchAllAuctionsArg struct {
 	NumAuctions uint64 `json:"num_auctions"`
 }
 
+type FetchAllAuctionsRetData struct {
+	Auctions []gandalf.Auction `json:"auctions"`
+	NextID   uint64            `json:"next_id"`
+}
+
 type FetchAllAuctionsRet struct {
 	BaseAPIResponse
-	Data []gandalf.Auction `json:"data"`
+	Data FetchAllAuctionsRetData `json:"data"`
 }
 
 // User Bids

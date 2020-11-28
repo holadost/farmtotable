@@ -59,10 +59,9 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/items/remove", aragorn.RemoveItem)      // Administrator API. Removes item
 
 	// Auction APIs.
-	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)             // Returns all the live auctions.
-	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.GetMaxBids)            // Returns the max bids for all requested items so far.
-	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)             // Registers a new bid by the user.
-	r.POST("/api/v1/resources/auctions/fetch_user_bids", aragorn.FetchUserBidsForItem) // Fetches user bids for an item
+	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)  // Returns all the live auctions.
+	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.GetMaxBids) // Returns the max bids for all requested items so far.
+	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)  // Registers a new bid by the user.
 
 	// Order APIs.
 	r.POST("/api/v1/resources/orders/get_order", aragorn.GetOrder)                                   // User and Administrator API.
@@ -318,7 +317,12 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		return
 	}
 	var retAuctions []gandalf.Auction
+	var maxID uint
+	maxID = 0
 	for _, auction := range auctions {
+		if auction.ID > maxID {
+			maxID = auction.ID
+		}
 		deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(int64(auction.AuctionDurationSecs)))
 		if deadline.Before(time.Now()) {
 			// The deadline has expired. Skip this auction.
@@ -329,7 +333,10 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
-	response.Data = retAuctions
+	response.Data = FetchAllAuctionsRetData{
+		Auctions: retAuctions,
+		NextID:   uint64(maxID + 1),
+	}
 	c.JSON(http.StatusOK, response)
 }
 
@@ -389,62 +396,6 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 		RegistrationStatus: true,
 	}
 	ret.Data = retData
-	c.JSON(http.StatusOK, ret)
-	return
-}
-
-func (aragorn *Aragorn) FetchUserBidsForItem(c *gin.Context) {
-	var ret GetUserBidsRet
-	var arg GetUserBidsForItemArg
-	if err := c.ShouldBindJSON(&arg); err != nil {
-		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = "Invalid input JSON"
-		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
-		return
-	}
-	bids, err := aragorn.gandalf.GetUserBids(arg.UserID)
-	if err != nil {
-		ret.Status = http.StatusInternalServerError
-		ret.ErrorMsg = "Unable to fetch user bids"
-		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
-		return
-	}
-	var itemBids []gandalf.Bid
-	for ii := 0; ii < len(bids); ii++ {
-		if bids[ii].ItemID == arg.ItemID {
-			itemBids = append(itemBids, bids[ii])
-		}
-	}
-	ret.Status = http.StatusOK
-	ret.ErrorMsg = ""
-	ret.Data = itemBids
-	c.JSON(http.StatusOK, ret)
-	return
-}
-
-func (aragorn *Aragorn) FetchAllUserBids(c *gin.Context) {
-	var ret GetUserBidsRet
-	var arg GetAllUserBidsArg
-	if err := c.ShouldBindJSON(&arg); err != nil {
-		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = "Invalid input JSON"
-		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
-		return
-	}
-	bids, err := aragorn.gandalf.GetUserBids(arg.UserID)
-	if err != nil {
-		ret.Status = http.StatusInternalServerError
-		ret.ErrorMsg = "Unable to fetch all user bids"
-		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
-		return
-	}
-	ret.Status = http.StatusOK
-	ret.ErrorMsg = ""
-	ret.Data = bids
 	c.JSON(http.StatusOK, ret)
 	return
 }
@@ -516,7 +467,7 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 	ret.ErrorMsg = ""
 	ret.Data = GetOrdersRetData{
 		Orders: orderRets,
-		NextID: arg.StartID + arg.NumOrders,
+		NextID: uint64(orders[len(orders)-1].ID + 1),
 	}
 	c.JSON(http.StatusOK, ret)
 	return
@@ -552,7 +503,7 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 	ret.ErrorMsg = ""
 	ret.Data = GetOrdersRetData{
 		Orders: orderRets,
-		NextID: arg.StartID + arg.NumOrders,
+		NextID: uint64(orders[len(orders)-1].ID + 1),
 	}
 	c.JSON(http.StatusOK, ret)
 	return
