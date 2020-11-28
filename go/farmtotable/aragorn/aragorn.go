@@ -71,6 +71,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/orders/update_order", aragorn.UpdateOrder)                             // Administrator API.
 	r.POST("/api/v1/resources/orders/purchase", aragorn.PurchaseOrder)                               // User API.
 	r.POST("/api/v1/resources/test/orders/test_only_add_order", aragorn.TestOnlyAddOrder)            // Test API.
+	r.POST("/api/v1/resources/test/auctions/test_only_add_auctions", aragorn.TestOnlyAddAuctions)    // Test API.
 
 	// Start router.
 	r.Run(":8080")
@@ -623,8 +624,8 @@ func (aragorn *Aragorn) PurchaseOrder(c *gin.Context) {
 
 func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
 	// This is a test API. This must not be used for any other reason.
-	var ret AddOrderRet
-	var arg AddOrderArg
+	var ret TestOnlyAddOrderRet
+	var arg TestOnlyAddOrderArg
 	if err := c.ShouldBindJSON(&arg); err != nil {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
@@ -655,6 +656,68 @@ func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
 	ret.Data = retData
 	c.JSON(http.StatusOK, ret)
 	return
+}
+
+func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
+	// This method takes all the items in items table and adds them to the auctions table.
+	var ret TestOnlyAddAuctionsRet
+	suppliers, err := aragorn.gandalf.GetAllSuppliers()
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Unable to get all suppliers to find items to add to auctions"
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(ret.ErrorMsg)
+		return
+	}
+	success := false
+	var auctions []gandalf.Auction
+	if len(suppliers) == 0 {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Did not find any suppliers"
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(ret.ErrorMsg)
+		return
+	}
+	for _, supplier := range suppliers {
+		items, err := aragorn.gandalf.GetSupplierItems(supplier.SupplierID)
+		if err != nil {
+			continue
+		}
+		if len(items) != 0 {
+			for _, item := range items {
+				var auction gandalf.Auction
+				auction.ItemID = item.ItemID
+				auction.ItemQty = item.ItemQty
+				auction.ItemName = item.ItemName
+				auction.AuctionStartTime = item.AuctionStartTime
+				auction.AuctionDurationSecs = 86400
+				auctions = append(auctions, auction)
+			}
+			success = true
+		}
+	}
+	if !success {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Did not find any items to add to auctions"
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(ret.ErrorMsg)
+		return
+	}
+	err = aragorn.gandalf.RegisterAuctions(auctions)
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Failed to register auctions due to error: %v", err)
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(ret.ErrorMsg)
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	retData := RegistrationStatusRet{
+		RegistrationStatus: true,
+	}
+	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRet, error) {

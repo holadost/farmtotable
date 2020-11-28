@@ -434,7 +434,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to get supplier items")
 	}
 	for ii := 0; ii < numOrders; ii++ {
-		var order AddOrderArg
+		var order TestOnlyAddOrderArg
 		order.ItemPrice = 7.0 * float32(ii+1)
 		order.ItemQty = uint32(5 * (ii + 1))
 		if ii%2 == 0 {
@@ -457,7 +457,7 @@ func TestAragornRun(t *testing.T) {
 			t.Fatalf("Unable to read add order ret")
 		}
 		resp.Body.Close()
-		var ret AddOrderRet
+		var ret TestOnlyAddOrderRet
 		err = json.Unmarshal(fullBody, &ret)
 		if err != nil {
 			t.Fatalf("Unable to deserialize add order ret. Error: %v", err)

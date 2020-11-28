@@ -208,14 +208,22 @@ type ScanOrdersArg struct {
 	OrderStatus gandalf.OrderStatus `json:"order_status"`
 }
 
-type AddOrderArg struct {
+type TestOnlyAddOrderArg struct {
 	UserID    string  `json:"user_id"`
 	ItemID    string  `json:"item_id"`
 	ItemQty   uint32  `json:"item_qty"`
 	ItemPrice float32 `json:"item_price"`
 }
 
-type AddOrderRet struct {
+type TestOnlyAddOrderRet struct {
+	BaseAPIResponse
+	Data RegistrationStatusRet `json:"data"`
+}
+
+type TestOnlyAddAuctionsArg struct {
+}
+
+type TestOnlyAddAuctionsRet struct {
 	BaseAPIResponse
 	Data RegistrationStatusRet `json:"data"`
 }
