@@ -218,3 +218,57 @@ func TestGandalf_Auction(t *testing.T) {
 		t.Fatalf("Max bid got updated even though it should not have")
 	}
 }
+
+func TestGandalf_Order(t *testing.T) {
+	cleanupSqliteDB()
+	gandalf := NewSqliteGandalf()
+	defer gandalf.Close()
+	var orders []Order
+	numOrders := 5
+	for ii := 0; ii < numOrders; ii++ {
+		var order Order
+		order.ItemQty = 10
+		order.ItemPrice = 10.0
+		order.UserID = "nikhil"
+		order.ItemID = "Item_" + strconv.Itoa(ii)
+		orders = append(orders, order)
+	}
+	if err := gandalf.AddOrders(orders); err != nil {
+		t.Fatalf("Unable to add errors due to err: %v", err)
+	}
+	retOrders, err := gandalf.GetUserOrders("nikhil")
+	if err != nil {
+		t.Fatalf("Unable to fetch orders for nikhil due to err: %v", err)
+	}
+	if len(retOrders) != len(orders) {
+		t.Fatalf("Did not get all the orders as expected(%d vs %d)",
+			len(retOrders), len(orders))
+	}
+	err = gandalf.UpdateOrderStatus(retOrders[0].OrderID, KOrderDeliveryPending)
+	if err != nil {
+		t.Fatalf("Unable to update order status for order: %v due to err: %v",
+			retOrders[0], err)
+	}
+	order, err := gandalf.GetOrder(retOrders[0].OrderID)
+	if err != nil {
+		t.Fatalf("Unable to get order: %s due to err: %v", retOrders[0].OrderID, err)
+	}
+	if order.Status != KOrderDeliveryPending {
+		t.Fatalf("Invalid order status. Expected: %d, got: %d",
+			KOrderDeliveryPending, order.Status)
+	}
+	scanOrders, err := gandalf.ScanPaymentPendingOrders(0, uint64(numOrders))
+	if err != nil {
+		t.Fatalf("Unable to scan payment pending orders due to err: %v", err)
+	}
+	if len(scanOrders) != (numOrders - 1) {
+		t.Fatalf("Expected %d orders, got %d. Orders: %v", numOrders-1, len(scanOrders), scanOrders)
+	}
+	scanOrders, err = gandalf.ScanDeliveryPendingOrders(0, uint64(numOrders))
+	if err != nil {
+		t.Fatalf("Unable to scan delivery pending orders due to err: %v", err)
+	}
+	if len(scanOrders) != 1 {
+		t.Fatalf("Expected 1 order, got %d", len(scanOrders))
+	}
+}

@@ -354,6 +354,8 @@ func (gandalf *Gandalf) AddOrders(orders []Order) error {
 		err = nil
 		for ii := 0; ii < 5; ii++ {
 			order.OrderID = xid.New().String()
+			// All new orders will start from KOrderPaymentPending
+			order.Status = KOrderPaymentPending
 			dbc = gandalf.Db.Create(&order)
 			if dbc.Error != nil {
 				// TODO: Check if it is a unique ID error before retrying.
@@ -386,9 +388,10 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 Gets all orders whose payment is pending. This method must be used with care as it could potentially end up
 returning 100,000 of rows.
 */
-func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numBids uint64) ([]Order, error) {
+func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numOrders uint64) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numBids).Find(&orders)
+	dbc := gandalf.Db.Where(
+		"status = ?", KOrderPaymentPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -396,9 +399,10 @@ func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numBids uint
 }
 
 /* Gets all orders whose delivery is pending. */
-func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numBids uint64) ([]Order, error) {
+func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numOrders uint64) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numBids).Find(&orders)
+	dbc := gandalf.Db.Where(
+		"status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -417,10 +421,21 @@ func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 
 /* Update order status. */
 func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
+	tx := gandalf.Db.Begin()
 	var order Order
-	dbc := gandalf.Db.Model(&order).Where("order_id = ?", status).Update("status", status)
+	dbc := tx.Where("order_id = ?", orderID).First(&order)
 	if dbc.Error != nil {
+		if !strings.Contains(dbc.Error.Error(), "record not found") {
+			tx.Rollback()
+			return dbc.Error
+		}
+	}
+	order.Status = status
+	dbc = tx.Save(&order)
+	if dbc.Error != nil {
+		tx.Rollback()
 		return dbc.Error
 	}
+	tx.Commit()
 	return nil
 }
