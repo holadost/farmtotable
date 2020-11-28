@@ -9,6 +9,7 @@ import (
 	"github.com/rs/xid"
 	bulk "github.com/sunary/gorm-bulk-insert"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -238,15 +239,17 @@ func (gandalf *Gandalf) RegisterAuctions(auctions []Auction) error {
 }
 
 func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
-	// TODO: This is a massive transaction in the critical path. This will eventually slow the entire auction system
-	// TODO: down. We should move the auctions and bids to faster key value store like redis or remote-badger.
+	// TODO: This is a massive transaction in the critical path. This will eventually slow down the entire auction
+	// TODO: system. We should move the auctions and bids to faster key value store like redis or remote-badger.
 	// Check if a bid has already been made by the user.
 	tx := gandalf.Db.Begin()
 	var currBid Bid
 	dbc := tx.Where("item_id = ? AND user_id = ?", itemID, userID).First(&currBid)
 	if dbc.Error != nil {
-		tx.Rollback()
-		return dbc.Error
+		if !strings.Contains(dbc.Error.Error(), "record not found") {
+			tx.Rollback()
+			return dbc.Error
+		}
 	}
 	if currBid.ItemID == "" {
 		dbc := tx.Create(&Bid{
@@ -285,8 +288,6 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 			tx.Rollback()
 			return dbc.Error
 		}
-	} else {
-		tx.Rollback()
 	}
 	tx.Commit()
 	return nil
@@ -359,33 +360,13 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 	return orders, nil
 }
 
-/* Gets all user orders whose payment is pending. */
-func (gandalf *Gandalf) GetUserPaymentPendingOrders(userID string) ([]Order, error) {
-	var orders []Order
-	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderPaymentPending).Find(&orders)
-	if dbc.Error != nil {
-		return orders, dbc.Error
-	}
-	return orders, nil
-}
-
 /*
 Gets all orders whose payment is pending. This method must be used with care as it could potentially end up
 returning 100,000 of rows.
 */
-func (gandalf *Gandalf) GetAllPaymentPendingOrders() ([]Order, error) {
+func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numBids uint64) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.Db.Where("status = ?", KOrderPaymentPending).Find(&orders)
-	if dbc.Error != nil {
-		return orders, dbc.Error
-	}
-	return orders, nil
-}
-
-/* Gets all user orders whose delivery is pending. */
-func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, error) {
-	var orders []Order
-	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderDeliveryPending).Find(&orders)
+	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numBids).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}
@@ -393,19 +374,9 @@ func (gandalf *Gandalf) GetUserDeliveryPendingOrders(userID string) ([]Order, er
 }
 
 /* Gets all orders whose delivery is pending. */
-func (gandalf *Gandalf) GetAllDeliveryPendingOrders() ([]Order, error) {
+func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numBids uint64) ([]Order, error) {
 	var orders []Order
-	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Find(&orders)
-	if dbc.Error != nil {
-		return orders, dbc.Error
-	}
-	return orders, nil
-}
-
-/* Gets all user orders that are complete */
-func (gandalf *Gandalf) GetUserCompletedOrders(userID string) ([]Order, error) {
-	var orders []Order
-	dbc := gandalf.Db.Where("user_id = ? AND status = ?", userID, KOrderComplete).Find(&orders)
+	dbc := gandalf.Db.Where("status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numBids).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
 	}

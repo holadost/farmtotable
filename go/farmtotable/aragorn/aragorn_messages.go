@@ -163,6 +163,11 @@ type OrderRet struct {
 	ItemDescription string `json:"item_description"`
 }
 
+type GetOrdersRetData struct {
+	Orders []OrderRet `json:"orders"`
+	NextID uint64     `json:"next_id"`
+}
+
 type GetOrderArg struct {
 	OrderID string `json:"order_id"`
 }
@@ -174,7 +179,7 @@ type GetOrderRet struct {
 
 type UpdateOrderArg struct {
 	OrderID string `json:"order_id"`
-	Status  uint32 `json:"status"`
+	Status  string `json:"status"`
 }
 
 type UpdateOrderRet struct {
@@ -187,7 +192,13 @@ type GetUserOrdersArg struct {
 	Status string `json:"status"`
 }
 
-type GetUserOrdersRet struct {
+type GetOrdersRet struct {
 	BaseAPIResponse
-	Data []OrderRet `json:"data"`
+	Data GetOrdersRetData `json:"data"`
+}
+
+type ScanOrdersArg struct {
+	StartID     uint64              `json:"start_id"`
+	NumOrders   uint64              `json:"num_orders"`
+	OrderStatus gandalf.OrderStatus `json:"order_status"`
 }
