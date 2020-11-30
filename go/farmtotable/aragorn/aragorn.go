@@ -268,24 +268,31 @@ func (aragorn *Aragorn) RemoveItem(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
-	item := aragorn.gandalf.GetItem(arg.ItemID)
+	item, err := aragorn.gandalf.GetItem(arg.ItemID)
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Unable to get item from backend")
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		return
+	}
 	if item.ItemName == "" {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Did not find item to delete")
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	// TODO: We also need to remove the item from the auctions table and all associated bids.
-	err := aragorn.gandalf.DeleteItem(arg.ItemID)
+	err = aragorn.gandalf.DeleteItem(arg.ItemID)
 	if err != nil {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Error while removing item: %v", err)
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -305,7 +312,7 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, response)
-		aragorn.apiLogger.Error(response.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
 	auctions, err := aragorn.gandalf.GetAllAuctions(fetchAucArg.StartID, fetchAucArg.NumAuctions)
@@ -313,7 +320,7 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		response.Status = http.StatusInternalServerError
 		response.ErrorMsg = "Unable to get all auctions"
 		c.JSON(http.StatusInternalServerError, response)
-		aragorn.apiLogger.Error(response.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
 	var retAuctions []gandalf.Auction
@@ -358,7 +365,7 @@ func (aragorn *Aragorn) GetMaxBids(c *gin.Context) {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, response)
-		aragorn.apiLogger.Error(response.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
 	auctions, err := aragorn.gandalf.GetMaxBids(arg.ItemIDs)
@@ -366,7 +373,7 @@ func (aragorn *Aragorn) GetMaxBids(c *gin.Context) {
 		response.Status = http.StatusInternalServerError
 		response.ErrorMsg = "Unable to get max bids for items"
 		c.JSON(http.StatusInternalServerError, response)
-		aragorn.apiLogger.Error(response.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
 	results := make([]FetchMaxBidsRetData, 0, len(auctions))
@@ -390,7 +397,7 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	err := aragorn.gandalf.RegisterBid(arg.ItemID, arg.UserID, arg.BidAmount, arg.BidQty)
@@ -398,7 +405,7 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to register bid"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -419,7 +426,7 @@ func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	orders, err := aragorn.gandalf.GetUserOrders(arg.UserID)
@@ -427,7 +434,7 @@ func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch user orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	orderRets, err := aragorn.joinOrderWithItemInfo(orders)
@@ -435,7 +442,7 @@ func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch user orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -455,7 +462,7 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	orders, err := aragorn.gandalf.ScanPaymentPendingOrders(arg.StartID, arg.NumOrders)
@@ -463,7 +470,7 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch payment pending orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	var orderRets []OrderRet
@@ -482,7 +489,7 @@ func (aragorn *Aragorn) GetPaymentPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch payment pending orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -502,7 +509,7 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	orders, err := aragorn.gandalf.ScanDeliveryPendingOrders(arg.StartID, arg.NumOrders)
@@ -510,7 +517,7 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch delivery pending orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 
@@ -531,7 +538,7 @@ func (aragorn *Aragorn) GetDeliveryPendingOrders(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch delivery pending orders"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -551,7 +558,7 @@ func (aragorn *Aragorn) GetOrder(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	order, err := aragorn.gandalf.GetOrder(arg.OrderID)
@@ -559,7 +566,7 @@ func (aragorn *Aragorn) GetOrder(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch order"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	var orders []gandalf.Order
@@ -569,7 +576,7 @@ func (aragorn *Aragorn) GetOrder(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to fetch order"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -586,7 +593,7 @@ func (aragorn *Aragorn) UpdateOrder(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	status := gandalf.OrderStatusStr(arg.Status)
@@ -595,7 +602,7 @@ func (aragorn *Aragorn) UpdateOrder(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON. Order status not supported"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	err = aragorn.gandalf.UpdateOrderStatus(arg.OrderID, uint32(statusCode))
@@ -630,7 +637,7 @@ func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Invalid input JSON"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	var orders []gandalf.Order
@@ -645,7 +652,7 @@ func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
 		ret.Status = http.StatusInternalServerError
 		ret.ErrorMsg = "Unable to add order"
 		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error("Unable to add order")
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK
@@ -666,7 +673,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Unable to get all suppliers to find items to add to auctions"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	success := false
@@ -675,7 +682,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Did not find any suppliers"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	for _, supplier := range suppliers {
@@ -700,7 +707,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Did not find any items to add to auctions"
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	err = aragorn.gandalf.RegisterAuctions(auctions)
@@ -708,7 +715,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Failed to register auctions due to error: %v", err)
 		c.JSON(http.StatusBadRequest, ret)
-		aragorn.apiLogger.Error(ret.ErrorMsg)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
 	ret.Status = http.StatusOK

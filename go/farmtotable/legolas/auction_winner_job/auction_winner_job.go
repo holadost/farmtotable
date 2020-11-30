@@ -41,20 +41,20 @@ func (awj *AuctionWinnerJob) Stop() {
 
 /*********************** INTERNAL HELPERS ******************************/
 type _Worker struct {
-	it      *gandalf.AuctionsScanner
-	gandalf *gandalf.Gandalf
+	auctionScanner *gandalf.AuctionsScanner
+	gandalf        *gandalf.Gandalf
 }
 
 func newWorker(gandalf *gandalf.Gandalf, it *gandalf.AuctionsScanner) *_Worker {
 	worker := _Worker{}
-	worker.it = it
+	worker.auctionScanner = it
 	worker.gandalf = gandalf
 	return &worker
 }
 
 func (worker *_Worker) run() error {
 	for {
-		auction, status, err := worker.it.Next()
+		auction, status, err := worker.auctionScanner.Next()
 		if err != nil {
 			return errors.New(fmt.Sprintf("error while picking winners for auction: %v, error: %v", auction, err))
 		}
@@ -62,11 +62,16 @@ func (worker *_Worker) run() error {
 			// Iterator has finished. No more auctions to process.
 			return nil
 		}
-		worker.pickWinners(auction)
+		topBids, err := worker.pickWinners(auction)
+		if err != nil {
+			return err
+		}
+		err = worker.placeOrders(auction, topBids)
+
 	}
 }
 
-func (worker *_Worker) pickWinners(auction gandalf.Auction) {
+func (worker *_Worker) pickWinners(auction gandalf.Auction) ([]gandalf.Bid, error) {
 	glog.Infof("Processing winners for auction: %v", auction)
 	bidScanner := gandalf.NewItemsBidScanner(worker.gandalf, auction.ItemID, 1024)
 	topBids := make([]gandalf.Bid, 0, 2*KNumWinnersPerItem)
@@ -74,7 +79,7 @@ func (worker *_Worker) pickWinners(auction gandalf.Auction) {
 		batch, finished, err := bidScanner.NextN(KNumWinnersPerItem)
 		if err != nil {
 			glog.Errorf("Unable to process winners for auction: %v due to err: %v", auction, err)
-			return
+			return topBids, err
 		}
 		if (!finished) || (finished && (len(batch) > 0)) {
 			topBids = append(topBids, batch...)
@@ -87,7 +92,52 @@ func (worker *_Worker) pickWinners(auction gandalf.Auction) {
 			break
 		}
 	}
-	// We now have the winners of the auction in topBids.
+	return topBids, nil
+}
+
+func (worker *_Worker) placeOrders(auction gandalf.Auction, topBids []gandalf.Bid) error {
+	glog.Infof("Placing orders for auction: %v", auction)
+	item, err := worker.gandalf.GetItem(auction.ItemID)
+	if err != nil {
+		return err
+	}
+	if item.ItemID == "" {
+		return errors.New(
+			fmt.Sprintf(
+				"unable to fetch item with item ID: %s from backend", item.ItemID))
+	}
+	var orders []gandalf.Order
+	totalQty := item.ItemQty
+	for ii := len(topBids) - 1; ii >= 0; ii-- {
+		var order gandalf.Order
+		order.ItemID = item.ItemID
+		order.UserID = topBids[ii].UserID
+		order.ItemPrice = topBids[ii].BidAmount
+		if totalQty >= topBids[ii].BidQty {
+			order.ItemQty = topBids[ii].BidQty
+			totalQty -= topBids[ii].BidQty
+		} else {
+			glog.Warningf(
+				"Unable to satisfy order from bid: %v due to "+
+					"insufficient item quantity(%d)", topBids[ii], totalQty)
+			continue
+		}
+		orders = append(orders, order)
+	}
+	// TODO: We should ensure that the orders being placed now haven't been placed
+	// TODO: already.
+	glog.V(1).Infof("Adding orders to backend: %v", orders)
+	err = worker.gandalf.AddOrders(orders)
+	if err != nil {
+		glog.Errorf("Unable to add orders to backend")
+		return err
+	}
+	return nil
+}
+
+func (worker *_Worker) notifyWinners(auction gandalf.Auction, topBids []gandalf.Bid) error {
+	// TODO: Notify the winners via email. We need to figure this out.
+	return nil
 }
 
 /* Sorting interface to sort the bids by Bid amount. */

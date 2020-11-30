@@ -116,7 +116,10 @@ func TestGandalf_Item(t *testing.T) {
 		t.Fatalf("Did not get the correct number of items")
 	}
 
-	item := gandalf.GetItem(items[0].ItemID)
+	item, err := gandalf.GetItem(items[0].ItemID)
+	if err != nil {
+		t.Fatalf("Unable to get item. Error: %v", err)
+	}
 	if item.ItemName != "Item1" {
 		t.Fatalf("Did not get the correct item")
 	}
@@ -126,7 +129,10 @@ func TestGandalf_Item(t *testing.T) {
 		t.Fatalf("Unable to edit item. Error: %v", err)
 	}
 
-	item = gandalf.GetItem(items[0].ItemID)
+	item, err = gandalf.GetItem(items[0].ItemID)
+	if err != nil {
+		t.Fatalf("Unable to get item. Error: %v", err)
+	}
 	if item.ItemName != "Item11" || item.ItemQty != 150 {
 		t.Fatalf("Did not get the correctly edited item")
 	}
@@ -136,7 +142,7 @@ func TestGandalf_Item(t *testing.T) {
 		t.Fatalf("Unable to delete item")
 	}
 
-	item = gandalf.GetItem(items[1].ItemID)
+	item, err = gandalf.GetItem(items[1].ItemID)
 	if item.ItemID != "" {
 		t.Fatalf("Deleted item came back")
 	}

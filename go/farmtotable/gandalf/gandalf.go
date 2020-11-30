@@ -181,9 +181,13 @@ func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]Item, error) {
 	return items, nil
 }
 
-func (gandalf *Gandalf) GetItem(itemID string) (item Item) {
-	gandalf.Db.Where("item_id = ?", itemID).First(&item)
-	return
+func (gandalf *Gandalf) GetItem(itemID string) (Item, error) {
+	var item Item
+	dbc := gandalf.Db.Where("item_id = ?", itemID).First(&item)
+	if dbc.Error != nil {
+		return item, dbc.Error
+	}
+	return item, nil
 }
 
 func (gandalf *Gandalf) GetItems(itemIDs []string) ([]Item, error) {
