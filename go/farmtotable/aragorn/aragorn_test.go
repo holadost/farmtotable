@@ -96,7 +96,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Fetched wrong user")
 	}
 	if userRet.Data.PhNum != "9198029973" {
-		t.Fatalf("User ph num is wrong")
+		t.Fatalf("UserModel ph num is wrong")
 	}
 
 	/************************************* Suppliers *******************************************/

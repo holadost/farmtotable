@@ -44,7 +44,7 @@ func (aragorn *Aragorn) Run() {
 		MaxAge:       12 * time.Hour,
 	}))
 
-	// User APIs.
+	// UserModel APIs.
 	r.POST("/api/v1/resources/users/fetch", aragorn.GetUser)
 	r.POST("/api/v1/resources/users/register", aragorn.RegisterUser)
 
@@ -64,12 +64,12 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)  // Registers a new bid by the user.
 
 	// Order APIs.
-	r.POST("/api/v1/resources/orders/get_order", aragorn.GetOrder)                                   // User and Administrator API.
-	r.POST("/api/v1/resources/orders/get_user_orders", aragorn.GetUserOrders)                        // User and Administrator API.
+	r.POST("/api/v1/resources/orders/get_order", aragorn.GetOrder)                                   // UserModel and Administrator API.
+	r.POST("/api/v1/resources/orders/get_user_orders", aragorn.GetUserOrders)                        // UserModel and Administrator API.
 	r.POST("/api/v1/resources/orders/get_payment_pending_orders", aragorn.GetPaymentPendingOrders)   // Administrator API.
 	r.POST("/api/v1/resources/orders/get_delivery_pending_orders", aragorn.GetDeliveryPendingOrders) // Administrator API.
 	r.POST("/api/v1/resources/orders/update_order", aragorn.UpdateOrder)                             // Administrator API.
-	r.POST("/api/v1/resources/orders/purchase", aragorn.PurchaseOrder)                               // User API.
+	r.POST("/api/v1/resources/orders/purchase", aragorn.PurchaseOrder)                               // UserModel API.
 	r.POST("/api/v1/resources/test/orders/test_only_add_order", aragorn.TestOnlyAddOrder)            // Test API.
 	r.POST("/api/v1/resources/test/auctions/test_only_add_auctions", aragorn.TestOnlyAddAuctions)    // Test API.
 
@@ -98,7 +98,7 @@ func (aragorn *Aragorn) Run() {
 //	return true
 //}
 
-/* User APIs. */
+/* UserModel APIs. */
 func (aragorn *Aragorn) GetUser(c *gin.Context) {
 	var response GetUserRet
 	var arg GetUserArg

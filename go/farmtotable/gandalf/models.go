@@ -5,7 +5,7 @@ import (
 )
 
 /* Database model/schema */
-type User struct {
+type UserModel struct {
 	UserID  string `gorm:"type:varchar(100);PRIMARY_KEY" json:"user_id"`
 	Name    string `gorm:"type:varchar(255);NOT NULL" json:"name"`
 	EmailID string `gorm:"type:varchar(255);NOT NULL;index" json:"email_id"`
@@ -31,6 +31,10 @@ type Item struct {
 	ItemQty          uint32    `json:"item_qty"`
 	AuctionStartTime time.Time `json:"auction_start_time"`
 	MinPrice         float32   `json:"min_price"`
+	MaxPrice         float32   `json:"max_price"`
+	AuctionStarted   bool      `json:"auction_started"` // A flag to indicate whether the auction for this item has started.
+	AuctionEnded     bool      `json:"auction_ended"`   // A flag to indicate whether auction has ended.
+	AuctionDecided   bool      `json:"auction_decided"` // A flag to indicate whether the auction has been decided.
 }
 
 type Bid struct {

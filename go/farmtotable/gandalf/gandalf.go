@@ -56,7 +56,7 @@ func NewGandalf() *Gandalf {
 }
 
 func (gandalf *Gandalf) Initialize() error {
-	user := User{}
+	user := UserModel{}
 	supplier := Supplier{}
 	item := Item{}
 	bid := Bid{}
@@ -75,7 +75,7 @@ func (gandalf *Gandalf) Close() {
 }
 
 func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string, phNum string, address string) error {
-	user := &User{
+	user := &UserModel{
 		UserID:  userID,
 		Name:    name,
 		EmailID: emailID,
@@ -89,17 +89,17 @@ func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string,
 	return nil
 }
 
-func (gandalf *Gandalf) GetUserByID(userID string) (user User) {
+func (gandalf *Gandalf) GetUserByID(userID string) (user UserModel) {
 	gandalf.Db.Where("user_id = ?", userID).First(&user)
 	return
 }
 
-func (gandalf *Gandalf) GetUserByEmailID(emailID string) (user User) {
+func (gandalf *Gandalf) GetUserByEmailID(emailID string) (user UserModel) {
 	gandalf.Db.Where("email_id = ?", emailID).First(&user)
 	return
 }
 
-func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user User) {
+func (gandalf *Gandalf) GetUserByPhNo(phNum string) (user UserModel) {
 	gandalf.Db.Where("ph_num = ?", phNum).First(&user)
 	return
 }

@@ -14,18 +14,18 @@ type RegistrationStatusRet struct {
 	RegistrationStatus bool `json:"registration_status"`
 }
 
-// Get User Arg and Ret.
+// Get UserModel Arg and Ret.
 type GetUserArg struct {
 	UserID string `json:"user_id"`
 }
 type GetUserRet struct {
 	BaseAPIResponse
-	Data gandalf.User `json:"data"`
+	Data gandalf.UserModel `json:"data"`
 }
 
 // Register user args and ret.
 type RegisterUserArg struct {
-	gandalf.User
+	gandalf.UserModel
 }
 
 type RegisterUserRet struct {
@@ -147,7 +147,7 @@ type FetchAllAuctionsRet struct {
 	Data FetchAllAuctionsRetData `json:"data"`
 }
 
-// User bids messages.
+// UserModel bids messages.
 type GetAllUserBidsArg struct {
 	GetUserArg
 }
