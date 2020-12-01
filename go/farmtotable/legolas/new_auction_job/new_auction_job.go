@@ -58,7 +58,7 @@ func (pnaj *PopulateNewAuctionsJob) Run() {
 			glog.Fatalf("Worker: %d failed with error: %v", ii, pnaj.workerErrs[ii])
 		}
 	}
-	glog.Info("All workers finished successfully. New auction populated")
+	glog.Info("All workers finished successfully. New auctions populated")
 }
 
 type _Worker struct {
