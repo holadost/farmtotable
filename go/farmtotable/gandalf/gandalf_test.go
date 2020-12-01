@@ -182,7 +182,7 @@ func TestGandalf_Auction(t *testing.T) {
 			MaxBid:              items[ii].MinPrice,
 		})
 	}
-	err = gandalf.RegisterAuctions(auctions)
+	err = gandalf.AddAuctions(auctions)
 	if err != nil {
 		t.Fatalf("Unable to register auction")
 	}

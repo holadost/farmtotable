@@ -234,6 +234,28 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 	return nil
 }
 
+/* Updates the various item auction status. This method is a lil ugly. We need separate methods
+to update the fields independently. */
+func (gandalf *Gandalf) UpdateItemAuctionStatus(itemID string, auctionStartedStatus bool, auctionEndedStatus bool, auctionDecidedStatus bool) error {
+	tx := gandalf.Db.Begin()
+	var item ItemModel
+	dbc := tx.Where("item_id = ?", itemID).First(&item)
+	if dbc.Error != nil {
+		tx.Rollback()
+		return dbc.Error
+	}
+	item.AuctionStarted = auctionStartedStatus
+	item.AuctionEnded = auctionEndedStatus
+	item.AuctionDecided = auctionDecidedStatus
+	dbc = tx.Save(&item)
+	if dbc.Error != nil {
+		tx.Rollback()
+		return dbc.Error
+	}
+	tx.Commit()
+	return nil
+}
+
 func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	item := ItemModel{
 		ItemID: itemID,
@@ -245,7 +267,7 @@ func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	return nil
 }
 
-func (gandalf *Gandalf) RegisterAuctions(auctions []AuctionModel) error {
+func (gandalf *Gandalf) AddAuctions(auctions []AuctionModel) error {
 	var insertRecords []interface{}
 	for ii := 0; ii < len(auctions); ii++ {
 		insertRecords = append(insertRecords, auctions[ii])

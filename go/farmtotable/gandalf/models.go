@@ -24,17 +24,18 @@ type SupplierModel struct {
 }
 
 type ItemModel struct {
-	ItemID           string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
-	SupplierID       string    `gorm:"type:varchar(100);index" json:"user_id"`
-	ItemName         string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
-	ItemDescription  string    `gorm:"NOT NULL" json:"item_description"`
-	ItemQty          uint32    `json:"item_qty"`
-	AuctionStartTime time.Time `json:"auction_start_time"`
-	MinPrice         float32   `json:"min_price"`
-	MaxPrice         float32   `json:"max_price"`
-	AuctionStarted   bool      `json:"auction_started"` // A flag to indicate whether the auction for this item has started.
-	AuctionEnded     bool      `json:"auction_ended"`   // A flag to indicate whether auction has ended.
-	AuctionDecided   bool      `json:"auction_decided"` // A flag to indicate whether the auction has been decided.
+	ItemID              string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
+	SupplierID          string    `gorm:"type:varchar(100);index" json:"user_id"`
+	ItemName            string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
+	ItemDescription     string    `gorm:"NOT NULL" json:"item_description"`
+	ItemQty             uint32    `json:"item_qty"`
+	AuctionStartTime    time.Time `json:"auction_start_time"`
+	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
+	MinPrice            float32   `json:"min_price"`
+	MaxPrice            float32   `json:"max_price"`
+	AuctionStarted      bool      `json:"auction_started"` // A flag to indicate whether the auction for this item has started.
+	AuctionEnded        bool      `json:"auction_ended"`   // A flag to indicate whether auction has ended.
+	AuctionDecided      bool      `json:"auction_decided"` // A flag to indicate whether the auction has been decided.
 }
 
 type BidModel struct {
