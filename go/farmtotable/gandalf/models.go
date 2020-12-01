@@ -13,7 +13,7 @@ type UserModel struct {
 	Address string `gorm:"NOT NULL" json:"address"`
 }
 
-type Supplier struct {
+type SupplierModel struct {
 	SupplierID          string `gorm:"type:varchar(32);PRIMARY_KEY" json:"supplier_id"`
 	SupplierName        string `gorm:"type:varchar(255)" json:"supplier_name"`
 	SupplierEmailID     string `gorm:"type:varchar(255)" json:"supplier_email_id"`
@@ -23,7 +23,7 @@ type Supplier struct {
 	SupplierTags        string `gorm:"type:varchar(255)" json:"supplier_tags"`
 }
 
-type Item struct {
+type ItemModel struct {
 	ItemID           string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
 	SupplierID       string    `gorm:"type:varchar(100);index" json:"user_id"`
 	ItemName         string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
@@ -37,14 +37,14 @@ type Item struct {
 	AuctionDecided   bool      `json:"auction_decided"` // A flag to indicate whether the auction has been decided.
 }
 
-type Bid struct {
+type BidModel struct {
 	ItemID    string  `gorm:"type:varchar(32);index" json:"item_id"`
 	UserID    string  `gorm:"type:varchar(100);index" json:"user_id"`
 	BidAmount float32 `json:"bid_amount"`
 	BidQty    uint32  `json:"bid_qty"`
 }
 
-type Auction struct {
+type AuctionModel struct {
 	ID                  uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
 	ItemID              string    `gorm:"type:varchar(32)" json:"item_id"`
 	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"`
@@ -54,7 +54,7 @@ type Auction struct {
 	MaxBid              float32   `json:"max_bid"`
 }
 
-type Order struct {
+type OrderModel struct {
 	ID        uint    `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
 	OrderID   string  `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`
 	UserID    string  `gorm:"type:varchar(100);index" json:"user_id"`

@@ -57,11 +57,11 @@ func NewGandalf() *Gandalf {
 
 func (gandalf *Gandalf) Initialize() error {
 	user := UserModel{}
-	supplier := Supplier{}
-	item := Item{}
-	bid := Bid{}
-	auction := Auction{}
-	order := Order{}
+	supplier := SupplierModel{}
+	item := ItemModel{}
+	bid := BidModel{}
+	auction := AuctionModel{}
+	order := OrderModel{}
 	dbc := gandalf.Db.AutoMigrate(&user, &supplier, &item, &auction, &bid, &order)
 	if dbc != nil && dbc.Error != nil {
 		panic("Unable to create database")
@@ -109,7 +109,7 @@ func (gandalf *Gandalf) RegisterSupplier(supplierName string, emailID string, ph
 	var dbc *gorm.DB
 	var err error
 	err = nil
-	supplier := &Supplier{
+	supplier := &SupplierModel{
 		SupplierName:        supplierName,
 		SupplierAddress:     address,
 		SupplierEmailID:     emailID,
@@ -131,13 +131,13 @@ func (gandalf *Gandalf) RegisterSupplier(supplierName string, emailID string, ph
 	return err
 }
 
-func (gandalf *Gandalf) GetSupplierByID(supplierID string) (supplier Supplier) {
+func (gandalf *Gandalf) GetSupplierByID(supplierID string) (supplier SupplierModel) {
 	gandalf.Db.Where("supplier_id = ?", supplierID).First(&supplier)
 	return
 }
 
-func (gandalf *Gandalf) GetAllSuppliers() ([]Supplier, error) {
-	var suppliers []Supplier
+func (gandalf *Gandalf) GetAllSuppliers() ([]SupplierModel, error) {
+	var suppliers []SupplierModel
 	dbc := gandalf.Db.Find(&suppliers)
 	if dbc.Error != nil {
 		return suppliers, dbc.Error
@@ -150,7 +150,7 @@ func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDes
 	var dbc *gorm.DB
 	var err error
 	err = nil
-	item := &Item{
+	item := &ItemModel{
 		SupplierID:       supplierID,
 		ItemName:         itemName,
 		ItemDescription:  itemDesc,
@@ -172,8 +172,8 @@ func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDes
 	return err
 }
 
-func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]Item, error) {
-	var items []Item
+func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]ItemModel, error) {
+	var items []ItemModel
 	dbc := gandalf.Db.Where("supplier_id = ?", supplierID).Find(&items)
 	if dbc.Error != nil {
 		return items, dbc.Error
@@ -181,8 +181,8 @@ func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]Item, error) {
 	return items, nil
 }
 
-func (gandalf *Gandalf) GetItem(itemID string) (Item, error) {
-	var item Item
+func (gandalf *Gandalf) GetItem(itemID string) (ItemModel, error) {
+	var item ItemModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).First(&item)
 	if dbc.Error != nil {
 		return item, dbc.Error
@@ -190,17 +190,17 @@ func (gandalf *Gandalf) GetItem(itemID string) (Item, error) {
 	return item, nil
 }
 
-func (gandalf *Gandalf) GetItems(itemIDs []string) ([]Item, error) {
+func (gandalf *Gandalf) GetItems(itemIDs []string) ([]ItemModel, error) {
 	if len(itemIDs) == 0 {
-		return []Item{}, nil
+		return []ItemModel{}, nil
 	}
-	var items []Item
+	var items []ItemModel
 	var args []interface{}
 	for _, itemID := range itemIDs {
 		args = append(args, itemID)
 	}
 	// For some reason, gorm WHERE query with IN clause was failing. So we go with a raw query.
-	query := "SELECT * FROM items WHERE item_id IN (?" + strings.Repeat(",?", len(args)-1) + ")"
+	query := "SELECT * FROM item_models WHERE item_id IN (?" + strings.Repeat(",?", len(args)-1) + ")"
 	dbc := gandalf.Db.Raw(query, args...).Scan(&items)
 	if dbc.Error != nil {
 		glog.Errorf("Unable to query items due to error: %v", dbc.Error)
@@ -209,8 +209,8 @@ func (gandalf *Gandalf) GetItems(itemIDs []string) ([]Item, error) {
 	return items, nil
 }
 
-func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]Item, error) {
-	var items []Item
+func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]ItemModel, error) {
+	var items []ItemModel
 	dbc := gandalf.Db.Offset(startIndex).Limit(numItems).Find(&items)
 	if dbc.Error != nil {
 		return items, dbc.Error
@@ -219,7 +219,7 @@ func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]Item, e
 }
 
 func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string, itemQty uint32, auctionStartTime time.Time, minPrice float32) error {
-	item := Item{
+	item := ItemModel{
 		ItemID:           itemID,
 		ItemName:         itemName,
 		ItemDescription:  itemDesc,
@@ -235,7 +235,7 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 }
 
 func (gandalf *Gandalf) DeleteItem(itemID string) error {
-	item := Item{
+	item := ItemModel{
 		ItemID: itemID,
 	}
 	dbc := gandalf.Db.Model(&item).Delete(&item)
@@ -245,12 +245,12 @@ func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	return nil
 }
 
-func (gandalf *Gandalf) RegisterAuctions(auctions []Auction) error {
+func (gandalf *Gandalf) RegisterAuctions(auctions []AuctionModel) error {
 	var insertRecords []interface{}
 	for ii := 0; ii < len(auctions); ii++ {
 		insertRecords = append(insertRecords, auctions[ii])
 	}
-	err := bulk.BulkInsertWithTableName(gandalf.Db, "auctions", insertRecords)
+	err := bulk.BulkInsertWithTableName(gandalf.Db, "auction_models", insertRecords)
 	if err != nil {
 		return err
 	}
@@ -262,7 +262,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 	// TODO: system. We should move the auctions and bids to faster key value store like redis or remote-badger.
 	// Check if a bid has already been made by the user.
 	tx := gandalf.Db.Begin()
-	var currBid Bid
+	var currBid BidModel
 	dbc := tx.Where("item_id = ? AND user_id = ?", itemID, userID).First(&currBid)
 	if dbc.Error != nil {
 		if !strings.Contains(dbc.Error.Error(), "record not found") {
@@ -271,7 +271,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 		}
 	}
 	if currBid.ItemID == "" {
-		dbc := tx.Create(&Bid{
+		dbc := tx.Create(&BidModel{
 			ItemID:    itemID,
 			UserID:    userID,
 			BidAmount: bidAmount,
@@ -298,7 +298,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 	}
 
 	// Update the max bid.
-	auction := Auction{}
+	auction := AuctionModel{}
 	tx.Where("item_id = ?", itemID).First(&auction)
 	if auction.MaxBid < bidAmount {
 		auction.MaxBid = bidAmount
@@ -313,8 +313,8 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 }
 
 /* Returns all the auctions/items that the user has bid on. */
-func (gandalf *Gandalf) GetUserBids(userID string) ([]Bid, error) {
-	var bids []Bid
+func (gandalf *Gandalf) GetUserBids(userID string) ([]BidModel, error) {
+	var bids []BidModel
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&bids)
 	if dbc.Error != nil {
 		return bids, dbc.Error
@@ -323,8 +323,8 @@ func (gandalf *Gandalf) GetUserBids(userID string) ([]Bid, error) {
 }
 
 /* Returns the bids for a given item starting from 'start' row upto numBids rows. */
-func (gandalf *Gandalf) ScanItemBids(itemID string, startIndex uint64, numBids uint64) ([]Bid, error) {
-	var bids []Bid
+func (gandalf *Gandalf) ScanItemBids(itemID string, startIndex uint64, numBids uint64) ([]BidModel, error) {
+	var bids []BidModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).Offset(startIndex).Limit(numBids).Find(&bids)
 	if dbc.Error != nil {
 		return bids, dbc.Error
@@ -334,8 +334,8 @@ func (gandalf *Gandalf) ScanItemBids(itemID string, startIndex uint64, numBids u
 
 /* Returns all the bids for a given item. This method must be used with care as there could potentially be
 millions of such records. */
-func (gandalf *Gandalf) GetAllItemBids(itemID string) ([]Bid, error) {
-	var bids []Bid
+func (gandalf *Gandalf) GetAllItemBids(itemID string) ([]BidModel, error) {
+	var bids []BidModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).Find(&bids)
 	if dbc.Error != nil {
 		return bids, dbc.Error
@@ -344,8 +344,8 @@ func (gandalf *Gandalf) GetAllItemBids(itemID string) ([]Bid, error) {
 }
 
 /* Fetches the max bids for the given items. */
-func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {
-	var auctions []Auction
+func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]AuctionModel, error) {
+	var auctions []AuctionModel
 	dbc := gandalf.Db.Where("item_id IN (?)", itemIDs).Find(&auctions)
 	if dbc.Error != nil {
 		return auctions, dbc.Error
@@ -354,8 +354,8 @@ func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]Auction, error) {
 }
 
 /* Fetches all the auctions starting from start index upto numAuctions. */
-func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([]Auction, error) {
-	var auctions []Auction
+func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([]AuctionModel, error) {
+	var auctions []AuctionModel
 	dbc := gandalf.Db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
 	if dbc.Error != nil {
 		return auctions, dbc.Error
@@ -364,7 +364,7 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 }
 
 /* Adds the given orders to the backend. */
-func (gandalf *Gandalf) AddOrders(orders []Order) error {
+func (gandalf *Gandalf) AddOrders(orders []OrderModel) error {
 	// Adds the given orders to the database.
 	var dbc *gorm.DB
 	var err error
@@ -393,8 +393,8 @@ func (gandalf *Gandalf) AddOrders(orders []Order) error {
 }
 
 /* Gets all user orders. */
-func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
-	var orders []Order
+func (gandalf *Gandalf) GetUserOrders(userID string) ([]OrderModel, error) {
+	var orders []OrderModel
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&orders)
 	if dbc.Error != nil {
 		return orders, dbc.Error
@@ -406,8 +406,8 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]Order, error) {
 Gets all orders whose payment is pending. This method must be used with care as it could potentially end up
 returning 100,000 of rows.
 */
-func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numOrders uint64) ([]Order, error) {
-	var orders []Order
+func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numOrders uint64) ([]OrderModel, error) {
+	var orders []OrderModel
 	dbc := gandalf.Db.Where(
 		"status = ?", KOrderPaymentPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
@@ -417,8 +417,8 @@ func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numOrders ui
 }
 
 /* Gets all orders whose delivery is pending. */
-func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numOrders uint64) ([]Order, error) {
-	var orders []Order
+func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numOrders uint64) ([]OrderModel, error) {
+	var orders []OrderModel
 	dbc := gandalf.Db.Where(
 		"status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
@@ -428,8 +428,8 @@ func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numOrders u
 }
 
 /* Get order information */
-func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
-	var order Order
+func (gandalf *Gandalf) GetOrder(orderID string) (OrderModel, error) {
+	var order OrderModel
 	dbc := gandalf.Db.Where("order_id = ?", orderID).First(&order)
 	if dbc.Error != nil {
 		return order, dbc.Error
@@ -440,7 +440,7 @@ func (gandalf *Gandalf) GetOrder(orderID string) (Order, error) {
 /* Update order status. */
 func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
 	tx := gandalf.Db.Begin()
-	var order Order
+	var order OrderModel
 	dbc := tx.Where("order_id = ?", orderID).First(&order)
 	if dbc.Error != nil {
 		if !strings.Contains(dbc.Error.Error(), "record not found") {

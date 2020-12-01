@@ -48,7 +48,7 @@ func (pnaj *PopulateNewAuctionsJob) populateAuctionableItems() {
 	}
 }
 
-func (pnaj *PopulateNewAuctionsJob) fetchNextBatch() []gandalf.Item {
-	var items []gandalf.Item
+func (pnaj *PopulateNewAuctionsJob) fetchNextBatch() []gandalf.ItemModel {
+	var items []gandalf.ItemModel
 	return items
 }

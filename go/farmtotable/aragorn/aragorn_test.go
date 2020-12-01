@@ -103,7 +103,7 @@ func TestAragornRun(t *testing.T) {
 	glog.Info("Testing aragorn suppliers APIs")
 	// Register supplier
 	supplierArg := RegisterSupplierArg{
-		SupplierName:        "Supplier 1",
+		SupplierName:        "SupplierModel 1",
 		SupplierTags:        "Tag1, Tag2, Tag3",
 		SupplierDescription: "This is a BS supplier",
 		SupplierAddress:     "Tera Ghar",
@@ -159,7 +159,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to get all suppliers as expected")
 	}
 
-	// Get Supplier
+	// Get SupplierModel
 	suppArg := GetSupplierArg{
 		SupplierID: allSuppRet.Data[0].SupplierID,
 	}
@@ -190,13 +190,13 @@ func TestAragornRun(t *testing.T) {
 
 	/************************** Items *********************************/
 	glog.Info("Testing aragorn items APIs")
-	// Register Item
+	// Register ItemModel
 	regItemArg := RegisterItemArg{
-		ItemName:         "Item 1",
+		ItemName:         "ItemModel 1",
 		ItemQty:          100,
 		ItemDescription:  "Some stupid item.",
 		ItemTags:         "Tag1, Tag2, Tag3",
-		SupplierID:       "Supplier 1",
+		SupplierID:       "SupplierModel 1",
 		AuctionStartDate: time.Now(),
 		MinPrice:         5.0,
 	}
@@ -227,7 +227,7 @@ func TestAragornRun(t *testing.T) {
 
 	// Get supplier items.
 	getSupplierItemsArg := GetSupplierItemsArg{}
-	getSupplierItemsArg.SupplierID = "Supplier 1"
+	getSupplierItemsArg.SupplierID = "SupplierModel 1"
 	body, err = json.Marshal(getSupplierItemsArg)
 	if err != nil {
 		t.Fatalf("Unable to marshal get suppliter items arg")
@@ -254,7 +254,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Failure while fetching all supplier items")
 	}
 
-	// Remove Item
+	// Remove ItemModel
 	removeItemArg := RemoveItemArg{}
 	removeItemArg.ItemID = getSuppItemsRet.Data[0].ItemID
 	body, err = json.Marshal(removeItemArg)
@@ -285,10 +285,10 @@ func TestAragornRun(t *testing.T) {
 
 	/********************** Auctions **************************/
 	glog.Info("Testing aragorn auctions APIs")
-	var auctions []gandalf.Auction
+	var auctions []gandalf.AuctionModel
 	for ii := 0; ii < 5; ii++ {
-		itemName := "Item" + strconv.Itoa(ii)
-		itemDesc := itemName + ": Item description"
+		itemName := "ItemModel" + strconv.Itoa(ii)
+		itemDesc := itemName + ": ItemModel description"
 		err := aragorn.gandalf.RegisterItem("supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii))
 		if err != nil {
 			t.Fatalf("Unable to register item")
@@ -299,7 +299,7 @@ func TestAragornRun(t *testing.T) {
 		t.Fatalf("Unable to fetch items for user")
 	}
 	for ii := 0; ii < 5; ii++ {
-		auctions = append(auctions, gandalf.Auction{
+		auctions = append(auctions, gandalf.AuctionModel{
 			ItemID:              items[ii].ItemID,
 			ItemQty:             items[ii].ItemQty,
 			AuctionStartTime:    items[ii].AuctionStartTime,

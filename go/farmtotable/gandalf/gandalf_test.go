@@ -160,10 +160,10 @@ func TestGandalf_Auction(t *testing.T) {
 	cleanupSqliteDB()
 	gandalf := NewSqliteGandalf()
 	defer gandalf.Close()
-	var auctions []Auction
+	var auctions []AuctionModel
 	for ii := 0; ii < 5; ii++ {
-		itemName := "Item" + strconv.Itoa(ii)
-		itemDesc := itemName + ": Item description"
+		itemName := "ItemModel" + strconv.Itoa(ii)
+		itemDesc := itemName + ": ItemModel description"
 		err := gandalf.RegisterItem("nikhil", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii))
 		if err != nil {
 			t.Fatalf("Unable to register item")
@@ -174,7 +174,7 @@ func TestGandalf_Auction(t *testing.T) {
 		t.Fatalf("Unable to fetch items for user")
 	}
 	for ii := 0; ii < 5; ii++ {
-		auctions = append(auctions, Auction{
+		auctions = append(auctions, AuctionModel{
 			ItemID:              items[ii].ItemID,
 			ItemQty:             items[ii].ItemQty,
 			AuctionStartTime:    items[ii].AuctionStartTime,
@@ -229,10 +229,10 @@ func TestGandalf_Order(t *testing.T) {
 	cleanupSqliteDB()
 	gandalf := NewSqliteGandalf()
 	defer gandalf.Close()
-	var orders []Order
+	var orders []OrderModel
 	numOrders := 5
 	for ii := 0; ii < numOrders; ii++ {
-		var order Order
+		var order OrderModel
 		order.ItemQty = 10
 		order.ItemPrice = 10.0
 		order.UserID = "nikhil"

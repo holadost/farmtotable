@@ -17,7 +17,7 @@ const (
 	SQLiteDBPath = "/tmp/gandalf.db"
 )
 
-/* Order Status Codes */
+/* OrderModel Status Codes */
 const (
 	KOrderPaymentPending  = 0
 	KOrderDeliveryPending = 1

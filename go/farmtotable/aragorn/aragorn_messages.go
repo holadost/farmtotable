@@ -33,7 +33,7 @@ type RegisterUserRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
-// Register Item Args and Ret.
+// Register ItemModel Args and Ret.
 type RegisterItemArg struct {
 	SupplierID       string    `json:"supplier_id"`
 	ItemName         string    `json:"item_name"`
@@ -59,7 +59,7 @@ type RemoveItemRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
-// Register Item Args and Ret.
+// Register ItemModel Args and Ret.
 type RegisterSupplierArg struct {
 	SupplierName        string `json:"supplier_name"`
 	SupplierDescription string `json:"supplier_description"`
@@ -80,7 +80,7 @@ type GetAllSuppliersArg struct {
 
 type GetAllSuppliersRet struct {
 	BaseAPIResponse
-	Data []gandalf.Supplier `json:"data"`
+	Data []gandalf.SupplierModel `json:"data"`
 }
 
 // Get supplier args and ret.
@@ -90,7 +90,7 @@ type GetSupplierArg struct {
 
 type GetSupplierRet struct {
 	BaseAPIResponse
-	Data gandalf.Supplier `json:"data"`
+	Data gandalf.SupplierModel `json:"data"`
 }
 
 //  Get supplier items args and ret.
@@ -100,7 +100,7 @@ type GetSupplierItemsArg struct {
 
 type GetSupplierItemsRet struct {
 	BaseAPIResponse
-	Data []gandalf.Item `json:"data"`
+	Data []gandalf.ItemModel `json:"data"`
 }
 
 // Register bid args and ret.
@@ -138,8 +138,8 @@ type FetchAllAuctionsArg struct {
 }
 
 type FetchAllAuctionsRetData struct {
-	Auctions []gandalf.Auction `json:"auctions"`
-	NextID   int64             `json:"next_id"`
+	Auctions []gandalf.AuctionModel `json:"auctions"`
+	NextID   int64                  `json:"next_id"`
 }
 
 type FetchAllAuctionsRet struct {
@@ -159,12 +159,12 @@ type GetUserBidsForItemArg struct {
 
 type GetUserBidsRet struct {
 	BaseAPIResponse
-	Data []gandalf.Bid `json:"data"`
+	Data []gandalf.BidModel `json:"data"`
 }
 
-// Order messages.
+// OrderModel messages.
 type OrderRet struct {
-	gandalf.Order
+	gandalf.OrderModel
 	ItemName        string `json:"item_name"`
 	ItemDescription string `json:"item_description"`
 }

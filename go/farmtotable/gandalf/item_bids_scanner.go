@@ -8,7 +8,7 @@ import (
 /* Scans all the bids for a given item. The scanner is thread-safe. */
 type ItemBidsScanner struct {
 	nextID       uint64
-	currBatch    []Bid
+	currBatch    []BidModel
 	scanSize     uint64
 	gandalf      *Gandalf
 	scanComplete bool
@@ -25,7 +25,7 @@ func NewItemsBidScanner(gandalf *Gandalf, itemID string, scanSize uint64) *ItemB
 	it.scanComplete = false
 	it.itemID = itemID
 	it.scanErr = nil
-	it.currBatch = make([]Bid, 0, it.scanSize)
+	it.currBatch = make([]BidModel, 0, it.scanSize)
 	return &it
 }
 
@@ -57,11 +57,11 @@ func (it *ItemBidsScanner) maybeScanNextBatch() {
 	return
 }
 
-func (it *ItemBidsScanner) Next() (Bid, bool /* Scan complete */, error /* scan errors */) {
+func (it *ItemBidsScanner) Next() (BidModel, bool /* Scan complete */, error /* scan errors */) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
-	var item Bid
+	var item BidModel
 	if it.scanComplete {
 		return item, it.scanComplete, it.scanErr
 	}
@@ -72,17 +72,17 @@ func (it *ItemBidsScanner) Next() (Bid, bool /* Scan complete */, error /* scan 
 	return item, it.scanComplete, it.scanErr
 }
 
-func (it *ItemBidsScanner) NextBatch() ([]Bid, bool /* Scan complete */, error /* scan errors */) {
+func (it *ItemBidsScanner) NextBatch() ([]BidModel, bool /* Scan complete */, error /* scan errors */) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
 	if it.scanComplete {
-		return []Bid{}, it.scanComplete, it.scanErr
+		return []BidModel{}, it.scanComplete, it.scanErr
 	}
 	if len(it.currBatch) == 0 {
 		glog.Fatalf("currBatch is empty even though scanner is not complete")
 	}
-	items := make([]Bid, 0, len(it.currBatch))
+	items := make([]BidModel, 0, len(it.currBatch))
 	for _, bid := range it.currBatch {
 		items = append(items, bid)
 	}
@@ -91,17 +91,17 @@ func (it *ItemBidsScanner) NextBatch() ([]Bid, bool /* Scan complete */, error /
 	return items, it.scanComplete, it.scanErr
 }
 
-func (it *ItemBidsScanner) NextN(n uint) ([]Bid, bool /* Scan complete */, error /* scan errors */) {
+func (it *ItemBidsScanner) NextN(n uint) ([]BidModel, bool /* Scan complete */, error /* scan errors */) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
 	if it.scanComplete {
-		return []Bid{}, it.scanComplete, it.scanErr
+		return []BidModel{}, it.scanComplete, it.scanErr
 	}
 	if len(it.currBatch) == 0 {
 		glog.Fatalf("currBatch is empty even though scanner is not complete")
 	}
-	items := make([]Bid, 0, n)
+	items := make([]BidModel, 0, n)
 	for ii, bid := range it.currBatch {
 		if uint(ii) == n {
 			break

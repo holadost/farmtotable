@@ -71,10 +71,10 @@ func (worker *_Worker) run() error {
 	}
 }
 
-func (worker *_Worker) pickWinners(auction gandalf.Auction) ([]gandalf.Bid, error) {
+func (worker *_Worker) pickWinners(auction gandalf.AuctionModel) ([]gandalf.BidModel, error) {
 	glog.Infof("Processing winners for auction: %v", auction)
 	bidScanner := gandalf.NewItemsBidScanner(worker.gandalf, auction.ItemID, 1024)
-	topBids := make([]gandalf.Bid, 0, 2*KNumWinnersPerItem)
+	topBids := make([]gandalf.BidModel, 0, 2*KNumWinnersPerItem)
 	for {
 		batch, finished, err := bidScanner.NextN(KNumWinnersPerItem)
 		if err != nil {
@@ -95,7 +95,7 @@ func (worker *_Worker) pickWinners(auction gandalf.Auction) ([]gandalf.Bid, erro
 	return topBids, nil
 }
 
-func (worker *_Worker) placeOrders(auction gandalf.Auction, topBids []gandalf.Bid) error {
+func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []gandalf.BidModel) error {
 	glog.Infof("Placing orders for auction: %v", auction)
 	item, err := worker.gandalf.GetItem(auction.ItemID)
 	if err != nil {
@@ -106,10 +106,10 @@ func (worker *_Worker) placeOrders(auction gandalf.Auction, topBids []gandalf.Bi
 			fmt.Sprintf(
 				"unable to fetch item with item ID: %s from backend", item.ItemID))
 	}
-	var orders []gandalf.Order
+	var orders []gandalf.OrderModel
 	totalQty := item.ItemQty
 	for ii := len(topBids) - 1; ii >= 0; ii-- {
-		var order gandalf.Order
+		var order gandalf.OrderModel
 		order.ItemID = item.ItemID
 		order.UserID = topBids[ii].UserID
 		order.ItemPrice = topBids[ii].BidAmount
@@ -135,13 +135,13 @@ func (worker *_Worker) placeOrders(auction gandalf.Auction, topBids []gandalf.Bi
 	return nil
 }
 
-func (worker *_Worker) notifyWinners(auction gandalf.Auction, topBids []gandalf.Bid) error {
+func (worker *_Worker) notifyWinners(auction gandalf.AuctionModel, topBids []gandalf.BidModel) error {
 	// TODO: Notify the winners via email. We need to figure this out.
 	return nil
 }
 
-/* Sorting interface to sort the bids by Bid amount. */
-type sortByBidAmount []gandalf.Bid
+/* Sorting interface to sort the bids by BidModel amount. */
+type sortByBidAmount []gandalf.BidModel
 
 func (a sortByBidAmount) Len() int           { return len(a) }
 func (a sortByBidAmount) Less(i, j int) bool { return a[i].BidAmount < a[j].BidAmount }

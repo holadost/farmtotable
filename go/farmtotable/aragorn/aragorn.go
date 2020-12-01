@@ -48,22 +48,22 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/users/fetch", aragorn.GetUser)
 	r.POST("/api/v1/resources/users/register", aragorn.RegisterUser)
 
-	// Supplier APIs.
+	// SupplierModel APIs.
 	r.POST("/api/v1/resources/suppliers/fetch_all", aragorn.GetAllSuppliers) // Administrator API. Returns all the suppliers.
-	r.POST("/api/v1/resources/suppliers/register", aragorn.RegisterSupplier) // Administrator API. // Register Supplier.
+	r.POST("/api/v1/resources/suppliers/register", aragorn.RegisterSupplier) // Administrator API. // Register SupplierModel.
 	r.POST("/api/v1/resources/suppliers/fetch", aragorn.GetSupplier)         // Administrator API. Gets the supplier info.
 
-	// Item APIs.
+	// ItemModel APIs.
 	r.POST("/api/v1/resources/items/fetch", aragorn.GetSupplierItems) // Administrator API. Gets all items by a supplier.
 	r.POST("/api/v1/resources/items/register", aragorn.RegisterItem)  // Administrator API. Registers item.
 	r.POST("/api/v1/resources/items/remove", aragorn.RemoveItem)      // Administrator API. Removes item
 
-	// Auction APIs.
+	// AuctionModel APIs.
 	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)  // Returns all the live auctions.
 	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.GetMaxBids) // Returns the max bids for all requested items so far.
 	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)  // Registers a new bid by the user.
 
-	// Order APIs.
+	// OrderModel APIs.
 	r.POST("/api/v1/resources/orders/get_order", aragorn.GetOrder)                                   // UserModel and Administrator API.
 	r.POST("/api/v1/resources/orders/get_user_orders", aragorn.GetUserOrders)                        // UserModel and Administrator API.
 	r.POST("/api/v1/resources/orders/get_payment_pending_orders", aragorn.GetPaymentPendingOrders)   // Administrator API.
@@ -142,7 +142,7 @@ func (aragorn *Aragorn) RegisterUser(c *gin.Context) {
 	c.JSON(http.StatusOK, response)
 }
 
-/* Supplier APIs. */
+/* SupplierModel APIs. */
 func (aragorn *Aragorn) RegisterSupplier(c *gin.Context) {
 	var ret RegisterSupplierRet
 	var arg RegisterSupplierArg
@@ -209,7 +209,7 @@ func (aragorn *Aragorn) GetSupplier(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-/* Item APIs. */
+/* ItemModel APIs. */
 func (aragorn *Aragorn) GetSupplierItems(c *gin.Context) {
 	var ret GetSupplierItemsRet
 	var arg GetSupplierItemsArg
@@ -304,7 +304,7 @@ func (aragorn *Aragorn) RemoveItem(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-/* Auction APIs. */
+/* AuctionModel APIs. */
 func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
@@ -323,7 +323,7 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
-	var retAuctions []gandalf.Auction
+	var retAuctions []gandalf.AuctionModel
 	if len(auctions) == 0 {
 		response.Status = http.StatusOK
 		response.ErrorMsg = ""
@@ -418,7 +418,7 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 	return
 }
 
-/* Order APIs. */
+/* OrderModel APIs. */
 func (aragorn *Aragorn) GetUserOrders(c *gin.Context) {
 	var ret GetOrdersRet
 	var arg GetUserOrdersArg
@@ -569,7 +569,7 @@ func (aragorn *Aragorn) GetOrder(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
-	var orders []gandalf.Order
+	var orders []gandalf.OrderModel
 	orders = append(orders, order)
 	orderRets, err := aragorn.joinOrderWithItemInfo(orders)
 	if err != nil {
@@ -600,7 +600,7 @@ func (aragorn *Aragorn) UpdateOrder(c *gin.Context) {
 	statusCode, err := status.ToUint32()
 	if err != nil {
 		ret.Status = http.StatusBadRequest
-		ret.ErrorMsg = "Invalid input JSON. Order status not supported"
+		ret.ErrorMsg = "Invalid input JSON. OrderModel status not supported"
 		c.JSON(http.StatusBadRequest, ret)
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
@@ -640,8 +640,8 @@ func (aragorn *Aragorn) TestOnlyAddOrder(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
-	var orders []gandalf.Order
-	var order gandalf.Order
+	var orders []gandalf.OrderModel
+	var order gandalf.OrderModel
 	order.ItemID = arg.ItemID
 	order.UserID = arg.UserID
 	order.ItemPrice = arg.ItemPrice
@@ -677,7 +677,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		return
 	}
 	success := false
-	var auctions []gandalf.Auction
+	var auctions []gandalf.AuctionModel
 	if len(suppliers) == 0 {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = "Did not find any suppliers"
@@ -692,7 +692,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		}
 		if len(items) != 0 {
 			for _, item := range items {
-				var auction gandalf.Auction
+				var auction gandalf.AuctionModel
 				auction.ItemID = item.ItemID
 				auction.ItemQty = item.ItemQty
 				auction.ItemName = item.ItemName
@@ -727,7 +727,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 	c.JSON(http.StatusOK, ret)
 }
 
-func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRet, error) {
+func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.OrderModel) ([]OrderRet, error) {
 	itemIDs := make([]string, 0, len(orders))
 	orderItems := make([]OrderRet, 0, len(orders))
 	for ii := 0; ii < len(orders); ii++ {
@@ -737,7 +737,7 @@ func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.Order) ([]OrderRe
 	if err != nil {
 		glog.Errorf("Unable to get item IDs for orders due to error: %v", err)
 	}
-	itemSet := make(map[string]gandalf.Item)
+	itemSet := make(map[string]gandalf.ItemModel)
 	for _, item := range items {
 		itemSet[item.ItemID] = item
 	}

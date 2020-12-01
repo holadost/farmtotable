@@ -15,7 +15,7 @@ const (
 /* Scans all the auctions. The scanner is thread-safe. */
 type AuctionsScanner struct {
 	nextID       uint64
-	currBatch    []Auction
+	currBatch    []AuctionModel
 	scanSize     uint64
 	gandalf      *Gandalf
 	scanComplete bool
@@ -87,32 +87,32 @@ func (it *AuctionsScanner) maybeScanNextBatch() {
 	}
 }
 
-func (it *AuctionsScanner) Next() (Auction, bool /* Scan complete */, error /* scan errors */) {
+func (it *AuctionsScanner) Next() (AuctionModel, bool /* Scan complete */, error /* scan errors */) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
 	if it.scanComplete {
-		return Auction{}, it.scanComplete, it.scanErr
+		return AuctionModel{}, it.scanComplete, it.scanErr
 	}
 	if len(it.currBatch) == 0 {
 		glog.Fatalf("currBatch is empty even though scan is not complete")
 	}
-	var item Auction
+	var item AuctionModel
 	item, it.currBatch = it.currBatch[0], it.currBatch[1:]
 	return item, it.scanComplete, it.scanErr
 }
 
-func (it *AuctionsScanner) NextBatch() ([]Auction, bool /* Scan complete */, error /* scan errors */) {
+func (it *AuctionsScanner) NextBatch() ([]AuctionModel, bool /* Scan complete */, error /* scan errors */) {
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
 	if it.scanComplete {
-		return []Auction{}, it.scanComplete, it.scanErr
+		return []AuctionModel{}, it.scanComplete, it.scanErr
 	}
 	if len(it.currBatch) == 0 {
 		glog.Fatalf("currBatch is empty even though scan is not complete")
 	}
-	auctions := make([]Auction, 0, len(it.currBatch))
+	auctions := make([]AuctionModel, 0, len(it.currBatch))
 	for _, auction := range it.currBatch {
 		auctions = append(auctions, auction)
 	}
