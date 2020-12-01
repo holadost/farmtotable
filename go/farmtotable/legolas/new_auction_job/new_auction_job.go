@@ -31,7 +31,7 @@ func NewPopulateNewAuctionsJob(g *gandalf.Gandalf, scanSize uint64, numWorkers u
 	pnaj.gandalf = g
 	pnaj.it = gandalf.NewItemsScanner(g, scanSize)
 	pnaj.numWorkers = int(numWorkers)
-	pnaj.workerErrs = make([]error, 0, pnaj.numWorkers)
+	pnaj.workerErrs = make([]error, pnaj.numWorkers, pnaj.numWorkers)
 	for ii := 0; ii < int(pnaj.numWorkers); ii++ {
 		pnaj.workerErrs[ii] = nil
 	}
@@ -61,6 +61,7 @@ func (pnaj *PopulateNewAuctionsJob) Run() {
 	glog.Info("All workers finished successfully. New auctions populated")
 }
 
+/*********************** INTERNAL HELPERS ******************************/
 type _Worker struct {
 	itemScanner *gandalf.ItemsScanner
 	gandalf     *gandalf.Gandalf

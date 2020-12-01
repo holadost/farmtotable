@@ -13,30 +13,53 @@ This job performs the following tasks:
 	1. Finds which auctions have expired.
 	2. Determines winners for the completed auctions.
 	3. Places new orders for the winners.
-	4. Notifies the winners via email.
+	4. Updates the auction status for the items for whom auction has expired.
+	5. Notifies the winners via email.
 */
 
 type AuctionWinnerJob struct {
-	gandalf    *gandalf.Gandalf
-	numWorkers uint
-	workerPool []*_Worker
+	gandalf        *gandalf.Gandalf
+	numWorkers     int
+	workerErrs     []error
+	doneChan       chan bool
+	auctionScanner *gandalf.AuctionsScanner
+	scanSize       uint64
 }
 
-func NewAuctionWinnerJob(gandalf *gandalf.Gandalf, numWorkers uint) *AuctionWinnerJob {
+func NewAuctionWinnerJob(g *gandalf.Gandalf, numWorkers uint, scanSize uint64) *AuctionWinnerJob {
 	awj := AuctionWinnerJob{}
-	awj.gandalf = gandalf
-	awj.numWorkers = numWorkers
+	awj.gandalf = g
+	awj.numWorkers = int(numWorkers)
+	awj.workerErrs = make([]error, awj.numWorkers, awj.numWorkers)
+	for ii := 0; ii < awj.numWorkers; ii++ {
+		awj.workerErrs[ii] = nil
+	}
+	awj.doneChan = make(chan bool, awj.numWorkers)
+	awj.scanSize = scanSize
+	awj.auctionScanner = gandalf.NewAuctionsScanner(awj.gandalf, awj.scanSize)
 	return &awj
 }
 
 /* Starts the job. This method satisfies the LegolasJob interface. */
-func (awj *AuctionWinnerJob) Start() {
-
-}
-
-/* Stops the job. This method satisfies the LegolasJob interface. */
-func (awj *AuctionWinnerJob) Stop() {
-
+func (awj *AuctionWinnerJob) Run() {
+	glog.Infof("Starting all workers to process auction winners")
+	for ii := 0; ii < int(awj.numWorkers); ii++ {
+		worker := newWorker(awj.gandalf, awj.auctionScanner)
+		go func(idx int, worker *_Worker) {
+			awj.workerErrs[idx] = worker.run()
+			awj.doneChan <- true
+		}(ii, worker)
+	}
+	glog.Infof("Successfully started %d workers. Waiting for workers to finish", awj.numWorkers)
+	for ii := 0; ii < awj.numWorkers; ii++ {
+		<-awj.doneChan
+	}
+	for ii := 0; ii < awj.numWorkers; ii++ {
+		if awj.workerErrs[ii] != nil {
+			glog.Fatalf("Auction Winners Job Worker: %d failed with error: %v", ii, awj.workerErrs[ii])
+		}
+	}
+	glog.Info("All workers finished successfully. Expired auctions successfully processed")
 }
 
 /*********************** INTERNAL HELPERS ******************************/
@@ -67,7 +90,17 @@ func (worker *_Worker) run() error {
 			return err
 		}
 		err = worker.placeOrders(auction, topBids)
-
+		if err != nil {
+			return err
+		}
+		err = worker.updateItem(auction)
+		if err != nil {
+			return err
+		}
+		err = worker.notifyWinners(auction, topBids)
+		if err != nil {
+			return err
+		}
 	}
 }
 
@@ -130,6 +163,16 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 	err = worker.gandalf.AddOrders(orders)
 	if err != nil {
 		glog.Errorf("Unable to add orders to backend")
+		return err
+	}
+	return nil
+}
+
+func (worker *_Worker) updateItem(auction gandalf.AuctionModel) error {
+	glog.Infof("Updating auction status for item: %s", auction.ItemID)
+	err := worker.gandalf.UpdateItemAuctionStatus(auction.ItemID, true, true, true)
+	if err != nil {
+		glog.Errorf("Unable to update item auction status for item ID: %s due to err: %v", auction.ItemID, err)
 		return err
 	}
 	return nil
