@@ -710,7 +710,7 @@ func (aragorn *Aragorn) TestOnlyAddAuctions(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
 		return
 	}
-	err = aragorn.gandalf.RegisterAuctions(auctions)
+	err = aragorn.gandalf.AddAuctions(auctions)
 	if err != nil {
 		ret.Status = http.StatusBadRequest
 		ret.ErrorMsg = fmt.Sprintf("Failed to register auctions due to error: %v", err)

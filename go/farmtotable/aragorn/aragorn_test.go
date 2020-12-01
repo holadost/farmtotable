@@ -307,7 +307,7 @@ func TestAragornRun(t *testing.T) {
 			MaxBid:              items[ii].MinPrice,
 		})
 	}
-	err = aragorn.gandalf.RegisterAuctions(auctions)
+	err = aragorn.gandalf.AddAuctions(auctions)
 	if err != nil {
 		t.Fatalf("Unable to register auction")
 	}
