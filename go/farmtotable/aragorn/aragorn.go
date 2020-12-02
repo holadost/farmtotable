@@ -48,7 +48,7 @@ func NewAragornWithGandalf(g *gandalf.Gandalf) *Aragorn {
 }
 
 func (aragorn *Aragorn) Run() {
-	glog.Info("Starting Aragorn")
+	glog.Info("Aragorn initialized")
 	r := gin.Default()
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},

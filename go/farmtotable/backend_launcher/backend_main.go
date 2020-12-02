@@ -2,6 +2,7 @@ package main
 
 import (
 	"farmtotable/aragorn"
+	"farmtotable/gandalf"
 	"farmtotable/legolas"
 )
 
@@ -9,8 +10,9 @@ import (
 Aragorn and Legolas running as the same service allowing us to use Sqlite for
 Gandalf's backend. THIS MUST NOT BE USED IN PRODUCTION. */
 func main() {
-	go aragorn.NewAragorn().Run()
-	go legolas.NewLegolas().Run()
+	g := gandalf.NewSqliteGandalf()
+	go aragorn.NewAragornWithGandalf(g).Run()
+	go legolas.NewLegolasWithGandalf(g).Run()
 	// Block forever
 	select {}
 }

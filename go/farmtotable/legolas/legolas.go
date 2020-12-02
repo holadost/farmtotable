@@ -39,7 +39,7 @@ func NewLegolasWithGandalf(g *gandalf.Gandalf) *Legolas {
 }
 
 func (lg *Legolas) Run() {
-	glog.Infof("Starting legolas")
+	glog.Infof("Legolas initialized")
 	lg.scheduleJobs()
 	lg.executeJobs()
 }
