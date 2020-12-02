@@ -31,10 +31,7 @@ Scans the next batch if currBatch is empty and scan is not complete. This method
 This method should only be called after the caller holds the scanner mutex.
 */
 func (it *ItemsScanner) maybeScanNextBatch() {
-	if it.scanComplete {
-		return
-	}
-	if len(it.currBatch) > 0 {
+	if it.scanComplete || (len(it.currBatch) > 0) {
 		return
 	}
 	items, err := it.gandalf.ScanItems(it.nextID, it.scanSize)
