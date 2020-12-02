@@ -24,10 +24,22 @@ type Legolas struct {
 
 func NewLegolas() *Legolas {
 	var lg Legolas
+	lg.jobQ = make(chan LegolasJob)
+	lg.done = make(chan bool)
+	lg.gandalf = gandalf.NewSqliteGandalf()
+	return &lg
+}
+
+func NewLegolasWithGandalf(g *gandalf.Gandalf) *Legolas {
+	var lg Legolas
+	lg.jobQ = make(chan LegolasJob)
+	lg.done = make(chan bool)
+	lg.gandalf = g
 	return &lg
 }
 
 func (lg *Legolas) Run() {
+	glog.Infof("Starting legolas")
 	lg.scheduleJobs()
 	lg.executeJobs()
 }
