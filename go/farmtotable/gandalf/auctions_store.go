@@ -35,7 +35,7 @@ func (as *AuctionStore) AddAuctions(auctions []AuctionModel) error {
 			glog.Errorf("Unable to marshal auction to JSON object due to err: %v", err)
 			return err
 		}
-		cmd := as.rdb.Set(ctx, keyStr, val, time.Duration(auction.AuctionDurationSecs))
+		cmd := as.rdb.Set(ctx, keyStr, val, (time.Duration(auction.AuctionDurationSecs) * time.Second))
 		if cmd.Err() != nil {
 			glog.Errorf("Unable to put auction in auctions store due to err: %v", cmd.Err())
 			return cmd.Err()
