@@ -76,7 +76,7 @@ func newWorker(gandalf *gandalf.Gandalf, it *gandalf.ItemsScanner) *_Worker {
 
 func (worker *_Worker) run() error {
 	for {
-		items, status, err := worker.itemScanner.NextN(5)
+		items, status, err := worker.itemScanner.NextBatch()
 		if err != nil {
 			return errors.New(fmt.Sprintf("error while scanning items, error: %v", err))
 		}
