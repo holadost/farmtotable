@@ -52,6 +52,7 @@ type AuctionModel struct {
 	ItemQty             uint32    `json:"item_qty"`
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
+	MinBid              float32   `json:"min_bid"`
 	MaxBid              float32   `json:"max_bid"`
 }
 
