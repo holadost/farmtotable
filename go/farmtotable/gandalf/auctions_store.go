@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"github.com/go-redis/redis/v8"
 	"github.com/golang/glog"
+	"strings"
 	"time"
 )
 
@@ -117,7 +118,25 @@ func GenerateAuctionKey(itemID string) string {
 	return KAuctionKeyPrefix + KKeyDelimiter + itemID
 }
 
+func GetItemIDFromAuctionKey(key string) string {
+	fields := strings.Split(key, KKeyDelimiter)
+	if fields[0] == KAuctionKeyPrefix {
+		return fields[1]
+	}
+	glog.Errorf("Invalid auction key prefix for key: %s. Expected prefix: %s", key, KAuctionKeyPrefix)
+	return ""
+}
+
 /* Generates the bid key based on the given item ID and user ID. */
 func GenerateBidKey(itemID string, userID string) string {
 	return KBidKeyPrefix + KKeyDelimiter + itemID + KKeyDelimiter + userID
+}
+
+func GetItemAndUserIDFromBidKey(key string) (string, string) {
+	fields := strings.Split(key, KKeyDelimiter)
+	if fields[0] == KBidKeyPrefix {
+		return fields[1], fields[2]
+	}
+	glog.Errorf("Incorrect bid key prefix for key: %s", key)
+	return "", ""
 }
