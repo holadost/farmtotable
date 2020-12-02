@@ -65,10 +65,10 @@ func prepareDB(t *testing.T, gnd *gandalf.Gandalf, numItems int) {
 
 }
 
-func TestScanners(t *testing.T) {
+func TestItemsScanner(t *testing.T) {
 	cleanupDB()
 	gnd := gandalf.NewSqliteGandalf()
-	numItems := 5
+	numItems := 15
 	prepareDB(t, gnd, numItems)
 	itemScanner := gandalf.NewItemsScanner(gnd, 3)
 	var items []gandalf.ItemModel
@@ -79,6 +79,46 @@ func TestScanners(t *testing.T) {
 		}
 		if item.ItemID != "" {
 			items = append(items, item)
+		}
+		if finished {
+			if len(items) != numItems {
+				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
+			}
+			break
+		}
+	}
+
+	itemScanner = gandalf.NewItemsScanner(gnd, 3)
+	items = nil
+	for {
+		scannedItems, finished, err := itemScanner.NextN(2)
+		if err != nil {
+			t.Fatalf("Unable to scan items due to err: %v", err)
+		}
+		for _, item := range scannedItems {
+			if item.ItemID != "" {
+				items = append(items, item)
+			}
+		}
+		if finished {
+			if len(items) != numItems {
+				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
+			}
+			break
+		}
+	}
+
+	itemScanner = gandalf.NewItemsScanner(gnd, 3)
+	items = nil
+	for {
+		scannedItems, finished, err := itemScanner.NextBatch()
+		if err != nil {
+			t.Fatalf("Unable to scan items due to err: %v", err)
+		}
+		for _, item := range scannedItems {
+			if item.ItemID != "" {
+				items = append(items, item)
+			}
 		}
 		if finished {
 			if len(items) != numItems {
