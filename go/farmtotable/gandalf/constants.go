@@ -25,6 +25,12 @@ const (
 	KOrderCancelled       = 3
 )
 
+const (
+	KAuctionKeyPrefix = "auction"
+	KBidKeyPrefix     = "bid"
+	KKeyDelimiter     = "::"
+)
+
 type OrderStatus uint32
 
 func (os OrderStatus) ToString() (OrderStatusStr, error) {
