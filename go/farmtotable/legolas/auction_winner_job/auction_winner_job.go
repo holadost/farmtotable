@@ -36,7 +36,7 @@ func NewAuctionWinnerJob(g *gandalf.Gandalf, numWorkers uint, scanSize uint64) *
 	}
 	awj.doneChan = make(chan bool, awj.numWorkers)
 	awj.scanSize = scanSize
-	awj.auctionScanner = gandalf.NewAuctionsScanner(awj.gandalf, awj.scanSize)
+	awj.auctionScanner = gandalf.NewExpiredAuctionsScanner(awj.gandalf, awj.scanSize)
 	return &awj
 }
 
@@ -77,13 +77,16 @@ func newWorker(gandalf *gandalf.Gandalf, it *gandalf.AuctionsScanner) *_Worker {
 
 func (worker *_Worker) run() error {
 	for {
-		auction, status, err := worker.auctionScanner.Next()
+		auction, finished, err := worker.auctionScanner.Next()
 		if err != nil {
 			return errors.New(fmt.Sprintf("error while picking winners for auction: %v, error: %v", auction, err))
 		}
-		if status {
-			// Iterator has finished. No more auctions to process.
+		if auction.ItemID == "" && finished {
+			glog.Infof("Completed expired auctions scan")
 			return nil
+		} else if auction.ItemID == "" && !finished {
+			glog.Infof("Did not find any expired auctions in current batch. Continuing scan")
+			continue
 		}
 		topBids, err := worker.pickWinners(auction)
 		if err != nil {
@@ -101,30 +104,44 @@ func (worker *_Worker) run() error {
 		if err != nil {
 			return err
 		}
+		if finished {
+			return nil
+		}
 	}
 }
 
 func (worker *_Worker) pickWinners(auction gandalf.AuctionModel) ([]gandalf.BidModel, error) {
 	glog.Infof("Processing winners for auction: %v", auction)
 	bidScanner := gandalf.NewItemsBidScanner(worker.gandalf, auction.ItemID, 1024)
-	topBids := make([]gandalf.BidModel, 0, 2*KNumWinnersPerItem)
+	var topBids []gandalf.BidModel
 	for {
 		batch, finished, err := bidScanner.NextN(KNumWinnersPerItem)
 		if err != nil {
 			glog.Errorf("Unable to process winners for auction: %v due to err: %v", auction, err)
 			return topBids, err
 		}
+		if (!finished) && (len(batch) == 0) {
+			continue
+		}
 		if (!finished) || (finished && (len(batch) > 0)) {
 			topBids = append(topBids, batch...)
 			sort.Sort(sortByBidAmount(topBids))
-			topBids = topBids[0:KNumWinnersPerItem]
+			if len(topBids) > KNumWinnersPerItem {
+				topBids = topBids[0:KNumWinnersPerItem]
+			}
 			continue
 		}
+		if topBids == nil {
+			return topBids, nil
+		}
 		if finished {
-			topBids = topBids[0:KNumWinnersPerItem]
+			if len(topBids) > KNumWinnersPerItem {
+				topBids = topBids[0:KNumWinnersPerItem]
+			}
 			break
 		}
 	}
+	// Filter top bids as we may have empty values in there.
 	return topBids, nil
 }
 
@@ -160,6 +177,7 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 	// TODO: We should ensure that the orders being placed now haven't been placed
 	// TODO: already.
 	glog.V(1).Infof("Adding orders to backend: %v", orders)
+	glog.Errorf("Adding %d orders to backend", len(orders))
 	err = worker.gandalf.AddOrders(orders)
 	if err != nil {
 		glog.Errorf("Unable to add orders to backend")
@@ -187,5 +205,5 @@ func (worker *_Worker) notifyWinners(auction gandalf.AuctionModel, topBids []gan
 type sortByBidAmount []gandalf.BidModel
 
 func (a sortByBidAmount) Len() int           { return len(a) }
-func (a sortByBidAmount) Less(i, j int) bool { return a[i].BidAmount < a[j].BidAmount }
+func (a sortByBidAmount) Less(i, j int) bool { return a[i].BidAmount > a[j].BidAmount } // Sort in descending order.
 func (a sortByBidAmount) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }

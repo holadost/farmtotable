@@ -146,17 +146,18 @@ func (gandalf *Gandalf) GetAllSuppliers() ([]SupplierModel, error) {
 }
 
 func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDesc string, itemQty uint32,
-	auctionStartTime time.Time, minPrice float32) error {
+	auctionStartTime time.Time, minPrice float32, auctionDurationSecs uint32) error {
 	var dbc *gorm.DB
 	var err error
 	err = nil
 	item := &ItemModel{
-		SupplierID:       supplierID,
-		ItemName:         itemName,
-		ItemDescription:  itemDesc,
-		ItemQty:          itemQty,
-		AuctionStartTime: auctionStartTime,
-		MinPrice:         minPrice,
+		SupplierID:          supplierID,
+		ItemName:            itemName,
+		ItemDescription:     itemDesc,
+		ItemQty:             itemQty,
+		AuctionStartTime:    auctionStartTime,
+		MinPrice:            minPrice,
+		AuctionDurationSecs: uint64(auctionDurationSecs),
 	}
 	for ii := 0; ii < 5; ii++ {
 		item.ItemID = xid.New().String()
@@ -292,6 +293,18 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 			return dbc.Error
 		}
 	}
+	var auction AuctionModel
+	dbc = tx.Where("item_id = ?", itemID).First(&auction)
+	if dbc.Error != nil {
+		glog.Errorf("Cannot register bid for an expired/nonexistent auction: %s, user: %s", itemID, userID)
+		tx.Rollback()
+		return errors.New(fmt.Sprintf("cannot register bid for an expired auction: %s", itemID))
+	}
+	if bidAmount < auction.MinBid {
+		tx.Rollback()
+		return errors.New(fmt.Sprintf("cannot register bid(%f) which is smaller than min bid price(%f)",
+			bidAmount, auction.MinBid))
+	}
 	if currBid.ItemID == "" {
 		dbc := tx.Create(&BidModel{
 			ItemID:    itemID,
@@ -320,21 +333,6 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 	}
 
 	// Update the max bid.
-	var auction AuctionModel
-	dbc = tx.Where("item_id = ?", itemID).First(&auction)
-	if dbc.Error != nil {
-		if !strings.Contains(dbc.Error.Error(), "record not found") {
-			glog.Errorf("Unable to get item: %s from auctions", itemID)
-			tx.Rollback()
-			return dbc.Error
-		}
-		// TODO: This is for test purposes only. We should instead be returning the error.
-		glog.Errorf("Cannot register bid for an expired auction: %s, user: %s", itemID, userID)
-		// tx.Rollback()
-		// return errors.New(fmt.Sprintf("cannot register bid for an expired auction: %s", itemID))
-		tx.Commit()
-		return nil
-	}
 	if auction.MaxBid < bidAmount {
 		auction.MaxBid = bidAmount
 		dbc := tx.Model(&auction).Where("item_id = ?", itemID).Updates(&auction)

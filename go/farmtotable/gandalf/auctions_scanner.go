@@ -68,16 +68,26 @@ func (it *AuctionsScanner) maybeScanNextBatch() {
 	it.nextID += it.scanSize
 	now := time.Now()
 	for _, auction := range auctions {
+		item, err := it.gandalf.GetItem(auction.ItemID)
+		if err != nil {
+			it.scanComplete = true
+			it.scanErr = err
+			return
+		}
 		deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(auction.AuctionDurationSecs))
 		if it.auctionType == KAllAuctions {
 			it.currBatch = append(it.currBatch, auction)
 		} else if it.auctionType == KLiveAuctions {
-			if deadline.After(now) {
-				it.currBatch = append(it.currBatch, auction)
+			if item.AuctionStarted && !item.AuctionEnded {
+				if deadline.After(now) {
+					it.currBatch = append(it.currBatch, auction)
+				}
 			}
 		} else if it.auctionType == KExpiredAuctions {
-			if deadline.Before(now) {
-				it.currBatch = append(it.currBatch, auction)
+			if item.AuctionStarted && !item.AuctionDecided {
+				if deadline.Before(now) {
+					it.currBatch = append(it.currBatch, auction)
+				}
 			}
 		}
 	}
@@ -87,10 +97,10 @@ func (it *AuctionsScanner) Next() (AuctionModel, bool /* Scan complete */, error
 	it.mu.Lock()
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
-	if it.scanComplete {
-		return AuctionModel{}, it.scanComplete, it.scanErr
-	}
 	var item AuctionModel
+	if it.scanComplete || (len(it.currBatch) == 0) {
+		return item, it.scanComplete, it.scanErr
+	}
 	item, it.currBatch = it.currBatch[0], it.currBatch[1:]
 	return item, it.scanComplete, it.scanErr
 }

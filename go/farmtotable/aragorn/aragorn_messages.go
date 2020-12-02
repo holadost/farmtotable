@@ -35,13 +35,14 @@ type RegisterUserRet struct {
 
 // Register ItemModel Args and Ret.
 type RegisterItemArg struct {
-	SupplierID       string    `json:"supplier_id"`
-	ItemName         string    `json:"item_name"`
-	ItemDescription  string    `json:"item_description"`
-	ItemQty          uint32    `json:"item_qty"`
-	AuctionStartDate time.Time `json:"auction_start_date"`
-	MinPrice         float32   `json:"min_price"`
-	ItemTags         string    `json:"item_tags"`
+	SupplierID          string    `json:"supplier_id"`
+	ItemName            string    `json:"item_name"`
+	ItemDescription     string    `json:"item_description"`
+	ItemQty             uint32    `json:"item_qty"`
+	AuctionStartDate    time.Time `json:"auction_start_date"`
+	AuctionDurationSecs uint32    `json:"auction_duration_secs"`
+	MinPrice            float32   `json:"min_price"`
+	ItemTags            string    `json:"item_tags"`
 }
 
 type RegisterItemRet struct {

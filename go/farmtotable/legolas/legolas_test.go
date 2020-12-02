@@ -4,6 +4,7 @@ import (
 	"farmtotable/gandalf"
 	"farmtotable/legolas/auction_winner_job"
 	"farmtotable/legolas/new_auction_job"
+	"github.com/golang/glog"
 	"log"
 	"math"
 	"os"
@@ -24,7 +25,7 @@ func cleanupDB() {
 	}
 }
 
-func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, numBids int) {
+func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, numBids int, auctionDurationSecs uint32) {
 	now := time.Now()
 	// Add user.
 	err := gnd.RegisterUser(userID, "Nikhil Srivatsan", "kjahd@lkaj.com",
@@ -58,13 +59,14 @@ func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, 
 		if ii%2 == 0 {
 			// These items are ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
-				"lkjadlkjadl", uint32((ii+1)*100), now, float32((ii+1)*10))
+				"lkjadlkjadl", uint32((ii+1)*100), now, float32((ii+1)*2),
+				auctionDurationSecs)
 		} else {
 			// These items are not yet ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
 				"lkjadlkjadl", uint32((ii+1)*100),
 				now.Add(time.Duration(time.Second*900)),
-				float32((ii+1)*10))
+				float32((ii+1)*10), auctionDurationSecs)
 		}
 		if err != nil {
 			t.Fatalf("Unable to register item: %s", itemName)
@@ -72,10 +74,10 @@ func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, 
 	}
 
 	// Add bids.
-	addBids(t, gnd, userID, uint(numBids))
+	addBids(t, gnd, userID, uint(numBids), numItems*2)
 }
 
-func addBids(t *testing.T, gnd *gandalf.Gandalf, userID string, numBids uint) {
+func addBids(t *testing.T, gnd *gandalf.Gandalf, userID string, numBids uint, minBidPrice int) {
 	suppliers, err := gnd.GetAllSuppliers()
 	if err != nil {
 		t.Fatalf("Unable to fetch suppliers")
@@ -94,74 +96,9 @@ func addBids(t *testing.T, gnd *gandalf.Gandalf, userID string, numBids uint) {
 		if nextID >= len(items) {
 			nextID = 0
 		}
-		err = gnd.RegisterBid(itemID, userID, float32(22+ii), 3)
+		err = gnd.RegisterBid(itemID, userID, float32(minBidPrice+ii), 3)
 		if err != nil {
 			t.Fatalf("Unable to register bid due to err: %v", err)
-		}
-	}
-}
-
-func TestItemsScanner(t *testing.T) {
-	cleanupDB()
-	gnd := gandalf.NewSqliteGandalf()
-	defer gnd.Close()
-	numItems := 15
-	prepareDB(t, gnd, "nikhil", numItems, 15)
-	itemScanner := gandalf.NewItemsScanner(gnd, 3)
-	var items []gandalf.ItemModel
-	for {
-		item, finished, err := itemScanner.Next()
-		if err != nil {
-			t.Fatalf("Unable to scan items due to err: %v", err)
-		}
-		if item.ItemID != "" {
-			items = append(items, item)
-		}
-		if finished {
-			if len(items) != numItems {
-				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
-			}
-			break
-		}
-	}
-
-	itemScanner = gandalf.NewItemsScanner(gnd, 3)
-	items = nil
-	for {
-		scannedItems, finished, err := itemScanner.NextN(2)
-		if err != nil {
-			t.Fatalf("Unable to scan items due to err: %v", err)
-		}
-		for _, item := range scannedItems {
-			if item.ItemID != "" {
-				items = append(items, item)
-			}
-		}
-		if finished {
-			if len(items) != numItems {
-				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
-			}
-			break
-		}
-	}
-
-	itemScanner = gandalf.NewItemsScanner(gnd, 3)
-	items = nil
-	for {
-		scannedItems, finished, err := itemScanner.NextBatch()
-		if err != nil {
-			t.Fatalf("Unable to scan items due to err: %v", err)
-		}
-		for _, item := range scannedItems {
-			if item.ItemID != "" {
-				items = append(items, item)
-			}
-		}
-		if finished {
-			if len(items) != numItems {
-				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
-			}
-			break
 		}
 	}
 }
@@ -173,7 +110,7 @@ func TestNewAuctionsJob(t *testing.T) {
 	numItems := 15
 	expectedAucs := int(math.Ceil(float64(numItems) / 2))
 	numBids := 15
-	prepareDB(t, gnd, "nikhil", numItems, 0)
+	prepareDB(t, gnd, "nikhil", numItems, 0, 300)
 	naj := new_auction_job.NewPopulateNewAuctionsJob(gnd, 5, 2)
 	naj.Run()
 	auctionScanner := gandalf.NewAuctionsScanner(gnd, 5)
@@ -194,7 +131,7 @@ func TestNewAuctionsJob(t *testing.T) {
 		if nextID >= len(items) {
 			nextID = 0
 		}
-		err = gnd.RegisterBid(itemID, "nikhil", float32(22+ii), 3)
+		err = gnd.RegisterBid(itemID, "nikhil", float32(30+ii), 3)
 		if err != nil {
 			t.Fatalf("Unable to register bid due to err: %v", err)
 		}
@@ -243,10 +180,20 @@ func TestAuctionWinnerJob(t *testing.T) {
 	defer gnd.Close()
 	numItems := 15
 	numBids := 15
-	prepareDB(t, gnd, "nikhil", numItems, 0)
+	durationSecs := uint32(30)
+	prepareDB(t, gnd, "nikhil", numItems, 0, durationSecs)
 	naj := new_auction_job.NewPopulateNewAuctionsJob(gnd, 5, 2)
 	naj.Run()
-	addBids(t, gnd, "nikhil", uint(numBids))
+	addBids(t, gnd, "nikhil", uint(numBids), numItems*2)
 	awj := auction_winner_job.NewAuctionWinnerJob(gnd, 2, 4)
+	awj.Run()
+	glog.Infof("Sleeping for %d seconds to allow auctions to expire", durationSecs)
+	time.Sleep(time.Second * time.Duration(durationSecs))
+	// Pick the winners.
+	awj = auction_winner_job.NewAuctionWinnerJob(gnd, 2, 4)
+	awj.Run()
+
+	// Run job again and ensure that orders are not placed again.
+	awj = auction_winner_job.NewAuctionWinnerJob(gnd, 2, 4)
 	awj.Run()
 }
