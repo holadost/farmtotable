@@ -176,11 +176,10 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 	}
 	// TODO: We should ensure that the orders being placed now haven't been placed
 	// TODO: already.
-	glog.V(1).Infof("Adding orders to backend: %v", orders)
-	glog.Errorf("Adding %d orders to backend", len(orders))
+	glog.V(1).Infof("Adding %d orders to backend", len(orders))
 	err = worker.gandalf.AddOrders(orders)
 	if err != nil {
-		glog.Errorf("Unable to add orders to backend")
+		glog.Errorf("Unable to add orders to backend due to err: %v", err)
 		return err
 	}
 	return nil

@@ -180,6 +180,7 @@ func TestAuctionWinnerJob(t *testing.T) {
 	defer gnd.Close()
 	numItems := 15
 	numBids := 15
+	expectedOrders := int(math.Ceil(float64(numItems) / 2))
 	durationSecs := uint32(30)
 	prepareDB(t, gnd, "nikhil", numItems, 0, durationSecs)
 	naj := new_auction_job.NewPopulateNewAuctionsJob(gnd, 5, 2)
@@ -193,7 +194,23 @@ func TestAuctionWinnerJob(t *testing.T) {
 	awj = auction_winner_job.NewAuctionWinnerJob(gnd, 2, 4)
 	awj.Run()
 
+	orders, err := gnd.GetUserOrders("nikhil")
+	if err != nil {
+		t.Fatalf("Unable to get orders due to err: %v", err)
+	}
+	if len(orders) != expectedOrders {
+		t.Fatalf("Did not find expected number of orders")
+	}
+
 	// Run job again and ensure that orders are not placed again.
 	awj = auction_winner_job.NewAuctionWinnerJob(gnd, 2, 4)
 	awj.Run()
+
+	orders, err = gnd.GetUserOrders("nikhil")
+	if err != nil {
+		t.Fatalf("Unable to get orders due to err: %v", err)
+	}
+	if len(orders) != expectedOrders {
+		t.Fatalf("Did not find expected number of orders")
+	}
 }

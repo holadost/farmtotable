@@ -305,6 +305,12 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 		return errors.New(fmt.Sprintf("cannot register bid(%f) which is smaller than min bid price(%f)",
 			bidAmount, auction.MinBid))
 	}
+	if bidQty > auction.ItemQty {
+		tx.Rollback()
+		return errors.New(
+			fmt.Sprintf("cannot register bid with requested quantity: %d as it is > total item qty: %d",
+				bidQty, auction.ItemQty))
+	}
 	if currBid.ItemID == "" {
 		dbc := tx.Create(&BidModel{
 			ItemID:    itemID,
@@ -320,7 +326,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 		// Only update the current bid if the new bid is higher.
 		if currBid.BidAmount >= bidAmount {
 			tx.Rollback()
-			return errors.New(fmt.Sprintf("current bid(%f) is lower than previous bid(%f)",
+			return errors.New(fmt.Sprintf("user current bid(%f) is lower than user previous bid(%f)",
 				bidAmount, currBid.BidAmount))
 		}
 		currBid.BidAmount = bidAmount
