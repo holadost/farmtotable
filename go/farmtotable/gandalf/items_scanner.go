@@ -97,6 +97,11 @@ func (it *ItemsScanner) NextN(n uint) ([]ItemModel, bool /* Scan complete */, er
 		}
 		items = append(items, item)
 	}
-	it.currBatch = it.currBatch[n:]
+	if len(it.currBatch) <= int(n) {
+		// Simply clear the curr batch.
+		it.currBatch = it.currBatch[:0]
+	} else {
+		it.currBatch = it.currBatch[n:]
+	}
 	return items, it.scanComplete, it.scanErr
 }
