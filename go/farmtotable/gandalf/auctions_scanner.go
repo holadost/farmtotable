@@ -106,5 +106,7 @@ func (it *AuctionsScanner) NextBatch() ([]AuctionModel, bool /* Scan complete */
 	for _, auction := range it.currBatch {
 		auctions = append(auctions, auction)
 	}
+	// Clear currBatch but keep the underlying memory.
+	it.currBatch = it.currBatch[:0]
 	return auctions, it.scanComplete, it.scanErr
 }

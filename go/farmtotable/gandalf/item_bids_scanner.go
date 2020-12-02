@@ -98,6 +98,10 @@ func (it *ItemBidsScanner) NextN(n uint) ([]BidModel, bool /* Scan complete */, 
 		}
 		items = append(items, bid)
 	}
-	it.currBatch = it.currBatch[n:]
+	if len(it.currBatch) <= int(n) {
+		it.currBatch = it.currBatch[:0]
+	} else {
+		it.currBatch = it.currBatch[n:]
+	}
 	return items, it.scanComplete, it.scanErr
 }
