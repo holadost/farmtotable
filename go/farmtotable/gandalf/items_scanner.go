@@ -47,7 +47,10 @@ func (it *ItemsScanner) maybeScanNextBatch() {
 		it.scanComplete = true
 		return
 	}
-	it.nextID += it.nextID + it.scanSize
+	for _, item := range items {
+		it.currBatch = append(it.currBatch, item)
+	}
+	it.nextID += it.scanSize
 	return
 }
 
@@ -56,11 +59,12 @@ func (it *ItemsScanner) Next() (ItemModel, bool /* Scan complete */, error /* sc
 	defer it.mu.Unlock()
 	it.maybeScanNextBatch()
 	var item ItemModel
-	if it.scanComplete {
+	if len(it.currBatch) > 0 {
+		item, it.currBatch = it.currBatch[0], it.currBatch[1:]
+		return item, it.scanComplete, it.scanErr
+	} else {
 		return item, it.scanComplete, it.scanErr
 	}
-	item, it.currBatch = it.currBatch[0], it.currBatch[1:]
-	return item, it.scanComplete, it.scanErr
 }
 
 func (it *ItemsScanner) NextBatch() ([]ItemModel, bool /* Scan complete */, error /* scan errors */) {

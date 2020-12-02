@@ -65,7 +65,7 @@ func (it *AuctionsScanner) maybeScanNextBatch() {
 		it.scanComplete = true
 		return
 	}
-	it.nextID += it.nextID + it.scanSize
+	it.nextID += it.scanSize
 	now := time.Now()
 	for _, auction := range auctions {
 		deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(auction.AuctionDurationSecs))

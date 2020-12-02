@@ -49,7 +49,10 @@ func (it *ItemBidsScanner) maybeScanNextBatch() {
 		it.scanComplete = true
 		return
 	}
-	it.nextID += it.nextID + it.scanSize
+	it.nextID += it.scanSize
+	for _, bid := range bids {
+		it.currBatch = append(it.currBatch, bid)
+	}
 	return
 }
 

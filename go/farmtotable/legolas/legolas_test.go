@@ -77,12 +77,14 @@ func TestScanners(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Unable to scan items due to err: %v", err)
 		}
+		if item.ItemID != "" {
+			items = append(items, item)
+		}
 		if finished {
 			if len(items) != numItems {
-				t.Fatalf("Did not scan all items")
+				t.Fatalf("Did not scan all items. Expected: %d, got: %d", numItems, len(items))
 			}
 			break
 		}
-		items = append(items, item)
 	}
 }
