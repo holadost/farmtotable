@@ -95,7 +95,6 @@ func (it *ItemBidsScanner) NextN(n uint) ([]BidModel, bool /* Scan complete */, 
 		}
 		items = append(items, bid)
 	}
-	// Clear the currBatch but keep the underlying memory.
 	it.currBatch = it.currBatch[n:]
 	return items, it.scanComplete, it.scanErr
 }
