@@ -1,7 +1,6 @@
 package gandalf
 
 import (
-	"github.com/golang/glog"
 	"sync"
 )
 
@@ -63,9 +62,6 @@ func (it *ItemsScanner) Next() (ItemModel, bool /* Scan complete */, error /* sc
 	if it.scanComplete {
 		return item, it.scanComplete, it.scanErr
 	}
-	if len(it.currBatch) == 0 {
-		glog.Fatalf("currBatch is empty even though scanner is not complete")
-	}
 	item, it.currBatch = it.currBatch[0], it.currBatch[1:]
 	return item, it.scanComplete, it.scanErr
 }
@@ -76,9 +72,6 @@ func (it *ItemsScanner) NextBatch() ([]ItemModel, bool /* Scan complete */, erro
 	it.maybeScanNextBatch()
 	if it.scanComplete {
 		return []ItemModel{}, it.scanComplete, it.scanErr
-	}
-	if len(it.currBatch) == 0 {
-		glog.Fatalf("currBatch is empty even though scanner is not complete")
 	}
 	items := make([]ItemModel, 0, len(it.currBatch))
 	for _, item := range it.currBatch {
@@ -95,9 +88,6 @@ func (it *ItemsScanner) NextN(n uint) ([]ItemModel, bool /* Scan complete */, er
 	it.maybeScanNextBatch()
 	if it.scanComplete {
 		return []ItemModel{}, it.scanComplete, it.scanErr
-	}
-	if len(it.currBatch) == 0 {
-		glog.Fatalf("currBatch is empty even though scanner is not complete")
 	}
 	items := make([]ItemModel, 0, n)
 	for ii, item := range it.currBatch {

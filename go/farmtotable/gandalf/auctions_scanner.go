@@ -1,7 +1,6 @@
 package gandalf
 
 import (
-	"github.com/golang/glog"
 	"sync"
 	"time"
 )
@@ -94,9 +93,6 @@ func (it *AuctionsScanner) Next() (AuctionModel, bool /* Scan complete */, error
 	if it.scanComplete {
 		return AuctionModel{}, it.scanComplete, it.scanErr
 	}
-	if len(it.currBatch) == 0 {
-		glog.Fatalf("currBatch is empty even though scan is not complete")
-	}
 	var item AuctionModel
 	item, it.currBatch = it.currBatch[0], it.currBatch[1:]
 	return item, it.scanComplete, it.scanErr
@@ -108,9 +104,6 @@ func (it *AuctionsScanner) NextBatch() ([]AuctionModel, bool /* Scan complete */
 	it.maybeScanNextBatch()
 	if it.scanComplete {
 		return []AuctionModel{}, it.scanComplete, it.scanErr
-	}
-	if len(it.currBatch) == 0 {
-		glog.Fatalf("currBatch is empty even though scan is not complete")
 	}
 	auctions := make([]AuctionModel, 0, len(it.currBatch))
 	for _, auction := range it.currBatch {
