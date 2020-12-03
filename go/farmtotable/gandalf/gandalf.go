@@ -281,6 +281,25 @@ func (gandalf *Gandalf) AddAuctions(auctions []AuctionModel) error {
 }
 
 func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
+	timeout := 5 * time.Second
+	timer1 := time.NewTimer(timeout)
+	for {
+		select {
+		case <-timer1.C:
+			glog.Errorf("Unable to register bid within timeout: %v secs for "+
+				"itemID: %s", timeout, itemID)
+			return errors.New("timed out attempting to register bid")
+		default:
+			err := gandalf.registerBid(itemID, userID, bidAmount, bidQty)
+			if err != nil {
+				continue
+			}
+			return nil
+		}
+	}
+}
+
+func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount float32, bidQty uint32) error {
 	// TODO: This is a massive transaction in the critical path. This will eventually slow down the entire auction
 	// TODO: system. We should move the auctions and bids to faster key value store like redis or remote-badger.
 	// Check if a bid has already been made by the user.
