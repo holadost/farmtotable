@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+
 import '../screens/home_screen.dart';
 import '../screens/orders_overview_screen.dart';
 import '../screens/auctions_overview_screen.dart';
+import '../util/constants.dart';
 
 class SideDrawerWidget extends StatelessWidget {
 
@@ -11,7 +13,7 @@ class SideDrawerWidget extends StatelessWidget {
       child: Column(
         children: [
           AppBar(
-            title: Text('Hello Friend'),
+            title: Text(AppName),
             automaticallyImplyLeading: false,
           ),
           Divider(),
