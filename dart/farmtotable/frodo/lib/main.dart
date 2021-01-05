@@ -14,8 +14,13 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'AlgoRhythm',
       theme: ThemeData(
+        brightness: Brightness.light,
         primarySwatch: Colors.purple,
-        accentColor: Colors.deepOrange,
+        fontFamily: 'Lato',
+      ),
+      darkTheme: ThemeData(
+        brightness: Brightness.dark,
+        primarySwatch: Colors.orange,
         fontFamily: 'Lato',
       ),
       home: HomeScreen(),
