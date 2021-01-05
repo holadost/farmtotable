@@ -4,11 +4,13 @@ import 'package:provider/provider.dart';
 import './screens/home_screen.dart';
 import './screens/auctions_overview_screen.dart';
 import './screens/orders_overview_screen.dart';
+import './screens/item_auction_screen.dart';
 
 
 void main() => runApp(MyApp());
 
 class MyApp extends StatelessWidget {
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -28,6 +30,7 @@ class MyApp extends StatelessWidget {
       routes: {
         OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
         AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
+        ItemAuctionScreen.routeName: (ctx) => ItemAuctionScreen(),
       },
     );
   }
