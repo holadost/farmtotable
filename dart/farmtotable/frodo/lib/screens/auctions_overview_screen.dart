@@ -18,48 +18,73 @@ class AuctionsOverviewScreen extends StatelessWidget {
         style: getAppBarTextStyle(),
       ),
     );
-    final body = Container(
-        child: ListView.builder(
+    final body = ListView.builder(
       itemBuilder: (ctx, ii) {
         return ListTile(
           onTap: () {
-            Navigator.of(ctx).pushNamed(
-                ItemAuctionScreen.routeName,
+            Navigator.of(ctx).pushNamed(ItemAuctionScreen.routeName,
                 arguments: auctions[ii]);
           },
           leading: CircleAvatar(
+            backgroundColor: Colors.green,
             radius: 30,
             child: Padding(
                 padding: const EdgeInsets.all(6.0),
                 child: FittedBox(
                   child: Text(
-                    "Rs " +
-                        auctions[ii]
-                            .minBid
-                            .toStringAsPrecision(4),
-                    style: TextStyle(fontSize: 20),
+                    "Rs " + auctions[ii].minBid.toStringAsPrecision(4),
+                    style: TextStyle(
+                        fontSize: 20, color: Colors.black, fontFamily: 'Lato'),
                   ),
                 )),
           ),
           title: Text(
             auctions[ii].itemName,
-            style: Theme.of(context).textTheme.title,
+            style: Theme.of(context).textTheme.headline6,
             textAlign: TextAlign.left,
           ),
-          subtitle: Text(
-            DateFormat.yMMMMEEEEd()
-                .add_jm()
-                .format(auctions[ii].auctionStartTime),
-            style: TextStyle(
-              fontSize: 12,
-              color: Colors.grey,
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Deadline: ${DateFormat.yMMMMd()
+                    .add_jm()
+                    .format(auctions[ii].auctionStartTime)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              SizedBox(
+                height: 3,
+              ),
+              Text(
+                'Min price: Rs ${auctions[ii].minBid.toStringAsPrecision(4)}',
+                style: TextStyle(
+                  fontSize: 12,
+                  color: Colors.grey,
+                ),
+                textAlign: TextAlign.left,
+              )
+            ],
+          ),
+          trailing: Container(
+            width: 80.0,
+            padding: const EdgeInsets.all(8.0),
+            child: RaisedButton(
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10.0)
+              ),
+              onPressed: () {},
+              child: Text(
+                "Bid", style: TextStyle(fontSize: 16),),
             ),
-            textAlign: TextAlign.left,
           ),
         );
       },
       itemCount: auctions.length,
-    ));
+    );
     return Scaffold(
       appBar: appBar,
       body: body,
