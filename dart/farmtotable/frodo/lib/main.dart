@@ -16,16 +16,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'AlgoRhythm',
       theme: ThemeData(
-        brightness: Brightness.light,
-        primarySwatch: Colors.purple,
-        fontFamily: 'Lato',
-      ),
-      darkTheme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: Colors.orange,
         fontFamily: 'Lato',
       ),
-      themeMode: ThemeMode.dark,
       home: HomeScreen(),
       routes: {
         OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),

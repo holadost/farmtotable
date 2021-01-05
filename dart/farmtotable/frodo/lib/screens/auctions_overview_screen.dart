@@ -4,6 +4,7 @@ import 'package:intl/intl.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../data/dummy_auctions.dart';
 import '../screens/item_auction_screen.dart';
+import '../util/styles.dart';
 
 class AuctionsOverviewScreen extends StatelessWidget {
   static const routeName = '/auctions-overview-screen';
@@ -11,9 +12,11 @@ class AuctionsOverviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     var auctions = [...DUMMY_AUCTIONS];
-    final themeData = Theme.of(context);
     final appBar = AppBar(
-      title: Text('Auctions', style: themeData.textTheme.headline6),
+      title: Text(
+        'Auctions',
+        style: getAppBarTextStyle(),
+      ),
     );
     final body = Container(
         child: ListView.builder(

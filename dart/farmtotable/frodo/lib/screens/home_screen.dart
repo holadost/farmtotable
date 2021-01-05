@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../widgets/side_drawer_widget.dart';
 import '../util/constants.dart';
+import '../util/styles.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = "/";
@@ -9,7 +10,10 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(
-      title: Text(AppName),
+      title: Text(
+        AppName,
+        style: getAppBarTextStyle(),
+      ),
     );
     final body = Container(
       child: Text('Welcome to AlgoRhythm. Still under construction!'),

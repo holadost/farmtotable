@@ -1,13 +1,19 @@
 import 'package:flutter/material.dart';
 
 import '../widgets/side_drawer_widget.dart';
+import '../util/styles.dart';
 
 class OrdersOverviewScreen extends StatelessWidget {
   static const routeName = '/orders-overview-screen';
 
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar();
+    final appBar = AppBar(
+      title: Text(
+        'Orders',
+        style: getAppBarTextStyle(),
+      ),
+    );
     final body = Container(
       child: Text("Your orders"),
     );
