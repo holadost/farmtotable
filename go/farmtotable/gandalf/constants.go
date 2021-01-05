@@ -10,7 +10,7 @@ const (
 	PGPort     = 5432
 	PGUser     = "postgres"
 	PGPassword = "farmToTable4u"
-	PGDbName   = "nikhil"
+	PGDbName   = "farmtotable"
 )
 
 const (
