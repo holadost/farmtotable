@@ -23,6 +23,7 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.orange,
         fontFamily: 'Lato',
       ),
+      themeMode: ThemeMode.dark,
       home: HomeScreen(),
       routes: {
         OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
