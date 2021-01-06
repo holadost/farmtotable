@@ -70,6 +70,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/items/fetch", aragorn.GetSupplierItems) // Administrator API. Gets all items by a supplier.
 	r.POST("/api/v1/resources/items/register", aragorn.RegisterItem)  // Administrator API. Registers item.
 	r.POST("/api/v1/resources/items/remove", aragorn.RemoveItem)      // Administrator API. Removes item
+	r.POST("/api/v1/resources/items/get", aragorn.GetItem)            // Gets an item.
 
 	// AuctionModel APIs.
 	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)  // Returns all the live auctions.
@@ -314,6 +315,37 @@ func (aragorn *Aragorn) RemoveItem(c *gin.Context) {
 		RegistrationStatus: true,
 	}
 	ret.Data = retData
+	c.JSON(http.StatusOK, ret)
+}
+
+func (aragorn *Aragorn) GetItem(c *gin.Context) {
+	var ret GetItemRet
+	var arg GetItemArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		return
+	}
+	item, err := aragorn.gandalf.GetItem(arg.ItemID)
+	if err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Unable to get item from backend")
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		return
+	}
+	if item.ItemName == "" {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = fmt.Sprintf("Did not find item: %s", arg.ItemID)
+		c.JSON(http.StatusBadRequest, ret)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	ret.Data = item
 	c.JSON(http.StatusOK, ret)
 }
 
@@ -765,6 +797,7 @@ func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.OrderModel) ([]Or
 		}
 		orderRet.ItemName = item.ItemName
 		orderRet.ItemDescription = item.ItemDescription
+		orderRet.ImageURL = item.ImageURL
 		orderRet.UserID = orders[ii].UserID
 		orderRet.ItemQty = orders[ii].ItemQty
 		orderRet.ItemPrice = orders[ii].ItemPrice

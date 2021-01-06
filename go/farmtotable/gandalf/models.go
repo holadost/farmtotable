@@ -48,12 +48,13 @@ type BidModel struct {
 
 type AuctionModel struct {
 	ID                  uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
-	ItemID              string    `gorm:"type:varchar(32)" json:"item_id"`
-	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"`
-	ItemQty             uint32    `json:"item_qty"`
+	ItemID              string    `gorm:"type:varchar(32)" json:"item_id"`    // Same as ItemModel ItemID.
+	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"` // Same as ItemModel ItemName.
+	ItemQty             uint32    `json:"item_qty"`                           // Same as the ItemModel ItemQty.
+	ImageURL            string    `json:"image_url"`                          // Same as the ItemModel ImageURL
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
-	MinBid              float32   `json:"min_bid"`
+	MinBid              float32   `json:"min_bid"` // Same as the ItemModel ImageURL
 	MaxBid              float32   `json:"max_bid"`
 }
 

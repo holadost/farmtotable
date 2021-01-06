@@ -51,6 +51,16 @@ type RegisterItemRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
+// Get item args and ret.
+type GetItemArg struct {
+	ItemID string `json:"item_id"`
+}
+
+type GetItemRet struct {
+	BaseAPIResponse
+	Data gandalf.ItemModel `json:"data"`
+}
+
 // Remove item args and ret.
 type RemoveItemArg struct {
 	ItemID string `json:"item_id"`
@@ -169,6 +179,7 @@ type OrderRet struct {
 	gandalf.OrderModel
 	ItemName        string `json:"item_name"`
 	ItemDescription string `json:"item_description"`
+	ImageURL        string `json:"image_url"`
 }
 
 type GetOrderArg struct {
