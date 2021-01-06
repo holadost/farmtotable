@@ -51,7 +51,7 @@ class ItemDisplayWidget extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 10,),
+          SizedBox(height: 5,),
           ClipRRect(
             child: Container(
               child: Text(
@@ -68,9 +68,6 @@ class ItemDisplayWidget extends StatelessWidget {
               ),
               width: minWidth,
             ),
-          ),
-          SizedBox(
-            height: 10,
           ),
           ClipRRect(
             child: Container(
@@ -89,7 +86,7 @@ class ItemDisplayWidget extends StatelessWidget {
               width: minWidth,
             ),
           ),
-          SizedBox(height: 10,),
+          SizedBox(height: 5,),
           ElevatedButton(
             child: Text("Bid now"),
             onPressed: bidNow,
