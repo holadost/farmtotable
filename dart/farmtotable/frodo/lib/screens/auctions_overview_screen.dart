@@ -30,7 +30,7 @@ class AuctionsOverviewScreen extends StatelessWidget {
                   arguments: auctions[ii]);
             },
             leading: CircleAvatar(
-                backgroundColor: Colors.green,
+                backgroundColor: PrimaryColor,
                 radius: 30,
                 child: Container(
                     height: 250,
