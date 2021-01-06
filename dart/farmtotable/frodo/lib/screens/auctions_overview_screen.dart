@@ -64,7 +64,7 @@ class AuctionsOverviewScreen extends StatelessWidget {
                   height: 3,
                 ),
                 Text(
-                  'Min price: Rs ${auctions[ii].minBid.toStringAsPrecision(4)}',
+                  'Min price: $Rupee${auctions[ii].minBid.toStringAsPrecision(4)}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey,
@@ -88,7 +88,7 @@ class AuctionsOverviewScreen extends StatelessWidget {
                   child: FittedBox(
                     fit: BoxFit.contain,
                     child: Text(
-                      "Rs ${auctions[ii].maxBid.toStringAsFixed(2)}",
+                      "$Rupee${auctions[ii].maxBid.toStringAsFixed(2)}",
                       style: TextStyle(fontSize: 18),
                     ),
                   ),

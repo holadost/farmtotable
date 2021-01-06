@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/util/constants.dart';
+
 
 import './screens/home_screen.dart';
 import './screens/auctions_overview_screen.dart';
-import './screens/orders_overview_screen.dart';
 import './screens/item_auction_screen.dart';
+import './screens/orders_overview_screen.dart';
+import './screens/order_screen.dart';
+import './util/constants.dart';
 
 
 void main() => runApp(MyApp());
@@ -27,6 +29,7 @@ class MyApp extends StatelessWidget {
         OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
         AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
         ItemAuctionScreen.routeName: (ctx) => ItemAuctionScreen(),
+        OrderScreen.routeName: (ctx) => OrderScreen(),
       },
     );
   }

@@ -4,3 +4,4 @@ import 'package:flutter/material.dart';
 const AppName = 'AlgoRhythm';
 const PrimaryColor = Colors.deepPurple;
 const AccentColor = Colors.purpleAccent;
+const Rupee = '\u{20B9}';

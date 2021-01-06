@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/util/constants.dart';
 import 'package:intl/intl.dart';
 
 import '../models/auction_item.dart';
@@ -31,7 +32,7 @@ class ItemDisplayWidget extends StatelessWidget {
           ),
           Container(
             child: Text(
-              "Min Price: Rs ${auctionItem.minBid.toStringAsPrecision(4)}",
+              "Min Price: $Rupee${auctionItem.minBid.toStringAsPrecision(4)}",
               style: TextStyle(
                   fontFamily: "Quicksand",
                   fontWeight: FontWeight.bold,
