@@ -17,7 +17,8 @@ class MyApp extends StatelessWidget {
       title: 'AlgoRhythm',
       theme: ThemeData(
         brightness: Brightness.dark,
-        primarySwatch: PrimaryColor,
+        primaryColor: PrimaryColor,
+        primarySwatch: Colors.deepPurple,
         accentColor: AccentColor,
         fontFamily: 'Lato',
       ),
