@@ -9,6 +9,8 @@ class AuctionItem {
   final DateTime auctionStartTime;
   final Duration auctionDurationSecs;
   final double minBid;
+  final double maxBid;
+  final String imageURL;
 
   AuctionItem({
     @required this.itemDescription,
@@ -18,6 +20,8 @@ class AuctionItem {
     @required this.itemQty,
     @required this.auctionDurationSecs,
     @required this.auctionStartTime,
-    @required this.minBid
+    @required this.minBid,
+    @required this.maxBid,
+    @required this.imageURL,
   });
 }
