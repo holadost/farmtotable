@@ -199,6 +199,7 @@ func TestAragornRun(t *testing.T) {
 		SupplierID:       "SupplierModel 1",
 		AuctionStartDate: time.Now(),
 		MinPrice:         5.0,
+		ImageURL:         "http://imageURL",
 	}
 	body, err = json.Marshal(regItemArg)
 	if err != nil {
@@ -289,7 +290,7 @@ func TestAragornRun(t *testing.T) {
 	for ii := 0; ii < 5; ii++ {
 		itemName := "ItemModel" + strconv.Itoa(ii)
 		itemDesc := itemName + ": ItemModel description"
-		err := aragorn.gandalf.RegisterItem("supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii), 100)
+		err := aragorn.gandalf.RegisterItem("supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii), 100, "imageURL")
 		if err != nil {
 			t.Fatalf("Unable to register item")
 		}

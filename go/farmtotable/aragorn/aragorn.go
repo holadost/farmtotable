@@ -258,7 +258,7 @@ func (aragorn *Aragorn) RegisterItem(c *gin.Context) {
 		return
 	}
 	err := aragorn.gandalf.RegisterItem(item.SupplierID, item.ItemName, item.ItemDescription, item.ItemQty,
-		item.AuctionStartDate, item.MinPrice, item.AuctionDurationSecs)
+		item.AuctionStartDate, item.MinPrice, item.AuctionDurationSecs, item.ImageURL)
 	if err != nil {
 		response.Status = http.StatusBadRequest
 		response.ErrorMsg = fmt.Sprintf("Error while registering item: %v", err)

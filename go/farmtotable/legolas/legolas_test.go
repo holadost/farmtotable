@@ -60,13 +60,13 @@ func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, 
 			// These items are ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
 				"lkjadlkjadl", uint32((ii+1)*100), now, float32((ii+1)*2),
-				auctionDurationSecs)
+				auctionDurationSecs, "http://imageURL")
 		} else {
 			// These items are not yet ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
 				"lkjadlkjadl", uint32((ii+1)*100),
 				now.Add(time.Duration(time.Second*900)),
-				float32((ii+1)*10), auctionDurationSecs)
+				float32((ii+1)*10), auctionDurationSecs, "http://imageURL")
 		}
 		if err != nil {
 			t.Fatalf("Unable to register item: %s", itemName)

@@ -146,7 +146,7 @@ func (gandalf *Gandalf) GetAllSuppliers() ([]SupplierModel, error) {
 }
 
 func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDesc string, itemQty uint32,
-	auctionStartTime time.Time, minPrice float32, auctionDurationSecs uint32) error {
+	auctionStartTime time.Time, minPrice float32, auctionDurationSecs uint32, imageUrl string) error {
 	var dbc *gorm.DB
 	var err error
 	err = nil
@@ -158,6 +158,7 @@ func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDes
 		AuctionStartTime:    auctionStartTime,
 		MinPrice:            minPrice,
 		AuctionDurationSecs: uint64(auctionDurationSecs),
+		ImageURL:            imageUrl,
 	}
 	for ii := 0; ii < 5; ii++ {
 		item.ItemID = xid.New().String()

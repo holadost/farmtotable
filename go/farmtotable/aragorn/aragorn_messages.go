@@ -43,6 +43,7 @@ type RegisterItemArg struct {
 	AuctionDurationSecs uint32    `json:"auction_duration_secs"`
 	MinPrice            float32   `json:"min_price"`
 	ItemTags            string    `json:"item_tags"`
+	ImageURL            string    `json:"image_url"`
 }
 
 type RegisterItemRet struct {

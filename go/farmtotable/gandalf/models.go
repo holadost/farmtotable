@@ -29,6 +29,7 @@ type ItemModel struct {
 	ItemName            string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
 	ItemDescription     string    `gorm:"NOT NULL" json:"item_description"`
 	ItemQty             uint32    `json:"item_qty"`
+	ImageURL            string    `json:"image_url"`
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
 	MinPrice            float32   `json:"min_price"`

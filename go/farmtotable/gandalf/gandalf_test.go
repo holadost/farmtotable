@@ -96,15 +96,15 @@ func TestGandalf_Item(t *testing.T) {
 	cleanupSqliteDB()
 	gandalf := NewSqliteGandalf()
 	defer gandalf.Close()
-	err := gandalf.RegisterItem("nikhil_srivatsan", "Item1", "This stuff is good", 100, time.Now(), 100.0, 100)
+	err := gandalf.RegisterItem("nikhil_srivatsan", "Item1", "This stuff is good", 100, time.Now(), 100.0, 100, "http://imageURL")
 	if err != nil {
 		t.Fatalf("Unable to register item 1")
 	}
-	err = gandalf.RegisterItem("nikhil_srivatsan", "Item2", "This stuff is good 2", 200, time.Now(), 66.66, 100)
+	err = gandalf.RegisterItem("nikhil_srivatsan", "Item2", "This stuff is good 2", 200, time.Now(), 66.66, 100, "http://imageURL")
 	if err != nil {
 		t.Fatalf("Unable to register item 2")
 	}
-	err = gandalf.RegisterItem("nikhil_srivatsan", "Item3", "This stuff is good 3", 300, time.Now(), 33.33, 100)
+	err = gandalf.RegisterItem("nikhil_srivatsan", "Item3", "This stuff is good 3", 300, time.Now(), 33.33, 100, "http://imageURL")
 	if err != nil {
 		t.Fatalf("Unable to register item 3")
 	}
@@ -164,7 +164,7 @@ func TestGandalf_Auction(t *testing.T) {
 	for ii := 0; ii < 5; ii++ {
 		itemName := "ItemModel" + strconv.Itoa(ii)
 		itemDesc := itemName + ": ItemModel description"
-		err := gandalf.RegisterItem("nikhil", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii), 100)
+		err := gandalf.RegisterItem("nikhil", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii), 100, "imageUrl")
 		if err != nil {
 			t.Fatalf("Unable to register item")
 		}
