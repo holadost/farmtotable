@@ -290,7 +290,10 @@ func TestAragornRun(t *testing.T) {
 	for ii := 0; ii < 5; ii++ {
 		itemName := "ItemModel" + strconv.Itoa(ii)
 		itemDesc := itemName + ": ItemModel description"
-		err := aragorn.gandalf.RegisterItem("supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(), float32(1.0*ii), 100, "imageURL")
+		err := aragorn.gandalf.RegisterItem(
+			"supplier1", itemName, itemDesc, uint32(100*(ii+1)), time.Now(),
+			float32(1.0*ii), 100, "imageURL", 100,
+			1300, "g")
 		if err != nil {
 			t.Fatalf("Unable to register item")
 		}
@@ -306,6 +309,9 @@ func TestAragornRun(t *testing.T) {
 			AuctionStartTime:    items[ii].AuctionStartTime,
 			AuctionDurationSecs: 24 * 86400,
 			MaxBid:              items[ii].MinPrice,
+			MinBidQty:           100,
+			MaxBidQty:           1300,
+			ItemUnit:            "g",
 		})
 	}
 	err = aragorn.gandalf.AddAuctions(auctions)

@@ -100,6 +100,9 @@ func (worker *_Worker) run() error {
 					auction.MaxBid = item.MinPrice
 					auction.MinBid = item.MinPrice
 					auction.ImageURL = item.ImageURL
+					auction.MinBidQty = item.MinBidQty
+					auction.MaxBidQty = item.MaxBidQty
+					auction.ItemUnit = item.ItemUnit
 					chosenItems = append(chosenItems, auction)
 				}
 			}

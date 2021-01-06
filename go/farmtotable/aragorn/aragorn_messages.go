@@ -44,6 +44,9 @@ type RegisterItemArg struct {
 	MinPrice            float32   `json:"min_price"`
 	ItemTags            string    `json:"item_tags"`
 	ImageURL            string    `json:"image_url"`
+	MinBidQty           uint32    `json:"min_bid_qty"`
+	MaxBidQty           uint32    `json:"max_bid_qty"`
+	ItemUnit            string    `json:"item_unit"`
 }
 
 type RegisterItemRet struct {

@@ -24,16 +24,21 @@ type SupplierModel struct {
 }
 
 type ItemModel struct {
-	ItemID              string    `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
-	SupplierID          string    `gorm:"type:varchar(100);index" json:"user_id"`
-	ItemName            string    `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
-	ItemDescription     string    `gorm:"NOT NULL" json:"item_description"`
-	ItemQty             uint32    `json:"item_qty"`
-	ImageURL            string    `json:"image_url"`
+	// Item fields.
+	ItemID          string  `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
+	SupplierID      string  `gorm:"type:varchar(100);index" json:"user_id"`
+	ItemName        string  `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
+	ItemDescription string  `gorm:"NOT NULL" json:"item_description"`
+	ItemUnit        string  `gorm:"NOT NULL" json:"item_unit"`   // The unit of qty. For ex g or Kg.
+	MinBidQty       uint32  `gorm:"NOT NULL" json:"min_bid_qty"` // Min bid qty. Like 100g or 1Kg.
+	MaxBidQty       uint32  `gorm:"NOT NULL" json:"max_bid_qty"` // Max bid qty. Like 500g or 100Kg.
+	ItemQty         uint32  `json:"item_qty"`                    // Total item quantity.
+	ImageURL        string  `json:"image_url"`
+	MinPrice        float32 `json:"min_price"`
+	MaxPrice        float32 `json:"max_price"`
+	// Auction fields for an item.
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
-	MinPrice            float32   `json:"min_price"`
-	MaxPrice            float32   `json:"max_price"`
 	AuctionStarted      bool      `json:"auction_started"` // A flag to indicate whether the auction for this item has started.
 	AuctionEnded        bool      `json:"auction_ended"`   // A flag to indicate whether auction has ended.
 	AuctionDecided      bool      `json:"auction_decided"` // A flag to indicate whether the auction has been decided.
@@ -56,6 +61,9 @@ type AuctionModel struct {
 	ItemName            string    `gorm:"type:varchar(255)" json:"item_name"` // Same as ItemModel ItemName.
 	ItemQty             uint32    `json:"item_qty"`                           // Same as the ItemModel ItemQty.
 	ImageURL            string    `json:"image_url"`                          // Same as the ItemModel ImageURL
+	ItemUnit            string    `gorm:"NOT NULL" json:"item_unit"`          // The unit of qty. For ex g or Kg.
+	MinBidQty           uint32    `gorm:"NOT NULL" json:"min_bid_qty"`        // Min bid qty. Like 100g or 1Kg.
+	MaxBidQty           uint32    `gorm:"NOT NULL" json:"max_bid_qty"`        // Max bid qty. Like 500g or 100Kg.
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
 	MinBid              float32   `json:"min_bid"` // Same as the ItemModel MinBid.
