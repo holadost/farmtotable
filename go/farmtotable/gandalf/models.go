@@ -46,6 +46,10 @@ type BidModel struct {
 	BidQty    uint32  `json:"bid_qty"`
 }
 
+/*
+Note: The auction model replicates some of the data in ItemModel so that we can avoid
+JOINS in the critical path.
+*/
 type AuctionModel struct {
 	ID                  uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
 	ItemID              string    `gorm:"type:varchar(32)" json:"item_id"`    // Same as ItemModel ItemID.
@@ -54,7 +58,7 @@ type AuctionModel struct {
 	ImageURL            string    `json:"image_url"`                          // Same as the ItemModel ImageURL
 	AuctionStartTime    time.Time `json:"auction_start_time"`
 	AuctionDurationSecs uint64    `json:"auction_duration_secs"`
-	MinBid              float32   `json:"min_bid"` // Same as the ItemModel ImageURL
+	MinBid              float32   `json:"min_bid"` // Same as the ItemModel MinBid.
 	MaxBid              float32   `json:"max_bid"`
 }
 
