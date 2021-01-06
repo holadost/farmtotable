@@ -73,18 +73,27 @@ class AuctionsOverviewScreen extends StatelessWidget {
                 )
               ],
             ),
-            trailing: Container(
-              width: 80.0,
-              padding: const EdgeInsets.all(8.0),
-              child: RaisedButton(
-                shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(10.0)),
-                onPressed: () {},
-                child: Text(
-                  "Bid",
-                  style: TextStyle(fontSize: 16),
+            trailing: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(height: 20,),
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(10),
+                    color: Colors.green,
+                  ),
+                  padding: const EdgeInsets.all(3.0),
+                  height: 30,
+                  width: 80,
+                  child: FittedBox(
+                    fit: BoxFit.contain,
+                    child: Text(
+                      "Rs ${auctions[ii].maxBid.toStringAsFixed(2)}",
+                      style: TextStyle(fontSize: 18),
+                    ),
+                  ),
                 ),
-              ),
+              ],
             ),
           ),
         );

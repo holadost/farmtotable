@@ -47,7 +47,7 @@ var DUMMY_AUCTIONS = <AuctionItem>[
       auctionDurationSecs: Duration(seconds: 3600),
       auctionStartTime: DateTime.now(),
       minBid: 14.00,
-      maxBid: 15.25,
+      maxBid: 115.25,
       imageURL: "https://upload.wikimedia.org/wikipedia/commons/thumb/c/c3/Carrots_at_Ljubljana_Central_Market.JPG/1024px-Carrots_at_Ljubljana_Central_Market.JPG"),
   AuctionItem(
       itemDescription:
