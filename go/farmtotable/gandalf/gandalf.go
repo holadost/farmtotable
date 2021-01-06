@@ -160,6 +160,9 @@ func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDes
 		MinPrice:            minPrice,
 		AuctionDurationSecs: uint64(auctionDurationSecs),
 		ImageURL:            imageUrl,
+		MinBidQty:           minBidQty,
+		MaxBidQty:           maxBidQty,
+		ItemUnit:            itemUnit,
 	}
 	for ii := 0; ii < 5; ii++ {
 		item.ItemID = xid.New().String()
