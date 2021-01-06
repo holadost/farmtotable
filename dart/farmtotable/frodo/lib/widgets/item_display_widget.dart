@@ -11,7 +11,6 @@ class ItemDisplayWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final themeData = Theme.of(context);
     double minWidth = 300;
     return SingleChildScrollView(
       child: Column(
@@ -35,15 +34,6 @@ class ItemDisplayWidget extends StatelessWidget {
             child: Container(
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                gradient: LinearGradient(
-                  colors: [
-                    themeData.primaryColor.withOpacity(0.7),
-                    themeData.primaryColor
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
                 borderRadius: BorderRadius.circular(15),
               ),
               width: minWidth,
@@ -61,7 +51,7 @@ class ItemDisplayWidget extends StatelessWidget {
               ),
             ),
           ),
-          SizedBox(height: 20,),
+          SizedBox(height: 10,),
           ClipRRect(
             child: Container(
               child: Text(
@@ -74,22 +64,13 @@ class ItemDisplayWidget extends StatelessWidget {
               ),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                gradient: LinearGradient(
-                  colors: [
-                    themeData.primaryColor.withOpacity(0.7),
-                    themeData.primaryColor
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
                 borderRadius: BorderRadius.circular(15),
               ),
               width: minWidth,
             ),
           ),
           SizedBox(
-            height: 20,
+            height: 10,
           ),
           ClipRRect(
             child: Container(
@@ -103,21 +84,12 @@ class ItemDisplayWidget extends StatelessWidget {
               ),
               padding: const EdgeInsets.all(8),
               decoration: BoxDecoration(
-                border: Border.all(color: Colors.grey),
-                gradient: LinearGradient(
-                  colors: [
-                    themeData.primaryColor.withOpacity(0.7),
-                    themeData.primaryColor
-                  ],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
                 borderRadius: BorderRadius.circular(15),
               ),
               width: minWidth,
             ),
           ),
-          SizedBox(height: 20,),
+          SizedBox(height: 10,),
           ElevatedButton(
             child: Text("Bid now"),
             onPressed: bidNow,

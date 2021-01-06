@@ -13,6 +13,7 @@ class SideDrawerWidget extends StatelessWidget {
       child: Column(
         children: [
           AppBar(
+            backgroundColor: Colors.deepPurple,
             title: Text(AppName),
             automaticallyImplyLeading: false,
           ),

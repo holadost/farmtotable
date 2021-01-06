@@ -5,6 +5,7 @@ import '../widgets/side_drawer_widget.dart';
 import '../data/dummy_auctions.dart';
 import '../screens/item_auction_screen.dart';
 import '../util/styles.dart';
+import '../util/constants.dart';
 
 class AuctionsOverviewScreen extends StatelessWidget {
   static const routeName = '/auctions-overview-screen';
@@ -13,6 +14,7 @@ class AuctionsOverviewScreen extends StatelessWidget {
   Widget build(BuildContext context) {
     var auctions = [...DUMMY_AUCTIONS];
     final appBar = AppBar(
+      backgroundColor: PrimaryColor,
       title: Text(
         'Auctions',
         style: getAppBarTextStyle(),

@@ -7,3 +7,10 @@ TextStyle getAppBarTextStyle() {
       color: Colors.white
   );
 }
+
+ThemeData getAppTheme() {
+  return ThemeData(
+    brightness: Brightness.dark,
+    primarySwatch: Colors.deepOrange,
+    primaryColor: Colors.deepOrange);
+}

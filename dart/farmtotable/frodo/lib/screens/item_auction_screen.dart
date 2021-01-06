@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/util/constants.dart';
 import 'package:intl/intl.dart';
 
 import '../models/auction_item.dart';
@@ -16,6 +17,7 @@ class ItemAuctionScreen extends StatelessWidget {
     final auctionItem =
         ModalRoute.of(context).settings.arguments as AuctionItem;
     final appBar = AppBar(
+      backgroundColor: PrimaryColor,
       title: Text(auctionItem.itemName),
       actions: [
         IconButton(onPressed: _bidNow, icon: Icon(Icons.shopping_cart),)

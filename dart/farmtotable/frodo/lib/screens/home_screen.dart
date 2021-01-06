@@ -10,6 +10,7 @@ class HomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(
+      backgroundColor: PrimaryColor,
       title: Text(
         AppName,
         style: getAppBarTextStyle(),

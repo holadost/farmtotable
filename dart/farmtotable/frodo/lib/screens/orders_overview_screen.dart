@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/util/constants.dart';
 
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
@@ -9,6 +10,7 @@ class OrdersOverviewScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final appBar = AppBar(
+      backgroundColor: PrimaryColor,
       title: Text(
         'Orders',
         style: getAppBarTextStyle(),

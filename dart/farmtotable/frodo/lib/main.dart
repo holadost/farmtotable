@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
+import 'package:frodo/util/constants.dart';
 
 import './screens/home_screen.dart';
 import './screens/auctions_overview_screen.dart';
@@ -17,6 +17,8 @@ class MyApp extends StatelessWidget {
       title: 'AlgoRhythm',
       theme: ThemeData(
         brightness: Brightness.dark,
+        primarySwatch: PrimaryColor,
+        accentColor: AccentColor,
         fontFamily: 'Lato',
       ),
       home: HomeScreen(),
