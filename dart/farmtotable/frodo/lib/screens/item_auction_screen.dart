@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/util/constants.dart';
 import 'package:intl/intl.dart';
 
+import '../util/constants.dart';
 import '../models/auction_item.dart';
 import '../widgets/item_display_widget.dart';
 
