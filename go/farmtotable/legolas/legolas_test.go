@@ -60,13 +60,16 @@ func prepareDB(t *testing.T, gnd *gandalf.Gandalf, userID string, numItems int, 
 			// These items are ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
 				"lkjadlkjadl", uint32((ii+1)*100), now, float32((ii+1)*2),
-				auctionDurationSecs, "http://imageURL")
+				auctionDurationSecs, "http://imageURL",
+				100, 1300, "g")
 		} else {
 			// These items are not yet ready to be auctioned.
 			err = gnd.RegisterItem(supplier.SupplierID, itemName,
 				"lkjadlkjadl", uint32((ii+1)*100),
 				now.Add(time.Duration(time.Second*900)),
-				float32((ii+1)*10), auctionDurationSecs, "http://imageURL")
+				float32((ii+1)*10), auctionDurationSecs, "http://imageURL",
+				100, 1300, "g")
+
 		}
 		if err != nil {
 			t.Fatalf("Unable to register item: %s", itemName)
@@ -166,7 +169,8 @@ func TestNewAuctionsJob(t *testing.T) {
 		if finished {
 
 			if len(auctions) != expectedAucs {
-				t.Fatalf("Did not scan all auctions. Expected: %d, got: %d", expectedAucs, len(auctions))
+				t.Fatalf("Did not scan all auctions. Expected: %d, got: %d",
+					expectedAucs, len(auctions))
 			}
 			break
 		}

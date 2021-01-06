@@ -28,7 +28,7 @@ type ItemModel struct {
 	ItemID          string  `gorm:"type:varchar(32);PRIMARY_KEY" json:"item_id"`
 	SupplierID      string  `gorm:"type:varchar(100);index" json:"user_id"`
 	ItemName        string  `gorm:"type:varchar(255);NOT NULL" json:"item_name"`
-	ItemDescription string  `gorm:"NOT NULL" json:"item_description"`
+	ItemDescription string  `gorm:"type:TEXT;NOT NULL" json:"item_description"`
 	ItemUnit        string  `gorm:"NOT NULL" json:"item_unit"`   // The unit of qty. For ex g or Kg.
 	MinBidQty       uint32  `gorm:"NOT NULL" json:"min_bid_qty"` // Min bid qty. Like 100g or 1Kg.
 	MaxBidQty       uint32  `gorm:"NOT NULL" json:"max_bid_qty"` // Max bid qty. Like 500g or 100Kg.
