@@ -314,7 +314,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 			if err != nil {
 				ge := err.(*GandalfError)
 				if ge.errorCode != KGandalfBackendError {
-					return err
+					return ge
 				}
 				continue
 			}
