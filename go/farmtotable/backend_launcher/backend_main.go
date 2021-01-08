@@ -27,7 +27,11 @@ func main() {
 	if *cleanupDB {
 		cleanupdb()
 	}
-	prepareDB(g)
+	// Recreate DB if it does not exist.
+	_, err := os.Stat(gandalf.SQLiteDBPath)
+	if os.IsNotExist(err) {
+		prepareDB(g)
+	}
 	go aragorn.NewAragornWithGandalf(g).Run()
 	go legolas.NewLegolasWithGandalf(g).Run()
 	// Block forever
