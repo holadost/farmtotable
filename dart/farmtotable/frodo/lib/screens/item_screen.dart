@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frodo/net/rest_api_client.dart';
+import 'package:frodo/widgets/register_bid_widget.dart';
 
 import '../models/item.dart';
 import '../util/constants.dart';
@@ -23,19 +24,25 @@ class _ItemScreenState extends State<ItemScreen> {
   @override
   void didChangeDependencies() {
     if (!_gatheredArgs) {
-      final args =
-      ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
+      final args = ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
       _showBiddingButton = args['show_bid_button'];
       _itemID = args['item_id'];
       _gatheredArgs = true;
     }
-    print("Show Bidding: ${_showBiddingButton}, Item ID: ${_itemID}");
+    print("Show Bidding: $_showBiddingButton, Item ID: $_itemID");
     _loadData();
     super.didChangeDependencies();
   }
 
   void _bidNow() {
     print("Bidding now");
+    showModalBottomSheet(context: context, builder: (_) {
+      return GestureDetector(
+        child: RegisterBidWidget(),
+        onTap: () {},
+        behavior: HitTestBehavior.opaque,
+      );
+    });
   }
 
   void _loadData() async {
@@ -59,7 +66,7 @@ class _ItemScreenState extends State<ItemScreen> {
     }
   }
 
-  AppBar _buildAppBar() {
+  AppBar _buildAppBar(BuildContext context) {
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
       title: _isLoading ? const Text("") : Text(_item.itemName),
@@ -81,7 +88,7 @@ class _ItemScreenState extends State<ItemScreen> {
       bidNow = _bidNow;
     }
     return Scaffold(
-      appBar: _buildAppBar(),
+      appBar: _buildAppBar(context),
       body: _isLoading
           ? Center(
               child: CircularProgressIndicator(),
