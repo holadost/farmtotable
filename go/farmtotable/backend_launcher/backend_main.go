@@ -99,7 +99,9 @@ func addDummyItems(gnd *gandalf.Gandalf) {
 	// 12 products can go on auction everyday starting from now.
 	// The auction duration is set to 10 days for all products.
 	for ii := 0; ii < 10; ii++ {
-		startDate := time.Now().Add(time.Duration(86400 * ii))
+		numDays := time.Second * 86400 * time.Duration(ii)
+		startDate := time.Now().Add(numDays)
+		glog.Infof("Start Date: %v", startDate)
 		err := gnd.RegisterItem(
 			"supplier1",
 			"Rice-A "+strconv.Itoa(ii),

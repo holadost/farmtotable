@@ -106,6 +106,12 @@ func (worker *_Worker) run() error {
 					chosenItems = append(chosenItems, auction)
 				}
 			}
+
+			if len(chosenItems) == 0 {
+				// Did not find any auctionable item in this batch. Move on.
+				continue
+			}
+
 			err := worker.gandalf.AddAuctions(chosenItems)
 			if err != nil {
 				glog.Errorf("Unable to add the following items to the auctions table due to err: %v\n%v",
