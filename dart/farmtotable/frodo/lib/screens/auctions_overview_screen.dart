@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
-import 'package:intl/intl.dart';
 
-import '../widgets/side_drawer_widget.dart';
-import '../data/dummy_auctions.dart';
-import '../screens/item_auction_screen.dart';
+import '../models/auction_item.dart';
+import '../net/rest_apis.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
+import '../widgets/side_drawer_widget.dart';
+import '../widgets/auctions_list_widget.dart';
 
 class AuctionsOverviewScreen extends StatefulWidget {
   static const routeName = '/auctions-overview-screen';
@@ -15,9 +15,35 @@ class AuctionsOverviewScreen extends StatefulWidget {
 }
 
 class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
+  final apiClient = RestApiClient();
+  bool _isLoading = false;
+  int _lastID = -1;
+  int _numItemsPerPage = 8;
+  List<AuctionItem> _auctions = [];
+
+  @override
+  void didChangeDependencies() {
+    _loadData();
+    super.didChangeDependencies();
+  }
+
+  void _loadData() async {
+    // Loads all the required auctions.
+    print("Fetching data from backend");
+    try {
+      _isLoading = true;
+      final auctions =
+          await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
+      setState(() {
+        _auctions = [...auctions];
+        _isLoading = false;
+      });
+      print("Successfully fetched data from backend");
+    } catch (error) {}
+  }
+
   @override
   Widget build(BuildContext context) {
-    var auctions = [...DUMMY_AUCTIONS];
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
       title: Text(
@@ -25,86 +51,9 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
         style: getAppBarTextStyle(),
       ),
     );
-    final body = ListView.builder(
-      itemBuilder: (ctx, ii) {
-        return Container(
-          height: 100,
-          child: ListTile(
-            onTap: () {
-              Navigator.of(ctx).pushNamed(ItemAuctionScreen.routeName,
-                  arguments: auctions[ii]);
-            },
-            leading: CircleAvatar(
-                backgroundColor: PrimaryColor,
-                radius: 30,
-                child: Container(
-                    height: 250,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(auctions[ii].imageURL))))),
-            title: Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 2.0, vertical: 10.0),
-              child: Text(
-                auctions[ii].itemName,
-                style: Theme.of(context).textTheme.headline6,
-                textAlign: TextAlign.left,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Deadline: ${DateFormat.yMMMMd().add_jm().format(auctions[ii].auctionStartTime)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-                SizedBox(
-                  height: 3,
-                ),
-                Text(
-                  'Min price: $Rupee${auctions[ii].minBid.toStringAsPrecision(4)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.left,
-                )
-              ],
-            ),
-            trailing: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                SizedBox(height: 20,),
-                Container(
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(10),
-                    color: Colors.green,
-                  ),
-                  padding: const EdgeInsets.all(3.0),
-                  height: 30,
-                  width: 80,
-                  child: FittedBox(
-                    fit: BoxFit.contain,
-                    child: Text(
-                      "$Rupee${auctions[ii].maxBid.toStringAsFixed(2)}",
-                      style: TextStyle(fontSize: 18),
-                    ),
-                  ),
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-      itemCount: auctions.length,
-    );
+    final body = _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : AuctionsListWidget(_auctions);
     return Scaffold(
       appBar: appBar,
       body: body,
