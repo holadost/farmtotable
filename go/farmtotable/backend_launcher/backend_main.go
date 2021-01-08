@@ -23,10 +23,10 @@ Aragorn and Legolas running as the same service allowing us to use Sqlite for
 Gandalf's backend. THIS MUST NOT BE USED IN PRODUCTION. */
 func main() {
 	flag.Parse()
-	g := gandalf.NewSqliteGandalf()
 	if *cleanupDB {
 		cleanupdb()
 	}
+	g := gandalf.NewSqliteGandalf()
 	// Recreate DB if it does not exist.
 	_, err := os.Stat(gandalf.SQLiteDBPath)
 	if os.IsNotExist(err) {
