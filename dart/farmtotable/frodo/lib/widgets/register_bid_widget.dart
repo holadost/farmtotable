@@ -39,7 +39,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
   @override
   Widget build(BuildContext context) {
     return _isBeingSubmitted
-        ? CircularProgressIndicator()
+        ? Container(height: 300, child: Center(child: CircularProgressIndicator()))
         : SingleChildScrollView(
             child: Card(
                 elevation: 5,
