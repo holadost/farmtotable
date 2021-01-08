@@ -7,8 +7,15 @@ import (
 	"flag"
 	"fmt"
 	"github.com/golang/glog"
+	"log"
+	"os"
 	"strconv"
 	"time"
+)
+
+var (
+	cleanupDB = flag.Bool("cleanup_db", false,
+		"Starts with a fresh copy of the db")
 )
 
 /* Backend backend_launcher. This can be used for dev/test purposes when we want both
@@ -17,11 +24,26 @@ Gandalf's backend. THIS MUST NOT BE USED IN PRODUCTION. */
 func main() {
 	flag.Parse()
 	g := gandalf.NewSqliteGandalf()
+	if *cleanupDB {
+		cleanupdb()
+	}
 	prepareDB(g)
 	go aragorn.NewAragornWithGandalf(g).Run()
 	go legolas.NewLegolasWithGandalf(g).Run()
 	// Block forever
 	select {}
+}
+
+/* Deletes the underlying sqlite database. */
+func cleanupdb() {
+	_, err := os.Stat(gandalf.SQLiteDBPath)
+	if os.IsNotExist(err) {
+		return
+	}
+	err = os.Remove(gandalf.SQLiteDBPath)
+	if err != nil {
+		log.Fatalf("Unable to delete sqlite db")
+	}
 }
 
 func prepareDB(gnd *gandalf.Gandalf) {
