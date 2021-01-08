@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 
-import '../screens/item_auction_screen.dart';
+import '../screens/item_screen.dart';
 import '../models/auction_item.dart';
 import '../util/constants.dart';
 
@@ -18,7 +18,7 @@ class AuctionsListWidget extends StatelessWidget {
           height: 100,
           child: ListTile(
             onTap: () {
-              Navigator.of(ctx).pushNamed(ItemAuctionScreen.routeName,
+              Navigator.of(ctx).pushNamed(ItemScreen.routeName,
                   arguments: _auctions[ii]);
             },
             leading: CircleAvatar(
