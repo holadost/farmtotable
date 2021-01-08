@@ -1,7 +1,6 @@
 package gandalf
 
 import (
-	"errors"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
@@ -64,8 +63,8 @@ func (gandalf *Gandalf) Initialize() error {
 	order := OrderModel{}
 	dbc := gandalf.Db.AutoMigrate(&user, &supplier, &item, &auction, &bid, &order)
 	if dbc != nil && dbc.Error != nil {
-		panic("Unable to create database")
-		return dbc.Error
+		glog.Fatalf("Unable to create and initialize database due to err: %v", dbc.Error)
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return nil
 }
@@ -84,7 +83,7 @@ func (gandalf *Gandalf) RegisterUser(userID string, name string, emailID string,
 	}
 	dbc := gandalf.Db.Create(user)
 	if dbc.Error != nil {
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return nil
 }
@@ -128,7 +127,10 @@ func (gandalf *Gandalf) RegisterSupplier(supplierName string, emailID string, ph
 			break
 		}
 	}
-	return err
+	if err != nil {
+		return NewGandalfError(KGandalfBackendError, err.Error())
+	}
+	return nil
 }
 
 func (gandalf *Gandalf) GetSupplierByID(supplierID string) (supplier SupplierModel) {
@@ -140,7 +142,7 @@ func (gandalf *Gandalf) GetAllSuppliers() ([]SupplierModel, error) {
 	var suppliers []SupplierModel
 	dbc := gandalf.Db.Find(&suppliers)
 	if dbc.Error != nil {
-		return suppliers, dbc.Error
+		return suppliers, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return suppliers, nil
 }
@@ -185,14 +187,17 @@ func (gandalf *Gandalf) RegisterItem(
 			break
 		}
 	}
-	return err
+	if err != nil {
+		return NewGandalfError(KGandalfBackendError, err.Error())
+	}
+	return nil
 }
 
 func (gandalf *Gandalf) GetSupplierItems(supplierID string) ([]ItemModel, error) {
 	var items []ItemModel
 	dbc := gandalf.Db.Where("supplier_id = ?", supplierID).Find(&items)
 	if dbc.Error != nil {
-		return items, dbc.Error
+		return items, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return items, nil
 }
@@ -201,7 +206,7 @@ func (gandalf *Gandalf) GetItem(itemID string) (ItemModel, error) {
 	var item ItemModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).First(&item)
 	if dbc.Error != nil {
-		return item, dbc.Error
+		return item, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return item, nil
 }
@@ -220,7 +225,7 @@ func (gandalf *Gandalf) GetItems(itemIDs []string) ([]ItemModel, error) {
 	dbc := gandalf.Db.Raw(query, args...).Scan(&items)
 	if dbc.Error != nil {
 		glog.Errorf("Unable to query items due to error: %v", dbc.Error)
-		return items, dbc.Error
+		return items, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return items, nil
 }
@@ -229,7 +234,7 @@ func (gandalf *Gandalf) ScanItems(startIndex uint64, numItems uint64) ([]ItemMod
 	var items []ItemModel
 	dbc := gandalf.Db.Offset(startIndex).Limit(numItems).Find(&items)
 	if dbc.Error != nil {
-		return items, dbc.Error
+		return items, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return items, nil
 }
@@ -245,7 +250,7 @@ func (gandalf *Gandalf) EditItem(itemID string, itemName string, itemDesc string
 	}
 	dbc := gandalf.Db.Model(&item).Updates(&item)
 	if dbc.Error != nil {
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return nil
 }
@@ -258,7 +263,7 @@ func (gandalf *Gandalf) UpdateItemAuctionStatus(itemID string, auctionStartedSta
 	dbc := tx.Where("item_id = ?", itemID).First(&item)
 	if dbc.Error != nil {
 		tx.Rollback()
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	item.AuctionStarted = auctionStartedStatus
 	item.AuctionEnded = auctionEndedStatus
@@ -266,7 +271,7 @@ func (gandalf *Gandalf) UpdateItemAuctionStatus(itemID string, auctionStartedSta
 	dbc = tx.Save(&item)
 	if dbc.Error != nil {
 		tx.Rollback()
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	tx.Commit()
 	return nil
@@ -278,7 +283,7 @@ func (gandalf *Gandalf) DeleteItem(itemID string) error {
 	}
 	dbc := gandalf.Db.Model(&item).Delete(&item)
 	if dbc.Error != nil {
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return nil
 }
@@ -290,7 +295,7 @@ func (gandalf *Gandalf) AddAuctions(auctions []AuctionModel) error {
 	}
 	err := bulk.BulkInsertWithTableName(gandalf.Db, "auction_models", insertRecords)
 	if err != nil {
-		return err
+		return NewGandalfError(KGandalfBackendError, err.Error())
 	}
 	return nil
 }
@@ -303,7 +308,7 @@ func (gandalf *Gandalf) RegisterBid(itemID string, userID string, bidAmount floa
 		case <-timer1.C:
 			glog.Errorf("Unable to register bid within timeout: %v secs for "+
 				"itemID: %s", timeout, itemID)
-			return errors.New("timed out attempting to register bid")
+			return NewGandalfError(KTimeout, "timed out attempting to register bid")
 		default:
 			err := gandalf.registerBid(itemID, userID, bidAmount, bidQty)
 			if err != nil {
@@ -402,7 +407,7 @@ func (gandalf *Gandalf) GetUserBids(userID string) ([]BidModel, error) {
 	var bids []BidModel
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&bids)
 	if dbc.Error != nil {
-		return bids, dbc.Error
+		return bids, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return bids, nil
 }
@@ -412,7 +417,7 @@ func (gandalf *Gandalf) ScanItemBids(itemID string, startIndex uint64, numBids u
 	var bids []BidModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).Offset(startIndex).Limit(numBids).Find(&bids)
 	if dbc.Error != nil {
-		return bids, dbc.Error
+		return bids, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return bids, nil
 }
@@ -423,7 +428,7 @@ func (gandalf *Gandalf) GetAllItemBids(itemID string) ([]BidModel, error) {
 	var bids []BidModel
 	dbc := gandalf.Db.Where("item_id = ?", itemID).Find(&bids)
 	if dbc.Error != nil {
-		return bids, dbc.Error
+		return bids, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return bids, nil
 }
@@ -433,7 +438,7 @@ func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]AuctionModel, error) {
 	var auctions []AuctionModel
 	dbc := gandalf.Db.Where("item_id IN (?)", itemIDs).Find(&auctions)
 	if dbc.Error != nil {
-		return auctions, dbc.Error
+		return auctions, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return auctions, nil
 }
@@ -443,7 +448,7 @@ func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([
 	var auctions []AuctionModel
 	dbc := gandalf.Db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
 	if dbc.Error != nil {
-		return auctions, dbc.Error
+		return auctions, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return auctions, nil
 }
@@ -471,7 +476,7 @@ func (gandalf *Gandalf) AddOrders(orders []OrderModel) error {
 		}
 		if err != nil {
 			glog.Errorf("Unable to add order: %v to backend due to err: %v", order, err)
-			return err
+			return NewGandalfError(KGandalfBackendError, err.Error())
 		}
 	}
 	return nil
@@ -482,7 +487,7 @@ func (gandalf *Gandalf) GetUserOrders(userID string) ([]OrderModel, error) {
 	var orders []OrderModel
 	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&orders)
 	if dbc.Error != nil {
-		return orders, dbc.Error
+		return orders, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return orders, nil
 }
@@ -496,7 +501,7 @@ func (gandalf *Gandalf) ScanPaymentPendingOrders(startIndex uint64, numOrders ui
 	dbc := gandalf.Db.Where(
 		"status = ?", KOrderPaymentPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
-		return orders, dbc.Error
+		return orders, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return orders, nil
 }
@@ -507,7 +512,7 @@ func (gandalf *Gandalf) ScanDeliveryPendingOrders(startIndex uint64, numOrders u
 	dbc := gandalf.Db.Where(
 		"status = ?", KOrderDeliveryPending).Offset(startIndex).Limit(numOrders).Find(&orders)
 	if dbc.Error != nil {
-		return orders, dbc.Error
+		return orders, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return orders, nil
 }
@@ -517,7 +522,7 @@ func (gandalf *Gandalf) GetOrder(orderID string) (OrderModel, error) {
 	var order OrderModel
 	dbc := gandalf.Db.Where("order_id = ?", orderID).First(&order)
 	if dbc.Error != nil {
-		return order, dbc.Error
+		return order, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return order, nil
 }
@@ -530,14 +535,14 @@ func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
 	if dbc.Error != nil {
 		if !strings.Contains(dbc.Error.Error(), "record not found") {
 			tx.Rollback()
-			return dbc.Error
+			return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 		}
 	}
 	order.Status = status
 	dbc = tx.Save(&order)
 	if dbc.Error != nil {
 		tx.Rollback()
-		return dbc.Error
+		return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	tx.Commit()
 	return nil
