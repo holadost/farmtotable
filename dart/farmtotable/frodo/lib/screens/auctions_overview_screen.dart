@@ -7,9 +7,14 @@ import '../screens/item_auction_screen.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
 
-class AuctionsOverviewScreen extends StatelessWidget {
+class AuctionsOverviewScreen extends StatefulWidget {
   static const routeName = '/auctions-overview-screen';
 
+  @override
+  _AuctionsOverviewScreenState createState() => _AuctionsOverviewScreenState();
+}
+
+class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
   @override
   Widget build(BuildContext context) {
     var auctions = [...DUMMY_AUCTIONS];
