@@ -36,7 +36,6 @@ class RestApiClient {
       final response = await http.post(route, body: json.encode({
         "start_id": startID, "num_auctions": numAuctions
       }));
-      print("Received response");
       List<AuctionItem> auctions = [];
       if (parseAuctionsResponse(response.body, auctions)) {
         return auctions;

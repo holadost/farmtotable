@@ -31,32 +31,56 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
     // Loads all the required auctions.
     print("Fetching data from backend");
     try {
-      _isLoading = true;
+      setState(() {
+        print("Currently loading");
+        _isLoading = true;
+      });
+
       final auctions =
           await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
       setState(() {
         _auctions = [...auctions];
+        print("Finished loading");
         _isLoading = false;
       });
       print("Successfully fetched data from backend");
-    } catch (error) {}
+    } catch (error) {
+
+    }
   }
 
-  @override
-  Widget build(BuildContext context) {
+  AppBar _buildAppBar() {
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
       title: Text(
         'Auctions',
         style: getAppBarTextStyle(),
       ),
+      actions: [
+        IconButton(
+            icon: Icon(Icons.refresh),
+            onPressed: () {
+              // Refresh page.
+              _loadData();
+            }),
+      ],
     );
+    return appBar;
+  }
+
+
+  Widget _buildBody() {
     final body = _isLoading
         ? Center(child: CircularProgressIndicator())
         : AuctionsListWidget(_auctions);
+    return body;
+  }
+
+  @override
+  Widget build(BuildContext context) {
     return Scaffold(
-      appBar: appBar,
-      body: body,
+      appBar: _buildAppBar(),
+      body: _buildBody(),
       drawer: SideDrawerWidget(),
     );
   }
