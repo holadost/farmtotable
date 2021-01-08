@@ -449,10 +449,18 @@ func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
 	}
 	err := aragorn.gandalf.RegisterBid(arg.ItemID, arg.UserID, arg.BidAmount, arg.BidQty)
 	if err != nil {
-		ret.Status = http.StatusInternalServerError
-		ret.ErrorMsg = "Unable to register bid"
-		c.JSON(http.StatusInternalServerError, ret)
-		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		ge := err.(*gandalf.GandalfError)
+		if ge.ErrorCode() == gandalf.KGandalfBackendError || ge.ErrorCode() == gandalf.KTimeout {
+			ret.Status = http.StatusInternalServerError
+			ret.ErrorMsg = "Unable to register bid"
+			c.JSON(http.StatusInternalServerError, ret)
+			aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		} else {
+			ret.Status = http.StatusBadRequest
+			ret.ErrorMsg = ge.ErrorCodeStr()
+			c.JSON(http.StatusInternalServerError, ret)
+			aragorn.apiLogger.Error(ge.Error())
+		}
 		return
 	}
 	ret.Status = http.StatusOK
