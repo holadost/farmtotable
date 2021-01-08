@@ -29,10 +29,8 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
 
   void _loadData() async {
     // Loads all the required auctions.
-    print("Fetching data from backend");
     try {
       setState(() {
-        print("Currently loading");
         _isLoading = true;
       });
 
@@ -40,12 +38,10 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
           await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
       setState(() {
         _auctions = [...auctions];
-        print("Finished loading");
         _isLoading = false;
       });
-      print("Successfully fetched data from backend");
     } catch (error) {
-
+      print("Failed to load data");
     }
   }
 
