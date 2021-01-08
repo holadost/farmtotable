@@ -13,17 +13,23 @@ class ItemScreen extends StatefulWidget {
 }
 
 class _ItemScreenState extends State<ItemScreen> {
-  bool _showBiddingButton;
+  bool _showBiddingButton = false;
   String _itemID;
-  bool _isLoading;
+  bool _isLoading = false;
   var _apiClient = RestApiClient();
   Item _item;
+  bool _gatheredArgs = false;
 
   @override
   void didChangeDependencies() {
-    final args = ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
-    _showBiddingButton = args['show_bid_button'];
-    _itemID = args['item_id'];
+    if (!_gatheredArgs) {
+      final args =
+      ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
+      _showBiddingButton = args['show_bid_button'];
+      _itemID = args['item_id'];
+      _gatheredArgs = true;
+    }
+    print("Show Bidding: ${_showBiddingButton}, Item ID: ${_itemID}");
     _loadData();
     super.didChangeDependencies();
   }
@@ -56,7 +62,7 @@ class _ItemScreenState extends State<ItemScreen> {
   AppBar _buildAppBar() {
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
-      title: Text(_item.itemName),
+      title: _isLoading ? const Text("") : Text(_item.itemName),
       actions: [
         if (_showBiddingButton)
           IconButton(
@@ -76,10 +82,14 @@ class _ItemScreenState extends State<ItemScreen> {
     }
     return Scaffold(
       appBar: _buildAppBar(),
-      body: ItemDisplayWidget(
-        item: _item,
-        bidNow: bidNow,
-      ),
+      body: _isLoading
+          ? Center(
+              child: CircularProgressIndicator(),
+            )
+          : ItemDisplayWidget(
+              item: _item,
+              bidNow: bidNow,
+            ),
     );
   }
 }

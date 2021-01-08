@@ -49,26 +49,26 @@ class RestApiClient {
   }
 
   Item _parseItemResponse(String jsonStr) {
+    print(jsonStr);
     Map<String, dynamic> myMap = json.decode(jsonStr);
     if (myMap["status"] < 200 || myMap["status"] >= 300) {
       print("Received error from backend: ${myMap['error_msg']}");
       throw Future.error("Failure while fetching item data from backend");
     }
     final itemDeets = myMap["data"];
-    var item = Item(
+    return Item(
       itemID: itemDeets['item_id'],
       itemName: itemDeets['item_name'],
       itemDescription: itemDeets['item_description'],
       itemQty: itemDeets['item_qty'],
       itemUnit: itemDeets['item_unit'],
-      minBidPrice: itemDeets['min_price'],
+      minBidPrice: double.parse(itemDeets['min_price'].toString()),
       minBidQty: itemDeets['min_bid_qty'],
       maxBidQty: itemDeets['max_bid_qty'],
       imageURL: itemDeets['image_url'],
       auctionDurationSecs: Duration(seconds: itemDeets['auction_duration_secs']),
       auctionStartTime: DateTime.parse(itemDeets['auction_start_time']),
     );
-    return item;
   }
 
   Future<Item> getItem(String itemID) async {
