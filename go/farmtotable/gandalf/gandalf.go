@@ -145,9 +145,19 @@ func (gandalf *Gandalf) GetAllSuppliers() ([]SupplierModel, error) {
 	return suppliers, nil
 }
 
-func (gandalf *Gandalf) RegisterItem(supplierID string, itemName string, itemDesc string, itemQty uint32,
-	auctionStartTime time.Time, minPrice float32, auctionDurationSecs uint32, imageUrl string,
-	minBidQty uint32, maxBidQty uint32, itemUnit string) error {
+func (gandalf *Gandalf) RegisterItem(
+	supplierID string,
+	itemName string,
+	itemDesc string,
+	itemQty uint32,
+	auctionStartTime time.Time,
+	minPrice float32,
+	auctionDurationSecs uint32,
+	imageUrl string,
+	minBidQty uint32,
+	maxBidQty uint32,
+	itemUnit string) error {
+
 	var dbc *gorm.DB
 	var err error
 	err = nil
@@ -314,7 +324,7 @@ func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount floa
 	if dbc.Error != nil {
 		if !strings.Contains(dbc.Error.Error(), "record not found") {
 			tx.Rollback()
-			return dbc.Error
+			return NewGandalfError(KInvalidItem, dbc.Error.Error())
 		}
 	}
 	var auction AuctionModel
@@ -322,16 +332,21 @@ func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount floa
 	if dbc.Error != nil {
 		glog.Errorf("Cannot register bid for an expired/nonexistent auction: %s, user: %s", itemID, userID)
 		tx.Rollback()
-		return errors.New(fmt.Sprintf("cannot register bid for an expired auction: %s", itemID))
+		return NewGandalfError(
+			KAuctionExpired,
+			fmt.Sprintf("cannot register bid for an expired auction: %s", itemID))
 	}
 	if bidAmount < auction.MinBid {
 		tx.Rollback()
-		return errors.New(fmt.Sprintf("cannot register bid(%f) which is smaller than min bid price(%f)",
-			bidAmount, auction.MinBid))
+		return NewGandalfError(
+			KInvalidBidAmount,
+			fmt.Sprintf("cannot register bid(%f) which is smaller than min bid price(%f)",
+				bidAmount, auction.MinBid))
 	}
 	if bidQty > auction.ItemQty {
 		tx.Rollback()
-		return errors.New(
+		return NewGandalfError(
+			KInvalidBidQuantity,
 			fmt.Sprintf("cannot register bid with requested quantity: %d as it is > total item qty: %d",
 				bidQty, auction.ItemQty))
 	}
@@ -344,21 +359,23 @@ func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount floa
 		})
 		if dbc.Error != nil {
 			tx.Rollback()
-			return dbc.Error
+			return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 		}
 	} else {
 		// Only update the current bid if the new bid is higher.
 		if currBid.BidAmount >= bidAmount {
 			tx.Rollback()
-			return errors.New(fmt.Sprintf("user current bid(%f) is lower than user previous bid(%f)",
-				bidAmount, currBid.BidAmount))
+			return NewGandalfError(
+				KInvalidBidAmount,
+				fmt.Sprintf("user current bid(%f) is lower than user previous bid(%f)",
+					bidAmount, currBid.BidAmount))
 		}
 		currBid.BidAmount = bidAmount
 		currBid.BidQty = bidQty
 		dbc := tx.Model(&currBid).Where("item_id = ? AND user_id = ?", itemID, userID).Updates(&currBid)
 		if dbc.Error != nil {
 			tx.Rollback()
-			return dbc.Error
+			return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 		}
 	}
 
@@ -368,7 +385,7 @@ func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount floa
 		dbc := tx.Model(&auction).Where("item_id = ?", itemID).Updates(&auction)
 		if dbc.Error != nil {
 			tx.Rollback()
-			return dbc.Error
+			return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 		}
 	}
 	glog.V(2).Infof("Successfully registered bid for auction: %s by user: %s", itemID, userID)
