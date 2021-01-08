@@ -6,7 +6,6 @@ import '../models/auction_item.dart';
 import '../util/constants.dart';
 
 class AuctionsListWidget extends StatelessWidget {
-
   final List<AuctionItem> _auctions;
   AuctionsListWidget(this._auctions);
 
@@ -18,8 +17,10 @@ class AuctionsListWidget extends StatelessWidget {
           height: 100,
           child: ListTile(
             onTap: () {
-              Navigator.of(ctx).pushNamed(ItemScreen.routeName,
-                  arguments: _auctions[ii]);
+              Navigator.of(ctx).pushNamed(ItemScreen.routeName, arguments: {
+                "item_id": _auctions[ii].itemID,
+                "show_bid_button": true
+              });
             },
             leading: CircleAvatar(
                 backgroundColor: PrimaryColor,
@@ -34,7 +35,7 @@ class AuctionsListWidget extends StatelessWidget {
                             image: NetworkImage(_auctions[ii].imageURL))))),
             title: Padding(
               padding:
-              const EdgeInsets.symmetric(horizontal: 2.0, vertical: 10.0),
+                  const EdgeInsets.symmetric(horizontal: 2.0, vertical: 10.0),
               child: Text(
                 _auctions[ii].itemName,
                 style: Theme.of(context).textTheme.headline6,
@@ -68,7 +69,9 @@ class AuctionsListWidget extends StatelessWidget {
             trailing: Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                SizedBox(height: 20,),
+                SizedBox(
+                  height: 20,
+                ),
                 Container(
                   decoration: BoxDecoration(
                     borderRadius: BorderRadius.circular(10),
