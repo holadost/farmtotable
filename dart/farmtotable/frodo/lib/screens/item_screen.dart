@@ -38,7 +38,7 @@ class _ItemScreenState extends State<ItemScreen> {
     print("Bidding now");
     showModalBottomSheet(context: context, builder: (_) {
       return GestureDetector(
-        child: RegisterBidWidget(),
+        child: RegisterBidWidget(_item),
         onTap: () {},
         behavior: HitTestBehavior.opaque,
       );

@@ -49,7 +49,6 @@ class RestApiClient {
   }
 
   Item _parseItemResponse(String jsonStr) {
-    print(jsonStr);
     Map<String, dynamic> myMap = json.decode(jsonStr);
     if (myMap["status"] < 200 || myMap["status"] >= 300) {
       print("Received error from backend: ${myMap['error_msg']}");
@@ -79,6 +78,28 @@ class RestApiClient {
       }));
       final item = _parseItemResponse(response.body);
       return item;
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  void _parseRegisterBidResponse(String jsonStr) {
+    print(jsonStr);
+    Map<String, dynamic> myMap = json.decode(jsonStr);
+    if (myMap["status"] < 200 || myMap["status"] >= 300) {
+      print("Received error from backend: ${myMap['error_msg']}");
+      throw Future.error("Failure while fetching item data from backend");
+    }
+  }
+
+  Future<void> registerBid(String itemID, double bidAmt, int bidQty) async {
+    final route = baseRoute + "auctions/register_bid";
+    try {
+      final response = await http.post(route, body: json.encode({
+        "item_id": itemID, "user_id": "user1", "bid_amount": bidAmt,
+        "bid_qty": bidQty,
+      }));
+      _parseRegisterBidResponse(response.body);
     } catch (error) {
       throw error;
     }
