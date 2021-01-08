@@ -28,6 +28,7 @@ func main() {
 	}
 	// Recreate DB if it does not exist.
 	_, err := os.Stat(gandalf.SQLiteDBPath)
+	glog.Infof("The error is: %v", err)
 	var g *gandalf.Gandalf
 	if os.IsNotExist(err) {
 		g = gandalf.NewSqliteGandalf()
