@@ -46,7 +46,7 @@ class AuctionsListWidget extends StatelessWidget {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  'Deadline: ${DateFormat.yMMMMd().add_jm().format(_auctions[ii].auctionStartTime)}',
+                  'Deadline: ${DateFormat.yMMMMd().add_jm().format(_auctions[ii].auctionStartTime.add(_auctions[ii].auctionDurationSecs))}',
                   style: TextStyle(
                     fontSize: 12,
                     color: Colors.grey,

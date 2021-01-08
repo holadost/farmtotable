@@ -44,7 +44,7 @@ class ItemDisplayWidget extends StatelessWidget {
       if (bidNow != null)
         Container(
           child: Text(
-            "Deadline: ${DateFormat.yMMMMd().add_jm().format(item.auctionStartTime)}",
+            "Deadline: ${DateFormat.yMMMMd().add_jm().format(item.auctionStartTime.add(item.auctionDurationSecs))}",
             style: TextStyle(
               fontFamily: "Quicksand",
               fontWeight: FontWeight.bold,
