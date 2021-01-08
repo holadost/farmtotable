@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/auction_item.dart';
-import '../net/rest_apis.dart';
+import '../net/rest_api_client.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
 import '../widgets/side_drawer_widget.dart';
