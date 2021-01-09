@@ -362,7 +362,7 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
-	auctions, err := aragorn.gandalf.GetAllAuctions(fetchAucArg.StartID, fetchAucArg.NumAuctions)
+	auctions, err := aragorn.gandalf.FetchAuctions(fetchAucArg.StartID, fetchAucArg.NumAuctions)
 	if err != nil {
 		response.Status = http.StatusInternalServerError
 		response.ErrorMsg = "Unable to get all auctions"

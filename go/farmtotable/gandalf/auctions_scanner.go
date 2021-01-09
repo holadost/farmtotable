@@ -53,7 +53,7 @@ func (it *AuctionsScanner) maybeScanNextBatch() {
 	if it.scanComplete || (len(it.currBatch) > 0) {
 		return
 	}
-	auctions, err := it.gandalf.GetAllAuctions(it.nextID, it.scanSize)
+	auctions, err := it.gandalf.FetchAuctions(it.nextID, it.scanSize)
 	if err != nil {
 		// There was an error. Mark the scan as complete to avoid using
 		// the scanner beyond this.

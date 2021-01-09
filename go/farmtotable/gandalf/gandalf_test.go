@@ -198,7 +198,7 @@ func TestGandalf_Auction(t *testing.T) {
 		t.Fatalf("Unable to register auction")
 	}
 
-	mainAucs, err := gandalf.GetAllAuctions(0, 5)
+	mainAucs, err := gandalf.FetchAuctions(0, 5)
 	if err != nil || len(mainAucs) != 5 {
 		t.Fatalf("Unable to fetch auctions")
 	}

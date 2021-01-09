@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/golang/glog"
 	"sort"
+	"time"
 )
 
 /*
@@ -157,12 +158,15 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 				"unable to fetch item with item ID: %s from backend", item.ItemID))
 	}
 	var orders []gandalf.OrderModel
+	currTime := time.Now()
 	totalQty := item.ItemQty
 	for ii := len(topBids) - 1; ii >= 0; ii-- {
 		var order gandalf.OrderModel
 		order.ItemID = item.ItemID
 		order.UserID = topBids[ii].UserID
 		order.ItemPrice = topBids[ii].BidAmount
+		order.CreatedDate = currTime
+		order.UpdatedDate = currTime
 		if totalQty >= topBids[ii].BidQty {
 			order.ItemQty = topBids[ii].BidQty
 			totalQty -= topBids[ii].BidQty

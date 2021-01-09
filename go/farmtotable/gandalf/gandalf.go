@@ -457,7 +457,7 @@ func (gandalf *Gandalf) GetMaxBids(itemIDs []string) ([]AuctionModel, error) {
 }
 
 /* Fetches all the auctions starting from start index upto numAuctions. */
-func (gandalf *Gandalf) GetAllAuctions(startIndex uint64, numAuctions uint64) ([]AuctionModel, error) {
+func (gandalf *Gandalf) FetchAuctions(startIndex uint64, numAuctions uint64) ([]AuctionModel, error) {
 	var auctions []AuctionModel
 	dbc := gandalf.Db.Offset(startIndex).Limit(numAuctions).Find(&auctions)
 	if dbc.Error != nil {
@@ -498,7 +498,7 @@ func (gandalf *Gandalf) AddOrders(orders []OrderModel) error {
 /* Gets all user orders. */
 func (gandalf *Gandalf) GetUserOrders(userID string) ([]OrderModel, error) {
 	var orders []OrderModel
-	dbc := gandalf.Db.Where("user_id = ?", userID).Find(&orders)
+	dbc := gandalf.Db.Where("user_id = ?", userID).Order("created_date DESC").Find(&orders)
 	if dbc.Error != nil {
 		return orders, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
