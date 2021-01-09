@@ -131,6 +131,17 @@ type RegisterBidRet struct {
 	Data RegistrationStatusRet `json:"data"`
 }
 
+// Get user bid for an item arg and ret.
+type GetUserBidArg struct {
+	ItemID string `json:"item_id"`
+	UserID string `json:"user_id"`
+}
+
+type GetUserBidRet struct {
+	BaseAPIResponse
+	Data float32 `json:"data"`
+}
+
 // Fetch max bids args and ret.
 type FetchMaxBidsArg struct {
 	ItemIDs []string `json:"item_ids"`

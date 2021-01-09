@@ -352,7 +352,7 @@ func (gandalf *Gandalf) registerBid(itemID string, userID string, bidAmount floa
 			fmt.Sprintf("cannot register bid(%f) which is smaller than min bid price(%f)",
 				bidAmount, auction.MinBid))
 	}
-	if bidQty > auction.ItemQty {
+	if bidQty > auction.ItemQty || bidQty > auction.MaxBidQty {
 		tx.Rollback()
 		return NewGandalfError(
 			KInvalidBidQuantity,
@@ -410,6 +410,19 @@ func (gandalf *Gandalf) GetUserBids(userID string) ([]BidModel, error) {
 		return bids, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 	}
 	return bids, nil
+}
+
+/* Returns all the auctions/items that the user has bid on. */
+func (gandalf *Gandalf) GetUserBid(userID string, itemID string) (BidModel, error) {
+	var bid BidModel
+	dbc := gandalf.Db.Where("user_id = ? and item_id = ?", userID, itemID).First(&bid)
+	if dbc.Error != nil {
+		if strings.Contains(dbc.Error.Error(), "record not found") {
+			return bid, nil
+		}
+		return bid, NewGandalfError(KGandalfBackendError, dbc.Error.Error())
+	}
+	return bid, nil
 }
 
 /* Returns the bids for a given item starting from 'start' row upto numBids rows. */

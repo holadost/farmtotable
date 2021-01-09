@@ -71,11 +71,14 @@ type AuctionModel struct {
 }
 
 type OrderModel struct {
-	ID        uint    `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
-	OrderID   string  `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`
-	UserID    string  `gorm:"type:varchar(100);index" json:"user_id"`
-	ItemID    string  `gorm:"type:varchar(32);index" json:"item_id"`
-	ItemQty   uint32  `json:"item_qty"`
-	ItemPrice float32 `json:"item_price"`
-	Status    uint32  `json:"status"`
+	ID        uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
+	OrderID   string    `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`
+	UserID    string    `gorm:"type:varchar(100);index" json:"user_id"`
+	ItemID    string    `gorm:"type:varchar(32);index" json:"item_id"`
+	ItemQty   uint32    `json:"item_qty"`
+	ItemPrice float32   `json:"item_price"`
+	Status    uint32    `json:"status"`
+	CreatedAt time.Time `json:"created_at"`
+	UpdatedAt time.Time `json:"updated_at"`
+	DeletedAt time.Time `json:"deleted_at"`
 }

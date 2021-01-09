@@ -76,6 +76,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)  // Returns all the live auctions.
 	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.GetMaxBids) // Returns the max bids for all requested items so far.
 	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)  // Registers a new bid by the user.
+	r.POST("/api/v1/resources/auctions/get_user_bid", aragorn.GetUserBid)   // Gets the bid registered by the user.
 
 	// OrderModel APIs.
 	r.POST("/api/v1/resources/orders/get_order", aragorn.GetOrder)                                   // UserModel and Administrator API.
@@ -434,6 +435,33 @@ func (aragorn *Aragorn) GetMaxBids(c *gin.Context) {
 	response.ErrorMsg = ""
 	response.Data = results
 	c.JSON(http.StatusOK, response)
+}
+
+func (aragorn *Aragorn) GetUserBid(c *gin.Context) {
+	var ret GetUserBidRet
+	var arg GetUserBidArg
+	if err := c.ShouldBindJSON(&arg); err != nil {
+		ret.Status = http.StatusBadRequest
+		ret.ErrorMsg = "Invalid input JSON"
+		c.JSON(http.StatusBadRequest, ret)
+		return
+	}
+	bid, err := aragorn.gandalf.GetUserBid(arg.UserID, arg.ItemID)
+	if err != nil {
+		ret.Status = http.StatusInternalServerError
+		ret.ErrorMsg = fmt.Sprintf("Unable to get user(%s) bid for item: %s", arg.UserID, arg.ItemID)
+		c.JSON(http.StatusInternalServerError, ret)
+		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", ret.ErrorMsg, err))
+		return
+	}
+	ret.Status = http.StatusOK
+	ret.ErrorMsg = ""
+	if bid.ItemID == "" {
+		ret.Data = 0
+	} else {
+		ret.Data = bid.BidAmount
+	}
+	c.JSON(http.StatusOK, ret)
 }
 
 func (aragorn *Aragorn) RegisterBid(c *gin.Context) {
