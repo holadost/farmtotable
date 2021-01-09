@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frodo/net/rest_api_client.dart';
+import 'package:frodo/util/constants.dart';
 
 import '../models/item.dart';
 
@@ -16,7 +17,31 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
   final _qtyController = TextEditingController();
   final _amountController = TextEditingController();
   bool _isBeingSubmitted = false;
+  bool _bidButtonDisabled = false;
+  double _totalAmount = 0;
   var apiClient = RestApiClient();
+
+  void _updateTotal() {
+    int qty;
+    try {
+      qty = int.parse(_qtyController.text);
+    } catch (error) {
+      return;
+    }
+
+    double amount;
+    try {
+      amount = double.parse(_amountController.text);
+    } catch (error) {
+      return;
+    }
+    if ((qty <= 0) || (amount <= 0)) {
+      return;
+    }
+    setState(() {
+      _totalAmount = qty * amount;
+    });
+  }
 
   void _showAlert(String title, String content) {
     showDialog(
@@ -102,6 +127,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
         duration: Duration(seconds: 2),
         backgroundColor: Colors.green,
       ));
+      _bidButtonDisabled = true;
     } catch (error) {
       _showAlert(
           "Bid failed",
@@ -132,7 +158,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                       right: 10,
                       bottom: MediaQuery.of(context).viewInsets.bottom + 10),
                   child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
                       Container(
                           height: 250,
@@ -146,22 +172,44 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                         height: 20,
                       ),
                       TextField(
-                        decoration: InputDecoration(labelText: "Quantity"),
+                        decoration: InputDecoration(
+                          labelText: "Quantity(${widget.item.itemUnit})",
+                          labelStyle: TextStyle(fontSize: 20),
+                        ),
                         controller: _qtyController,
                         keyboardType: TextInputType.number,
                         onSubmitted: (_) => _submitData(),
+
                       ),
                       TextField(
-                        decoration: InputDecoration(labelText: "Amount"),
+                        decoration: InputDecoration(
+                            labelText:
+                                "Amount(per ${widget.item.minBidQty}${widget.item.itemUnit})",
+                            labelStyle: TextStyle(fontSize: 20)),
                         controller: _amountController,
                         keyboardType: TextInputType.number,
                         onSubmitted: (_) => _submitData(),
+                        onChanged: (x) {
+                          _updateTotal();
+                        },
                       ),
                       SizedBox(
                         height: 20,
                       ),
+                      if (_totalAmount > 0)
+                        Text(
+                          "Total: $Rupee$_totalAmount",
+                          style: TextStyle(
+                            color: Colors.green,
+                            fontSize: 20,
+                            fontFamily: 'Anton'
+                          ),
+                        ),
+                      SizedBox(
+                        height: 20,
+                      ),
                       ElevatedButton(
-                        onPressed: () => _submitData(),
+                        onPressed: _bidButtonDisabled ? null : _submitData,
                         child: const Text("Bid now!"),
                       )
                     ],
