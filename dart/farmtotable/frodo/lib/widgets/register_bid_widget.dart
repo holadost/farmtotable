@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/net/rest_api_client.dart';
-import 'package:frodo/util/constants.dart';
 
 import '../models/item.dart';
+import '../net/rest_api_client.dart';
+import '../util/constants.dart';
 
 class RegisterBidWidget extends StatefulWidget {
   final Item item;
