@@ -1,9 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/net/rest_api_client.dart';
-import 'package:frodo/screens/bid_screen.dart';
-import 'package:frodo/widgets/register_bid_widget.dart';
 
 import '../models/item.dart';
+import '../net/rest_api_client.dart';
+import '../screens/bid_screen.dart';
 import '../util/constants.dart';
 import '../widgets/item_display_widget.dart';
 
