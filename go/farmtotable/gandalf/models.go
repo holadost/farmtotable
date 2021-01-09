@@ -70,6 +70,11 @@ type AuctionModel struct {
 	MaxBid              float32   `json:"max_bid"`
 }
 
+type internalAuctionModel struct {
+	AuctionModel
+	RowNum uint
+}
+
 type OrderModel struct {
 	ID          uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
 	OrderID     string    `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`

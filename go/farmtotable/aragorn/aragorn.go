@@ -73,7 +73,7 @@ func (aragorn *Aragorn) Run() {
 	r.POST("/api/v1/resources/items/get", aragorn.GetItem)            // Gets an item.
 
 	// AuctionModel APIs.
-	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.GetAllAuctions)  // Returns all the live auctions.
+	r.POST("/api/v1/resources/auctions/fetch_all", aragorn.FetchAuctions)   // Returns all the live auctions.
 	r.POST("/api/v1/resources/auctions/fetch_max_bids", aragorn.GetMaxBids) // Returns the max bids for all requested items so far.
 	r.POST("/api/v1/resources/auctions/register_bid", aragorn.RegisterBid)  // Registers a new bid by the user.
 	r.POST("/api/v1/resources/auctions/get_user_bid", aragorn.GetUserBid)   // Gets the bid registered by the user.
@@ -352,7 +352,7 @@ func (aragorn *Aragorn) GetItem(c *gin.Context) {
 }
 
 /* AuctionModel APIs. */
-func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
+func (aragorn *Aragorn) FetchAuctions(c *gin.Context) {
 	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
 	if err := c.ShouldBindJSON(&fetchAucArg); err != nil {
@@ -362,45 +362,53 @@ func (aragorn *Aragorn) GetAllAuctions(c *gin.Context) {
 		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
 		return
 	}
-	auctions, err := aragorn.gandalf.FetchAuctions(fetchAucArg.StartID, fetchAucArg.NumAuctions)
-	if err != nil {
-		response.Status = http.StatusInternalServerError
-		response.ErrorMsg = "Unable to get all auctions"
-		c.JSON(http.StatusInternalServerError, response)
-		aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
-		return
-	}
 	var retAuctions []gandalf.AuctionModel
-	if len(auctions) == 0 {
-		response.Status = http.StatusOK
-		response.ErrorMsg = ""
-		response.Data = FetchAllAuctionsRetData{
-			Auctions: auctions,
-			NextID:   -1,
+	var gatheredAuctions bool
+	var nextID uint64
+	startID := fetchAucArg.StartID
+	for {
+		auctions, err := aragorn.gandalf.FetchAuctions(startID, fetchAucArg.NumAuctions)
+		if err != nil {
+			response.Status = http.StatusInternalServerError
+			response.ErrorMsg = "Unable to get all auctions"
+			c.JSON(http.StatusInternalServerError, response)
+			aragorn.apiLogger.Error(fmt.Sprintf("%s: error: %v", response.ErrorMsg, err))
+			return
 		}
-		c.JSON(http.StatusOK, response)
-		return
+		if len(auctions) == 0 {
+			response.Status = http.StatusOK
+			response.ErrorMsg = ""
+			response.Data = FetchAllAuctionsRetData{
+				Auctions: auctions,
+				NextID:   -1,
+			}
+			c.JSON(http.StatusOK, response)
+			return
+		}
+		for ii, auction := range auctions {
+			deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(int64(auction.AuctionDurationSecs)))
+			if deadline.Before(time.Now()) {
+				// The deadline has expired. Skip this auction.
+				continue
+			}
+			retAuctions = append(retAuctions, auction)
+			if len(retAuctions) == int(fetchAucArg.NumAuctions) {
+				// We have gathered the requested number of auctions.
+				nextID = startID + uint64(ii) + 1
+				gatheredAuctions = true
+				break
+			}
+		}
+		startID += fetchAucArg.NumAuctions
+		if gatheredAuctions {
+			break
+		}
 	}
-
-	var maxID uint
-	maxID = 0
-	for _, auction := range auctions {
-		if auction.ID > maxID {
-			maxID = auction.ID
-		}
-		deadline := auction.AuctionStartTime.Add(time.Second * time.Duration(int64(auction.AuctionDurationSecs)))
-		if deadline.Before(time.Now()) {
-			// The deadline has expired. Skip this auction.
-			continue
-		}
-		retAuctions = append(retAuctions, auction)
-	}
-
 	response.Status = http.StatusOK
 	response.ErrorMsg = ""
 	response.Data = FetchAllAuctionsRetData{
 		Auctions: retAuctions,
-		NextID:   int64(maxID + 1),
+		NextID:   int64(nextID),
 	}
 	c.JSON(http.StatusOK, response)
 }
