@@ -26,6 +26,9 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
     try {
       qty = int.parse(_qtyController.text);
     } catch (error) {
+      setState(() {
+        _totalAmount = 0;
+      });
       return;
     }
 
@@ -33,6 +36,9 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
     try {
       amount = double.parse(_amountController.text);
     } catch (error) {
+      setState(() {
+        _totalAmount = 0;
+      });
       return;
     }
     if ((qty <= 0) || (amount <= 0)) {
@@ -179,7 +185,9 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                         controller: _qtyController,
                         keyboardType: TextInputType.number,
                         onSubmitted: (_) => _submitData(),
-
+                        onChanged: (x) {
+                          _updateTotal();
+                        },
                       ),
                       TextField(
                         decoration: InputDecoration(

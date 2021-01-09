@@ -25,7 +25,7 @@ class RestApiClient {
               auctionDurationSecs: Duration(seconds: auction["auction_duration_secs"]),
               auctionStartTime: DateTime.parse(auction["auction_start_time"]),
               minBid: double.parse(auction["min_bid"].toString()),
-              maxBid: double.parse(auction["min_bid"].toString()),
+              maxBid: double.parse(auction["max_bid"].toString()),
               imageURL: auction["image_url"] as String));
     });
     return true;
