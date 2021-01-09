@@ -30,16 +30,42 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
     });
     try {
       await apiClient.registerBid(widget.item.itemID, amount, qty);
+      Scaffold.of(context).showSnackBar(SnackBar(
+        content: Text("Registered bid successfully"),
+        duration: Duration(seconds: 2),
+        backgroundColor: Colors.green,
+      ));
     } catch (error) {
-      print("Unable to register bid due to error: $error");
+      showDialog(
+          context: context,
+          builder: (ctx) => AlertDialog(
+                title: Text(
+                  "Bid failed",
+                  textAlign: TextAlign.center,
+                  style: TextStyle(color: Colors.red),
+                ),
+                content: Text(
+                  "The bid was invalid. Ensure that the current bid is greater than your previous bid",
+                ),
+                actions: [
+                  FlatButton(
+                      onPressed: () {
+                        Navigator.of(context).pop();
+                      },
+                      child: const Text("OK"))
+                ],
+              ));
     }
-    Navigator.of(context).pop();
+    setState(() {
+      _isBeingSubmitted = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return _isBeingSubmitted
-        ? Container(height: 300, child: Center(child: CircularProgressIndicator()))
+        ? Container(
+            height: 300, child: Center(child: CircularProgressIndicator()))
         : SingleChildScrollView(
             child: Card(
                 elevation: 5,
@@ -68,7 +94,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                         height: 20,
                       ),
                       ElevatedButton(
-                        onPressed: _submitData,
+                        onPressed: () => _submitData(),
                         child: const Text("Bid now!"),
                       )
                     ],

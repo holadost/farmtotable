@@ -88,7 +88,7 @@ class RestApiClient {
     Map<String, dynamic> myMap = json.decode(jsonStr);
     if (myMap["status"] < 200 || myMap["status"] >= 300) {
       print("Received error from backend: ${myMap['error_msg']}");
-      throw Future.error("Failure while fetching item data from backend");
+      throw Future.error("${myMap['error_msg']}");
     }
   }
 

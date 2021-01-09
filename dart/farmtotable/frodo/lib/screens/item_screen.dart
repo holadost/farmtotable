@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:frodo/net/rest_api_client.dart';
+import 'package:frodo/screens/bid_screen.dart';
 import 'package:frodo/widgets/register_bid_widget.dart';
 
 import '../models/item.dart';
@@ -34,15 +35,8 @@ class _ItemScreenState extends State<ItemScreen> {
     super.didChangeDependencies();
   }
 
-  void _bidNow() {
-    print("Bidding now");
-    showModalBottomSheet(context: context, builder: (_) {
-      return GestureDetector(
-        child: RegisterBidWidget(_item),
-        onTap: () {},
-        behavior: HitTestBehavior.opaque,
-      );
-    });
+  void _gotoBidScreen() {
+    Navigator.of(context).pushNamed(BidScreen.routeName, arguments: _item);
   }
 
   void _loadData() async {
@@ -73,7 +67,7 @@ class _ItemScreenState extends State<ItemScreen> {
       actions: [
         if (_showBiddingButton)
           IconButton(
-            onPressed: _bidNow,
+            onPressed: _gotoBidScreen,
             icon: Icon(Icons.shopping_cart),
           )
       ],
@@ -85,7 +79,7 @@ class _ItemScreenState extends State<ItemScreen> {
   Widget build(BuildContext context) {
     Function bidNow;
     if (_showBiddingButton) {
-      bidNow = _bidNow;
+      bidNow = _gotoBidScreen;
     }
     return Scaffold(
       appBar: _buildAppBar(context),

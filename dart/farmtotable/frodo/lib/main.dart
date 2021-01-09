@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-
 import './screens/home_screen.dart';
 import './screens/auctions_overview_screen.dart';
 import './screens/item_screen.dart';
 import './screens/orders_overview_screen.dart';
 import './screens/order_screen.dart';
+import './screens/bid_screen.dart';
 import './util/constants.dart';
 
 
@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
         AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
         ItemScreen.routeName: (ctx) => ItemScreen(),
         OrderScreen.routeName: (ctx) => OrderScreen(),
+        BidScreen.routeName: (ctx) => BidScreen(),
       },
     );
   }
