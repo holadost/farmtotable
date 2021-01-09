@@ -3,7 +3,6 @@ import 'package:flutter/material.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
-import '../data/dummy_orders.dart';
 import '../screens/order_screen.dart';
 
 class OrdersOverviewScreen extends StatelessWidget {
@@ -11,7 +10,7 @@ class OrdersOverviewScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var orders = [...DUMMY_ORDERS];
+    var orders = [];
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
       title: Text(
