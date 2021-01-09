@@ -49,19 +49,19 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
     try {
       qty = int.parse(_qtyController.text);
     } catch (error) {
-      _showAlert("Invalid quanity", "Quantity must be a whole number");
+      _showAlert("Invalid quantity", "Quantity must be a whole number");
       return;
     }
+    const alertTitle = "Invalid bid quantity";
+    final alertContent = "The bid quantity must be: "
+        "\n  1. >= ${widget.item.minBidQty}${widget.item.itemUnit} "
+        "\n  2. <= ${widget.item.maxBidQty}${widget.item.itemUnit} "
+        "\n  3. A multiple of ${widget.item.minBidQty}${widget.item.itemUnit}";
     if (qty < widget.item.minBidQty ||
         qty > widget.item.maxBidQty ||
         qty > widget.item.itemQty ||
         qty % widget.item.minBidQty != 0) {
-      _showAlert(
-          "Invalid bid quantity",
-          "The bid quantity must be >= than "
-              "${widget.item.minBidQty}${widget.item.itemUnit} "
-              "and must be lesser than ${widget.item.maxBidQty}${widget.item.itemUnit}"
-              "and must be a multiple of ${widget.item.minBidQty}${widget.item.itemUnit}");
+      _showAlert(alertTitle, alertContent);
       return;
     }
 
@@ -69,12 +69,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
         qty > widget.item.maxBidQty ||
         qty > widget.item.itemQty ||
         qty % widget.item.minBidQty != 0) {
-      _showAlert(
-          "Invalid bid quantity",
-          "The bid quantity must be >= than "
-              "${widget.item.minBidQty}${widget.item.itemUnit} "
-              "and must be lesser than ${widget.item.maxBidQty}${widget.item.itemUnit}"
-              "and must be a multiple of ${widget.item.minBidQty}${widget.item.itemUnit}");
+      _showAlert(alertTitle, alertContent);
       return;
     }
 
@@ -91,13 +86,12 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
       return;
     }
 
-    // Set state so that user can see a loading spinner while we process
-    // the request.
-    setState(() {
-      _isBeingSubmitted = true;
-    });
-
     try {
+      // Set state so that user can see a loading spinner while we process
+      // the request.
+      setState(() {
+        _isBeingSubmitted = true;
+      });
       await apiClient.registerBid(widget.item.itemID, amount, qty);
       Scaffold.of(context).showSnackBar(SnackBar(
         content: Text(
@@ -113,12 +107,14 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
           "Bid failed",
           "The bid was invalid. Ensure that the current bid is greater than "
               "your previous bid");
+      return;
+    } finally {
+      // Set state so that we can disable the loading spinner and user can
+      // see the response.
+      setState(() {
+        _isBeingSubmitted = false;
+      });
     }
-    // Set state so that we can disable the loading spinner and user can
-    // see the response.
-    setState(() {
-      _isBeingSubmitted = false;
-    });
   }
 
   @override
@@ -144,7 +140,8 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                           decoration: BoxDecoration(
                               shape: BoxShape.rectangle,
                               image: DecorationImage(
-                                  fit: BoxFit.fill, image: NetworkImage(widget.item.imageURL)))),
+                                  fit: BoxFit.fill,
+                                  image: NetworkImage(widget.item.imageURL)))),
                       SizedBox(
                         height: 20,
                       ),
