@@ -100,7 +100,7 @@ func addDummyItemsAndOrders(gnd *gandalf.Gandalf) {
 	glog.Infof("Start Date: %v", startDate)
 	err := gnd.RegisterItem(
 		"supplier1",
-		"Rice X-0 ",
+		"Rice X-0",
 		"Rice is the seed of the grass species Oryza glaberrima (African rice) or Oryza sativa (Asian rice). As a cereal grain, it is the most widely consumed staple food for a large part of the world's human population, especially in Asia and Africa. It is the agricultural commodity with the third-highest worldwide production (rice, 741.5 million tonnes in 2014), after sugarcane (1.9 billion tonnes) and maize (1.0 billion tonnes).",
 		100,
 		startDate,
@@ -434,8 +434,4 @@ func addDummyItemsAndOrders(gnd *gandalf.Gandalf) {
 			glog.Fatalf("Unable to register item 1")
 		}
 	}
-}
-
-func addDummyOrders(gnd *gandalf.Gandalf) {
-	glog.Info("Adding dummy orders")
 }
