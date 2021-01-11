@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../screens/order_screen.dart';
 import '../models/order.dart';
-import '../util/constants.dart';
 import '../util/custom_icons.dart';
 
 class OrdersListWidget extends StatelessWidget {
@@ -23,6 +22,9 @@ class OrdersListWidget extends StatelessWidget {
         if (_orders[ii].status.toInt() ==
             OrderStatus.KOrderPaymentPending.toInt()) {
           statusColor = Colors.red;
+        } else if (_orders[ii].status.toInt() ==
+            OrderStatus.KOrderCancelled.toInt()) {
+          statusColor = Colors.grey;
         } else {
           statusColor = Colors.green;
         }
