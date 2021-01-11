@@ -126,7 +126,7 @@ class AragornRestClient {
           itemName: order["item_name"] as String,
           orderedQty: order["item_qty"] as int,
           price: order["item_price"] as double,
-          status: order["status"] as int,
+          status: OrderStatus(order["status"] as int),
           imageURL: order["image_url"] as String));
     });
     return true;
@@ -161,7 +161,7 @@ class AragornRestClient {
         itemName: orderMap["item_name"] as String,
         orderedQty: orderMap["item_qty"] as int,
         price: orderMap["item_price"] as double,
-        status: orderMap["status"] as int,
+        status: OrderStatus(orderMap["status"] as int),
         imageURL: orderMap["image_url"] as String);
     return order;
   }
