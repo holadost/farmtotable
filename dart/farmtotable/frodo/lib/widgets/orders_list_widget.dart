@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../screens/item_screen.dart';
+import '../screens/order_screen.dart';
 import '../models/order.dart';
 import '../util/constants.dart';
 import '../util/custom_icons.dart';
@@ -25,10 +25,8 @@ class OrdersListWidget extends StatelessWidget {
           height: 100,
           child: ListTile(
               onTap: () {
-                Navigator.of(ctx).pushNamed(ItemScreen.routeName, arguments: {
-                  "item_id": _orders[ii].itemID,
-                  "show_bid_button": true
-                });
+                Navigator.of(ctx).pushNamed(OrderScreen.routeName,
+                    arguments: _orders[ii]);
               },
               leading: Container(
                   height: 250,

@@ -1,16 +1,54 @@
 import 'package:flutter/material.dart';
 
+import '../models/order.dart';
+import '../net/aragorn_rest_client.dart';
+import '../screens/order_screen.dart';
+import '../widgets/orders_list_widget.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
-import '../screens/order_screen.dart';
 
-class OrdersOverviewScreen extends StatelessWidget {
+
+class OrdersOverviewScreen extends StatefulWidget {
   static const routeName = '/orders-overview-screen';
 
   @override
+  _OrdersOverviewScreenState createState() => _OrdersOverviewScreenState();
+}
+
+class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
+
+  final apiClient = AragornRestClient();
+  List<Order> _ordersList = [];
+  bool _isLoading = false;
+
+
+  void _loadData() async {
+    // Loads all the required auctions.
+    List<Order> orders = [];
+    try {
+      setState(() {
+        _isLoading = true;
+      });
+      orders = await apiClient.getUserOrders("user1");
+    } catch (error) {
+      print("Failed to load data");
+    } finally {
+      setState(() {
+        _ordersList = [...orders];
+        _isLoading = false;
+      });
+    }
+  }
+
+  @override
+  void didChangeDependencies() {
+    _loadData();
+    super.didChangeDependencies();
+  }
+
+  @override
   Widget build(BuildContext context) {
-    var orders = [];
     final appBar = AppBar(
       backgroundColor: PrimaryColor,
       title: Text(
@@ -18,64 +56,7 @@ class OrdersOverviewScreen extends StatelessWidget {
         style: getAppBarTextStyle(),
       ),
     );
-    final body = ListView.builder(
-      itemBuilder: (ctx, ii) {
-        return Container(
-          height: 100,
-          child: ListTile(
-            onTap: () {
-              Navigator.of(ctx).pushNamed(OrderScreen.routeName,
-                  arguments: orders[ii]);
-            },
-            leading: CircleAvatar(
-                backgroundColor: PrimaryColor,
-                radius: 30,
-                child: Container(
-                    height: 250,
-                    width: double.infinity,
-                    decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        image: DecorationImage(
-                            fit: BoxFit.fill,
-                            image: NetworkImage(orders[ii].itemImageURL))))),
-            title: Padding(
-              padding:
-              const EdgeInsets.symmetric(horizontal: 2.0, vertical: 10.0),
-              child: Text(
-                orders[ii].itemName,
-                style: Theme.of(context).textTheme.headline6,
-                textAlign: TextAlign.left,
-              ),
-            ),
-            subtitle: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Quantity: ',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.left,
-                ),
-                SizedBox(
-                  height: 3,
-                ),
-                Text(
-                  'Total Price: $Rupee${orders[ii].price.toStringAsFixed(2)}',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                  ),
-                  textAlign: TextAlign.left,
-                )
-              ],
-            ),
-          ),
-        );
-      },
-      itemCount: orders.length,
-    );
+    final body = OrdersListWidget(_ordersList);
     return Scaffold(
       appBar: appBar,
       body: body,
