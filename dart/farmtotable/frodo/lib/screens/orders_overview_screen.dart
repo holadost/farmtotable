@@ -53,10 +53,12 @@ class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
         style: getAppBarTextStyle(),
       ),
     );
-    final body = Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: OrdersListWidget(_ordersList),
-    );
+    final body = _isLoading
+        ? Center(child: CircularProgressIndicator())
+        : Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: OrdersListWidget(_ordersList),
+          );
     return Scaffold(
       appBar: appBar,
       body: body,
