@@ -5,7 +5,7 @@ import '../models/auction_item.dart';
 import '../models/order.dart';
 import '../models/item.dart';
 
-class RestApiClient {
+class AragornRestClient {
   static const baseRoute = "http://165.22.222.169:8080/api/v1/resources/";
 
   bool _parseAuctionsResponse(String jsonStr, List<AuctionItem> auctions) {

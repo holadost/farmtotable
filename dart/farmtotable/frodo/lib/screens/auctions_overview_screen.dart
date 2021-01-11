@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/auction_item.dart';
-import '../net/rest_api_client.dart';
+import '../net/aragorn_rest_client.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
 import '../widgets/side_drawer_widget.dart';
@@ -15,7 +15,7 @@ class AuctionsOverviewScreen extends StatefulWidget {
 }
 
 class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
-  final apiClient = RestApiClient();
+  final apiClient = AragornRestClient();
   bool _isLoading = false;
   int _lastID = -1;
   int _numItemsPerPage = 8;

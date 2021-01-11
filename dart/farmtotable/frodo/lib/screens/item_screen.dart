@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/item.dart';
-import '../net/rest_api_client.dart';
+import '../net/aragorn_rest_client.dart';
 import '../screens/bid_screen.dart';
 import '../util/constants.dart';
 import '../widgets/item_display_widget.dart';
@@ -17,7 +17,7 @@ class _ItemScreenState extends State<ItemScreen> {
   bool _showBiddingButton = false;
   String _itemID;
   bool _isLoading = false;
-  var _apiClient = RestApiClient();
+  var _apiClient = AragornRestClient();
   Item _item;
   bool _gatheredArgs = false;
 
