@@ -8,7 +8,6 @@ import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
 
-
 class OrdersOverviewScreen extends StatefulWidget {
   static const routeName = '/orders-overview-screen';
 
@@ -17,11 +16,9 @@ class OrdersOverviewScreen extends StatefulWidget {
 }
 
 class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
-
   final apiClient = AragornRestClient();
   List<Order> _ordersList = [];
   bool _isLoading = false;
-
 
   void _loadData() async {
     // Loads all the required auctions.
@@ -56,7 +53,10 @@ class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
         style: getAppBarTextStyle(),
       ),
     );
-    final body = OrdersListWidget(_ordersList);
+    final body = Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: OrdersListWidget(_ordersList),
+    );
     return Scaffold(
       appBar: appBar,
       body: body,

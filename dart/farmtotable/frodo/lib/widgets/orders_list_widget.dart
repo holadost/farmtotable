@@ -9,6 +9,11 @@ class OrdersListWidget extends StatelessWidget {
   final List<Order> _orders;
   OrdersListWidget(this._orders);
 
+  void _navigateToOrderScreen(BuildContext ctx, Order order) {
+    Navigator.of(ctx).pushNamed(OrderScreen.routeName,
+        arguments: order);
+  }
+
   @override
   Widget build(BuildContext context) {
     final themeData = Theme.of(context);
@@ -25,12 +30,11 @@ class OrdersListWidget extends StatelessWidget {
           height: 100,
           child: ListTile(
               onTap: () {
-                Navigator.of(ctx).pushNamed(OrderScreen.routeName,
-                    arguments: _orders[ii]);
+                _navigateToOrderScreen(ctx, _orders[ii]);
               },
               leading: Container(
-                  height: 250,
-                  width: double.infinity,
+                  height: 60,
+                  width: 60,
                   decoration: BoxDecoration(
                       image: DecorationImage(
                           fit: BoxFit.fill,
@@ -54,7 +58,9 @@ class OrdersListWidget extends StatelessWidget {
               ),
               trailing: IconButton(
                 icon: Icon(CustomIcons.chevron_right),
-                onPressed: () {},
+                onPressed: () {
+                  _navigateToOrderScreen(ctx, _orders[ii]);
+                },
               )),
         );
       },
