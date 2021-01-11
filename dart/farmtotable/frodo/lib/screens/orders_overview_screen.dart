@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 
 import '../models/order.dart';
 import '../net/aragorn_rest_client.dart';
-import '../screens/order_screen.dart';
 import '../widgets/orders_list_widget.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
