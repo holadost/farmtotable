@@ -28,7 +28,7 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
     super.didChangeDependencies();
   }
 
-  void _cleanLoad() {
+  Future<void> _cleanLoad() async {
     _fetchData(true);
   }
 
@@ -72,7 +72,6 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
             _auctions.add(element);
           });
         }
-
       });
     }
   }
@@ -99,7 +98,10 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
   Widget _buildBody() {
     final body = _isLoading
         ? Center(child: CircularProgressIndicator())
-        : AuctionsListWidget(_auctions, _loadMore);
+        : RefreshIndicator(
+            child: AuctionsListWidget(_auctions, _loadMore),
+            onRefresh: _cleanLoad,
+          );
     return body;
   }
 
