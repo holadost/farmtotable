@@ -27,8 +27,6 @@ class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
         _isLoading = true;
       });
       orders = await apiClient.getUserOrders("user1");
-    } catch (error) {
-      print("Failed to load data");
     } finally {
       setState(() {
         _ordersList = [...orders];
