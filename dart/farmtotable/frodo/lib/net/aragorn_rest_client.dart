@@ -186,6 +186,7 @@ class AragornRestClient {
       final response = await http.post(route,
           body: json.encode({
             "user_id": "user1",
+            "item_id": itemID,
           }));
       return _parseOrderInfo(response.body);
     } catch (error) {
