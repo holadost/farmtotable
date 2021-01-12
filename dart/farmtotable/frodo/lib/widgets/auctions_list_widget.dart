@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/util/logging.dart';
 import 'package:intl/intl.dart';
 
 import '../screens/item_screen.dart';
@@ -15,11 +16,17 @@ class AuctionsListWidget extends StatelessWidget {
     return ListView.builder(
       itemBuilder: (ctx, ii) {
         return (ii == _auctions.length) ? Container(
-          height: 100,
+          height: 50,
           color: PrimaryColor,
           child: FlatButton(
-            child: Text("Load More"),
-            onPressed: () {},
+            child: Text(
+              "Load More",
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold),),
+            onPressed: () {
+              loadMore();
+            },
           ),
         ) :
         Container(
@@ -102,7 +109,7 @@ class AuctionsListWidget extends StatelessWidget {
           ),
         );
       },
-      itemCount: _auctions.length,
+      itemCount: _auctions.length+1,
     );
   }
 }

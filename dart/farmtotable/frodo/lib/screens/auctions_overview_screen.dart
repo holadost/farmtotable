@@ -50,9 +50,10 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
         }
         _isLoading = true;
       });
+      info("Fetching auction starting from ID: ${_lastID + 1}");
       auctions = await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
+      print(auctions.length);
       _lastID = _lastID + _numItemsPerPage;
-      info("Last fetched ID: $_lastID");
     } catch (error) {
       print("Failed to fetch data");
     } finally {

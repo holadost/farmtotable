@@ -10,6 +10,7 @@ class AragornRestClient {
   static const baseRoute = "http://165.22.222.169:8080/api/v1/resources/";
 
   bool _parseAuctionsResponse(String jsonStr, List<AuctionItem> auctions) {
+    print(jsonStr);
     Map<String, dynamic> myMap = json.decode(jsonStr);
     if (myMap["status"] < 200 || myMap["status"] >= 300) {
       print("Received error from backend: ${myMap['error_msg']}");
