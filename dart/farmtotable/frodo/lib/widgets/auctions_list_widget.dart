@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/util/logging.dart';
 import 'package:intl/intl.dart';
 
 import '../screens/item_screen.dart';

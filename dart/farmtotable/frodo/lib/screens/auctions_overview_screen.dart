@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/util/logging.dart';
 
+import '../util/logging.dart';
 import '../models/auction_item.dart';
 import '../net/aragorn_rest_client.dart';
 import '../util/styles.dart';

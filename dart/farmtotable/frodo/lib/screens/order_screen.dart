@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/screens/item_screen.dart';
-import 'package:intl/intl.dart';
 
+import '../screens/item_screen.dart';
 import '../util/constants.dart';
 import '../models/order.dart';
 
