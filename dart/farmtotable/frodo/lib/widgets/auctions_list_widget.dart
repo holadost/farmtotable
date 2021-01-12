@@ -7,13 +7,22 @@ import '../util/constants.dart';
 
 class AuctionsListWidget extends StatelessWidget {
   final List<AuctionItem> _auctions;
-  AuctionsListWidget(this._auctions);
+  final Function loadMore;
+  AuctionsListWidget(this._auctions, this.loadMore);
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
       itemBuilder: (ctx, ii) {
-        return Container(
+        return (ii == _auctions.length) ? Container(
+          height: 100,
+          color: PrimaryColor,
+          child: FlatButton(
+            child: Text("Load More"),
+            onPressed: () {},
+          ),
+        ) :
+        Container(
           height: 100,
           child: ListTile(
             onTap: () {

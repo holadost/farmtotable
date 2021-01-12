@@ -15,6 +15,6 @@ void warning(String message) {
 
 void log(String level, String message) {
   var now = new DateTime.now().toUtc().toIso8601String();
-  stdout.writeln("$now [$level] $message\n");
+  print("$now [$level] $message\n");
   stdout.flush();
 }

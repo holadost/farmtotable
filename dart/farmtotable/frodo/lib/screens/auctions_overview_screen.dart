@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/util/logging.dart';
 
 import '../models/auction_item.dart';
 import '../net/aragorn_rest_client.dart';
@@ -19,29 +20,51 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
   bool _isLoading = false;
   int _lastID = -1;
   int _numItemsPerPage = 8;
-  List<AuctionItem> _auctions = [];
+  final List<AuctionItem> _auctions = [];
 
   @override
   void didChangeDependencies() {
-    _loadData();
+    _cleanLoad();
     super.didChangeDependencies();
   }
 
-  void _loadData() async {
+  void _cleanLoad() {
+    _fetchData(true);
+  }
+
+  void _loadMore() {
+    _fetchData(false);
+  }
+
+  void _fetchLatestBids() {
+    // TODO: Implement this.
+  }
+
+  void _fetchData(bool clean) async {
     // Loads all the required auctions.
+    List<AuctionItem> auctions = [];
     try {
       setState(() {
+        if (clean) {
+          _lastID = -1;
+        }
         _isLoading = true;
       });
-
-      final auctions =
-          await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
+      auctions = await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
+      _lastID = _lastID + _numItemsPerPage;
+      info("Last fetched ID: $_lastID");
+    } catch (error) {
+      print("Failed to fetch data");
+    } finally {
       setState(() {
-        _auctions = [...auctions];
+        if (clean) {
+          _auctions.clear();
+        }
+        auctions.forEach((element) {
+          _auctions.add(element);
+        });
         _isLoading = false;
       });
-    } catch (error) {
-      print("Failed to load data");
     }
   }
 
@@ -57,18 +80,17 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
             icon: Icon(Icons.refresh),
             onPressed: () {
               // Refresh page.
-              _loadData();
+              _cleanLoad();
             }),
       ],
     );
     return appBar;
   }
 
-
   Widget _buildBody() {
     final body = _isLoading
         ? Center(child: CircularProgressIndicator())
-        : AuctionsListWidget(_auctions);
+        : AuctionsListWidget(_auctions, _loadMore);
     return body;
   }
 
