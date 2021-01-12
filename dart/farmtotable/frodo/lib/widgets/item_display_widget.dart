@@ -81,9 +81,12 @@ class ItemDisplayWidget extends StatelessWidget {
         height: 10,
       ),
       if (bidNow != null)
-        ElevatedButton(
+        RaisedButton(
           child: Text("Bid now"),
           onPressed: bidNow,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(16.0),
+          ),
         ),
     ];
     return children;

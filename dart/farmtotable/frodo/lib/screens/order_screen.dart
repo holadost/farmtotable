@@ -8,6 +8,7 @@ class OrderScreen extends StatelessWidget {
   static const routeName = '/order-screen';
 
   void _handlePayment() {}
+  void _gotoItemScreen() {}
 
   Widget _buildBody(BuildContext context, Order order) {
     final borderSide =
@@ -164,17 +165,28 @@ class OrderScreen extends StatelessWidget {
         ));
     final body = Column(
       children: [
-        Container(
-            height: 200,
-            width: 200,
-            decoration: BoxDecoration(
-                shape: BoxShape.rectangle,
-                image: DecorationImage(
-                    fit: BoxFit.fill, image: NetworkImage(order.imageURL)))),
+        GestureDetector(
+          onTap: _gotoItemScreen,
+          child: Container(
+              height: 200,
+              width: 200,
+              decoration: BoxDecoration(
+                  shape: BoxShape.rectangle,
+                  image: DecorationImage(
+                      fit: BoxFit.fill, image: NetworkImage(order.imageURL)))),
+        ),
         SizedBox(
           height: 20,
         ),
-        orderContents
+        orderContents,
+        if (order.status == OrderStatus.KOrderPaymentPending)
+          RaisedButton(
+            onPressed: _handlePayment,
+            child: const Text("Make payment"),
+            shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+            ),
+          )
       ],
     );
     return body;

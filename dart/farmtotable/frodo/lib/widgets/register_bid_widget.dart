@@ -216,9 +216,12 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
                       SizedBox(
                         height: 20,
                       ),
-                      ElevatedButton(
+                      RaisedButton(
                         onPressed: _bidButtonDisabled ? null : _submitData,
                         child: const Text("Bid now!"),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(16.0),
+                        ),
                       )
                     ],
                   ),
