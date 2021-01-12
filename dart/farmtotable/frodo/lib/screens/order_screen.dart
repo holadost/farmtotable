@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/screens/item_screen.dart';
 import 'package:intl/intl.dart';
 
 import '../util/constants.dart';
@@ -8,7 +9,11 @@ class OrderScreen extends StatelessWidget {
   static const routeName = '/order-screen';
 
   void _handlePayment() {}
-  void _gotoItemScreen() {}
+  void _gotoItemScreen(BuildContext context, String itemID) {
+    Navigator.of(context).pushNamed(
+        ItemScreen.routeName,
+        arguments: {'item_id': itemID, 'show_bid_button': false});
+  }
 
   Widget _buildBody(BuildContext context, Order order) {
     final borderSide =
@@ -166,7 +171,7 @@ class OrderScreen extends StatelessWidget {
     final body = Column(
       children: [
         GestureDetector(
-          onTap: _gotoItemScreen,
+          onTap: () => _gotoItemScreen(context, order.itemID),
           child: Container(
               height: 200,
               width: 200,
