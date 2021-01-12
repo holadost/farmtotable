@@ -47,8 +47,11 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
       setState(() {
         if (clean) {
           _lastID = -1;
+          // Avoid reloading screen if we are not doing a
+          // clean fetch. This ensures that during loadMore,
+          // we do not go back to the top of the screen.
+          _isLoading = true;
         }
-        _isLoading = true;
       });
       info("Fetching auction starting from ID: ${_lastID + 1}");
       auctions = await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
