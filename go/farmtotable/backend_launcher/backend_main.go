@@ -231,7 +231,7 @@ func addDummyItemsAndOrders(gnd *gandalf.Gandalf) {
 		order.UpdatedDate = currTime
 		order.Status = gandalf.KOrderPaymentPending
 		order.DeliveryPrice = 20.0
-		order.TaxPrice = 5
+		order.TaxPrice = 5.0
 		order.TotalPrice = (float32(order.ItemQty) * order.ItemPrice) +
 			order.DeliveryPrice + order.TaxPrice
 		err = gnd.AddOrders([]gandalf.OrderModel{order})

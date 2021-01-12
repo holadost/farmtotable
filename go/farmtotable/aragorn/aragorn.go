@@ -780,12 +780,15 @@ func (aragorn *Aragorn) joinOrderWithItemInfo(orders []gandalf.OrderModel) ([]Or
 			return orderItems, errors.New("unable to find item for order")
 		}
 		orderRet.ItemName = item.ItemName
-		orderRet.ItemDescription = item.ItemDescription
 		orderRet.ImageURL = item.ImageURL
 		orderRet.UserID = orders[ii].UserID
 		orderRet.ItemQty = orders[ii].ItemQty
 		orderRet.ItemPrice = orders[ii].ItemPrice
 		orderRet.Status = orders[ii].Status
+		orderRet.DeliveryPrice = orders[ii].DeliveryPrice
+		orderRet.TaxPrice = orders[ii].TaxPrice
+		orderRet.TotalPrice = orders[ii].TotalPrice
+		orderRet.OrderHistory = orders[ii].OrderHistory
 		orderItems = append(orderItems, orderRet)
 	}
 	return orderItems, nil
