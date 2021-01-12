@@ -52,19 +52,24 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
       });
       info("Fetching auction starting from ID: ${_lastID + 1}");
       auctions = await apiClient.getAuctions(_lastID + 1, _numItemsPerPage);
-      print(auctions.length);
-      _lastID = _lastID + _numItemsPerPage;
+      if ((auctions != null) && (auctions.length > 0)) {
+        _lastID = _lastID + auctions.length;
+      }
+      print("Last ID fetched: $_lastID");
     } catch (error) {
-      print("Failed to fetch data");
+      print("Failed to fetch data due to error: $error");
     } finally {
       setState(() {
         if (clean) {
           _auctions.clear();
         }
-        auctions.forEach((element) {
-          _auctions.add(element);
-        });
         _isLoading = false;
+        if (auctions != null) {
+          auctions.forEach((element) {
+            _auctions.add(element);
+          });
+        }
+
       });
     }
   }
