@@ -70,19 +70,24 @@ type AuctionModel struct {
 	MaxBid              float32   `json:"max_bid"`
 }
 
-type internalAuctionModel struct {
-	AuctionModel
-	RowNum uint
+type OrderModel struct {
+	ID            uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
+	OrderID       string    `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`
+	UserID        string    `gorm:"type:varchar(100);index" json:"user_id"`
+	ItemID        string    `gorm:"type:varchar(32);index" json:"item_id"`
+	ItemQty       uint32    `json:"item_qty"`
+	ItemPrice     float32   `json:"item_price"`
+	DeliveryPrice float32   `json:"delivery_price"`
+	TaxPrice      float32   `json:"tax_price"`
+	TotalPrice    float32   `json:"total_price"`
+	Status        uint32    `json:"status"`
+	CreatedDate   time.Time `json:"created_date"`
+	UpdatedDate   time.Time `json:"updated_date"`
+	OrderHistory  []byte    `json:"order_history"` // This is a json string of a list of events.
 }
 
-type OrderModel struct {
-	ID          uint      `gorm:"PRIMARY_KEY;autoIncrement" json:"id"`
-	OrderID     string    `gorm:"type:varchar(32);UNIQUE;index" json:"order_id"`
-	UserID      string    `gorm:"type:varchar(100);index" json:"user_id"`
-	ItemID      string    `gorm:"type:varchar(32);index" json:"item_id"`
-	ItemQty     uint32    `json:"item_qty"`
-	ItemPrice   float32   `json:"item_price"`
-	Status      uint32    `json:"status"`
-	CreatedDate time.Time `json:"created_date"`
-	UpdatedDate time.Time `json:"updated_date"`
+type OrderEvent struct {
+	Date   time.Time `json:"date"`
+	Status uint32    `json:"status"`
+	Msg    string    `json:"msg"`
 }

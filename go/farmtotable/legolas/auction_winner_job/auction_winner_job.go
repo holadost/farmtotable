@@ -1,6 +1,7 @@
 package auction_winner_job
 
 import (
+	"encoding/json"
 	"errors"
 	"farmtotable/gandalf"
 	"fmt"
@@ -162,13 +163,7 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 	totalQty := item.ItemQty
 	for ii := len(topBids) - 1; ii >= 0; ii-- {
 		var order gandalf.OrderModel
-		order.ItemID = item.ItemID
-		order.UserID = topBids[ii].UserID
-		order.ItemPrice = topBids[ii].BidAmount
-		order.CreatedDate = currTime
-		order.UpdatedDate = currTime
 		if totalQty >= topBids[ii].BidQty {
-			order.ItemQty = topBids[ii].BidQty
 			totalQty -= topBids[ii].BidQty
 		} else {
 			glog.Warningf(
@@ -176,10 +171,30 @@ func (worker *_Worker) placeOrders(auction gandalf.AuctionModel, topBids []ganda
 					"insufficient item quantity(%d)", topBids[ii], totalQty)
 			continue
 		}
+		order.ItemQty = topBids[ii].BidQty
+		order.ItemID = item.ItemID
+		order.UserID = topBids[ii].UserID
+		order.ItemPrice = topBids[ii].BidAmount
+		order.DeliveryPrice = 20.0
+		order.TaxPrice = 0.05 * float32(topBids[ii].BidQty) * topBids[ii].BidAmount
+		order.TotalPrice = (float32(topBids[ii].BidQty) * topBids[ii].BidAmount) +
+			order.TaxPrice + order.DeliveryPrice
+		order.CreatedDate = currTime
+		order.UpdatedDate = currTime
+		var events []gandalf.OrderEvent
+		events = append(events, gandalf.OrderEvent{
+			Msg:    "Order created",
+			Status: gandalf.KOrderPaymentPending,
+			Date:   currTime,
+		})
+		order.OrderHistory, err = json.Marshal(events)
+		if err != nil {
+			glog.Fatalf("Unable to marshal order events")
+		}
 		orders = append(orders, order)
 	}
 	// TODO: We should ensure that the orders being placed now haven't been placed
-	// TODO: already.
+	// TODO: already. This is for crash and recovery purposes.
 	glog.V(1).Infof("Adding %d orders to backend", len(orders))
 	err = worker.gandalf.AddOrders(orders)
 	if err != nil {
