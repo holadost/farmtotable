@@ -46,16 +46,16 @@ class _ItemScreenState extends State<ItemScreen> {
         print("Currently loading");
         _isLoading = true;
       });
-
       final item = await _apiClient.getItem(_itemID);
-      setState(() {
-        _item = item;
-        _isLoading = false;
-        print("Finished loading");
-      });
+      _item = item;
       print("Successfully fetched item from backend");
     } catch (error) {
       print("Unable to load data due to error: $error");
+    } finally {
+      setState(() {
+        _isLoading = false;
+        print("Finished loading");
+      });
     }
   }
 

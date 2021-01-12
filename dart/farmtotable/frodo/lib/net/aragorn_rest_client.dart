@@ -125,7 +125,10 @@ class AragornRestClient {
           itemID: order["item_id"] as String,
           itemName: order["item_name"] as String,
           orderedQty: order["item_qty"] as int,
-          price: order["item_price"] as double,
+          itemPrice: order["item_price"] as double,
+          deliveryPrice: order['delivery_price'] as double,
+          taxPrice: order['tax_price'] as double,
+          totalPrice: order['total_price'] as double,
           status: OrderStatus(order["status"] as int),
           imageURL: order["image_url"] as String));
     });
@@ -160,7 +163,10 @@ class AragornRestClient {
         itemID: orderMap["item_id"] as String,
         itemName: orderMap["item_name"] as String,
         orderedQty: orderMap["item_qty"] as int,
-        price: orderMap["item_price"] as double,
+        itemPrice: orderMap["item_price"] as double,
+        deliveryPrice: orderMap['delivery_price'] as double,
+        taxPrice: orderMap['tax_price'] as double,
+        totalPrice: orderMap['total_price'] as double,
         status: OrderStatus(orderMap["status"] as int),
         imageURL: orderMap["image_url"] as String);
     return order;
