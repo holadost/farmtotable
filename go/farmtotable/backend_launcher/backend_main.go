@@ -222,13 +222,18 @@ func addDummyItemsAndOrders(gnd *gandalf.Gandalf) {
 			glog.Fatalf("Unable to update auction status due to err: %v", err)
 		}
 		var order gandalf.OrderModel
+		currTime := time.Now()
 		order.ItemID = item.ItemID
 		order.UserID = "user1"
 		order.ItemPrice = 101.20
 		order.ItemQty = 5
-		order.CreatedDate = time.Now()
-		order.UpdatedDate = time.Now()
+		order.CreatedDate = currTime
+		order.UpdatedDate = currTime
 		order.Status = gandalf.KOrderPaymentPending
+		order.DeliveryPrice = 20.0
+		order.TaxPrice = 5
+		order.TotalPrice = (float32(order.ItemQty) * order.ItemPrice) +
+			order.DeliveryPrice + order.TaxPrice
 		err = gnd.AddOrders([]gandalf.OrderModel{order})
 		if err != nil {
 			glog.Fatalf("Unable to add order due to err: %v", err)

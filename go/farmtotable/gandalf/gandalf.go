@@ -1,6 +1,7 @@
 package gandalf
 
 import (
+	"encoding/json"
 	"fmt"
 	"github.com/golang/glog"
 	"github.com/jinzhu/gorm"
@@ -551,7 +552,26 @@ func (gandalf *Gandalf) UpdateOrderStatus(orderID string, status uint32) error {
 			return NewGandalfError(KGandalfBackendError, dbc.Error.Error())
 		}
 	}
+	currTime := time.Now()
 	order.Status = status
+	order.UpdatedDate = currTime
+	if len(order.OrderHistory) > 0 {
+		var events []OrderEvent
+		err := json.Unmarshal(order.OrderHistory, &events)
+		if err != nil {
+			glog.Errorf("Unable to update order history due to err: %v\nOrder History: %v", err, order.OrderHistory)
+		}
+		events = append(events, OrderEvent{
+			Date:   currTime,
+			Status: order.Status,
+			Msg:    "Updated order status",
+		})
+		order.OrderHistory, err = json.Marshal(events)
+		if err != nil {
+			glog.Errorf("Unable to marshal order history due to err: %v\nOrder History: %v", err, order.OrderHistory)
+		}
+	}
+
 	dbc = tx.Save(&order)
 	if dbc.Error != nil {
 		tx.Rollback()
