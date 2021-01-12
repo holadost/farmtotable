@@ -379,7 +379,7 @@ func (aragorn *Aragorn) FetchAuctions(c *gin.Context) {
 			response.Status = http.StatusOK
 			response.ErrorMsg = ""
 			response.Data = FetchAllAuctionsRetData{
-				Auctions: auctions,
+				Auctions: retAuctions,
 				NextID:   -1,
 			}
 			c.JSON(http.StatusOK, response)
