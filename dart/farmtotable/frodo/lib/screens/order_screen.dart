@@ -167,31 +167,33 @@ class OrderScreen extends StatelessWidget {
             ]),
           ],
         ));
-    final body = Column(
-      children: [
-        GestureDetector(
-          onTap: () => _gotoItemScreen(context, order.itemID),
-          child: Container(
-              height: 200,
-              width: 200,
-              decoration: BoxDecoration(
-                  shape: BoxShape.rectangle,
-                  image: DecorationImage(
-                      fit: BoxFit.fill, image: NetworkImage(order.imageURL)))),
-        ),
-        SizedBox(
-          height: 20,
-        ),
-        orderContents,
-        if (order.status == OrderStatus.KOrderPaymentPending)
-          RaisedButton(
-            onPressed: _handlePayment,
-            child: const Text("Make payment"),
-            shape: RoundedRectangleBorder(
+    final body = SingleChildScrollView(
+      child: Column(
+        children: [
+          GestureDetector(
+            onTap: () => _gotoItemScreen(context, order.itemID),
+            child: Container(
+                height: 200,
+                width: 200,
+                decoration: BoxDecoration(
+                    shape: BoxShape.rectangle,
+                    image: DecorationImage(
+                        fit: BoxFit.fill, image: NetworkImage(order.imageURL)))),
+          ),
+          SizedBox(
+            height: 20,
+          ),
+          orderContents,
+          if (order.status == OrderStatus.KOrderPaymentPending)
+            RaisedButton(
+              onPressed: _handlePayment,
+              child: const Text("Make payment"),
+              shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
-            ),
-          )
-      ],
+              ),
+            )
+        ],
+      ),
     );
     return body;
   }
