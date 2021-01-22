@@ -1,6 +1,8 @@
 import 'package:flutter/foundation.dart';
 import 'package:provider/provider.dart';
 
+import '../util/logging.dart';
+
 class AuthProvider with ChangeNotifier {
   String _idToken = "";
   String _userID = "";
@@ -11,10 +13,13 @@ class AuthProvider with ChangeNotifier {
     return _idToken;
   }
 
-  bool login(String userEmail, String password) {
+  Future<bool> login(String userEmail, String password) async {
+    info("Successfully logged in");
+    return true;
   }
 
-  bool signup(String userEmail, String password) {
+  Future<bool> signup(String userEmail, String password) async {
+    info("Successfully signed up");
+    return true;
   }
-
 }
