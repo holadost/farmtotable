@@ -15,11 +15,13 @@ class AuthProvider with ChangeNotifier {
 
   Future<bool> login(String userEmail, String password) async {
     info("Successfully logged in");
+    notifyListeners();
     return true;
   }
 
   Future<bool> signup(String userEmail, String password) async {
     info("Successfully signed up");
+    notifyListeners();
     return true;
   }
 }
