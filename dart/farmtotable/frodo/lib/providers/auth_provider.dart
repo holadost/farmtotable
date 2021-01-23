@@ -1,9 +1,12 @@
-import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 import '../util/logging.dart';
 
 class AuthProvider with ChangeNotifier {
+  final FirebaseAuth _auth = FirebaseAuth.instance;
   String _idToken = "";
   String _userID = "";
   String _userName = "";
@@ -20,8 +23,14 @@ class AuthProvider with ChangeNotifier {
   }
 
   Future<bool> signup(String userEmail, String password) async {
-    info("Successfully signed up");
-    notifyListeners();
-    return true;
+    try {
+      final result = await _auth.createUserWithEmailAndPassword(
+          email: userEmail, password: password);
+      info("Signed up!");
+      return true;
+    } catch (error) {
+      info("Caught error: ${error.toString()}");
+     return false;
+    }
   }
 }
