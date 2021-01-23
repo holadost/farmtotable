@@ -50,8 +50,7 @@ class SideDrawerWidget extends StatelessWidget {
             leading: Icon(Icons.logout), title: Text('Log out'),
             onTap: () {
               prov.signout();
-              Navigator.of(context).pushReplacementNamed(
-                  AuthScreen.routeName);
+              Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),
         ],
