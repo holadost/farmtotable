@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "550468688392",
+    "project_id": "algorhythm-9d886",
+    "storage_bucket": "algorhythm-9d886.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:550468688392:android:2e15d376c099a5a83dcfbd",
+        "android_client_info": {
+          "package_name": "com.example.frodo"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "550468688392-puu205gnso03kgr8l1j170rvv8dhfcqc.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyATYZQPQEWU876GtTd_d2I3BlIrxQIjpW4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "550468688392-puu205gnso03kgr8l1j170rvv8dhfcqc.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
