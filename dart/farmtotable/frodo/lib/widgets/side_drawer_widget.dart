@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/providers/auth_provider.dart';
 import 'package:provider/provider.dart';
 
-import '../screens/auth_screen.dart';
+import '../providers/auth_provider.dart';
 import '../screens/home_screen.dart';
 import '../screens/orders_overview_screen.dart';
 import '../screens/auctions_overview_screen.dart';
