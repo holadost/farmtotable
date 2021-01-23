@@ -9,8 +9,31 @@ class AuthProvider with ChangeNotifier {
   String _idToken = "";
   DateTime _expTime;
 
-  String get token {
-    return _idToken;
+  Future<String> get token async {
+    if (_idToken == "" || _idToken == null) {
+      return null;
+    }
+    if (_expTime == null) {
+      return null;
+    }
+    if (_expTime.subtract(Duration(minutes: 5)).isBefore(DateTime.now())) {}
+    if (await refreshTokens()) {
+      return _idToken;
+    }
+    return null;
+  }
+
+  Future<bool> refreshTokens() async {
+    try {
+      final user = _auth.currentUser;
+      final tokenRes = await user.getIdTokenResult(true);
+      _idToken = tokenRes.token;
+      _expTime = tokenRes.expirationTime;
+      return true;
+    } catch (error) {
+      info("Error while refreshing tokens. Error: ${error.toString()}");
+      return false;
+    }
   }
 
   bool isAuthorized() {
@@ -29,9 +52,7 @@ class AuthProvider with ChangeNotifier {
       final result = await _auth.signInWithEmailAndPassword(
           email: userEmail, password: password);
       final user = _auth.currentUser;
-      final tokenRes = await user.getIdTokenResult(true);
-      _idToken = tokenRes.token;
-      _expTime = tokenRes.expirationTime;
+      await refreshTokens();
       notifyListeners();
       info("Successfully logged in. User ID: ${user.uid}."
           "Expiry Time: ${DateFormat.yMMMMd().add_jm().format(_expTime)}");
@@ -48,7 +69,7 @@ class AuthProvider with ChangeNotifier {
       await _auth.createUserWithEmailAndPassword(
           email: userEmail, password: password);
       info("Successfully signed up new user! UID: "
-           "${_auth.currentUser.uid}");
+          "${_auth.currentUser.uid}");
       final res = await login(userEmail, password);
       if (!res) {
         return false;
@@ -56,7 +77,21 @@ class AuthProvider with ChangeNotifier {
       return true;
     } catch (error) {
       info("Caught error while signing up: ${error.toString()}");
-     return false;
+      return false;
+    }
+  }
+
+  Future<bool> signout() async {
+    try {
+      await _auth.signOut();
+      _idToken = null;
+      _expTime = null;
+      info("Successfully signed out!");
+      notifyListeners();
+      return true;
+    } catch (error) {
+      info("Caught error while signing out: ${error.toString()}");
+      return false;
     }
   }
 }
