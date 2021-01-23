@@ -49,6 +49,7 @@ class SideDrawerWidget extends StatelessWidget {
             leading: Icon(Icons.logout), title: Text('Log out'),
             onTap: () {
               prov.signout();
+              // Go back to main.dart.
               Navigator.of(context).popUntil((route) => route.isFirst);
             },
           ),
