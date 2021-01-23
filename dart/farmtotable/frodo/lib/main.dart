@@ -13,7 +13,6 @@ import './screens/order_screen.dart';
 import './screens/bid_screen.dart';
 import './util/constants.dart';
 
-
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
@@ -21,7 +20,6 @@ Future<void> main() async {
 }
 
 class MyApp extends StatelessWidget {
-
   @override
   Widget build(BuildContext context) {
     return MultiProvider(
@@ -29,29 +27,31 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider.value(value: AuthProvider()),
         // ignore: missing_required_param
         ChangeNotifierProxyProvider<AuthProvider, RestClientProvider>(
-            update: (ctx, auth, prevClient){
-              return RestClientProvider(auth.token);
-            }),
+            update: (ctx, auth, prevClient) {
+          return RestClientProvider(auth.token);
+        }),
       ],
-      child: MaterialApp(
-        title: AppName,
-        theme: ThemeData(
-          brightness: Brightness.dark,
-          primaryColor: PrimaryColor,
-          primarySwatch: Colors.deepPurple,
-          accentColor: AccentColor,
-          fontFamily: 'Lato',
-        ),
-        home: AuthScreen(),
-        routes: {
-          OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
-          AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
-          ItemScreen.routeName: (ctx) => ItemScreen(),
-          OrderScreen.routeName: (ctx) => OrderScreen(),
-          BidScreen.routeName: (ctx) => BidScreen(),
-          AuthScreen.routeName: (ctx) => AuthScreen(),
-        },
-      ),
+      child: Consumer<AuthProvider>(builder: (ctx, auth, _) {
+        return MaterialApp(
+          title: AppName,
+          theme: ThemeData(
+            brightness: Brightness.dark,
+            primaryColor: PrimaryColor,
+            primarySwatch: Colors.deepPurple,
+            accentColor: AccentColor,
+            fontFamily: 'Lato',
+          ),
+          home: auth.isAuthorized() ? HomeScreen() : AuthScreen(),
+          routes: {
+            OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
+            AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
+            ItemScreen.routeName: (ctx) => ItemScreen(),
+            OrderScreen.routeName: (ctx) => OrderScreen(),
+            BidScreen.routeName: (ctx) => BidScreen(),
+            AuthScreen.routeName: (ctx) => AuthScreen(),
+          },
+        );
+      }),
     );
   }
 }
