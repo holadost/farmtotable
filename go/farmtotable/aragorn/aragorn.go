@@ -1,17 +1,25 @@
 package aragorn
 
 import (
+	"context"
 	"errors"
 	"farmtotable/gandalf"
 	"farmtotable/util"
 	"firebase.google.com/go"
+	"flag"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 	"go.uber.org/zap"
+	"google.golang.org/api/option"
 	"net/http"
 	"time"
+)
+
+var (
+	fbCredPath = flag.String("fb_cred_path", "",
+		"The firebase credentials path")
 )
 
 type Aragorn struct {
@@ -23,12 +31,12 @@ type Aragorn struct {
 
 func NewAragorn() *Aragorn {
 	aragorn := &Aragorn{}
-	// TODO: Populate the config after we have the file from Raunaq.
-	//_, err := firebase.NewApp(context.Background(), nil)
-	//if err != nil {
-	//	panic("Unable to initialize firebase app")
-	//}
-	// TODO: Pick the backend type based on env. For now hardcode to sqlite.
+	opt := option.WithCredentialsFile(*fbCredPath)
+	var err error
+	aragorn.firebaseApp, err = firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		glog.Fatalf("Unable to initialize firebase app due to err: %s", err.Error())
+	}
 	aragorn.gandalf = gandalf.NewSqliteGandalf()
 	aragorn.apiLogger = util.NewJSONLogger()
 	return aragorn
@@ -91,26 +99,19 @@ func (aragorn *Aragorn) Run() {
 	r.Run(":8080")
 }
 
-//func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
-//	idToken := c.Request.Header["Authorization"][0]
-//	client, err := aragorn.firebaseApp.Auth(context.Background())
-//	if err != nil {
-//		return "", err
-//	}
-//	token, err := client.VerifyIDToken(context.Background(), idToken)
-//	if err != nil {
-//		return "", err
-//	}
-//	return token.UID, nil
-//}
-//
-//func (aragorn *Aragorn) doesUserExist(userID string) bool {
-//	user := aragorn.gandalf.GetUserByID(userID)
-//	if user.UserID != userID {
-//		return false
-//	}
-//	return true
-//}
+func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
+	idToken := c.Request.Header["Authorization"][0]
+	glog.Infof("ID Token: %s", idToken)
+	client, err := aragorn.firebaseApp.Auth(context.Background())
+	if err != nil {
+		return "", err
+	}
+	token, err := client.VerifyIDToken(context.Background(), idToken)
+	if err != nil {
+		return "", err
+	}
+	return token.UID, nil
+}
 
 /* UserModel APIs. */
 func (aragorn *Aragorn) GetUser(c *gin.Context) {
@@ -353,6 +354,7 @@ func (aragorn *Aragorn) GetItem(c *gin.Context) {
 
 /* AuctionModel APIs. */
 func (aragorn *Aragorn) FetchAuctions(c *gin.Context) {
+	aragorn.authenticate(c)
 	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
 	if err := c.ShouldBindJSON(&fetchAucArg); err != nil {
