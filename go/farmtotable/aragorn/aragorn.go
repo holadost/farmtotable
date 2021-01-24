@@ -104,10 +104,12 @@ func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
 	glog.Infof("ID Token: %s", idToken)
 	client, err := aragorn.firebaseApp.Auth(context.Background())
 	if err != nil {
+		glog.Errorf("Unable to initialize firebase auth due to error: %s", err.Error())
 		return "", err
 	}
 	token, err := client.VerifyIDToken(context.Background(), idToken)
 	if err != nil {
+		glog.Errorf("Unable to verify ID token due to err: %s", err.Error())
 		return "", err
 	}
 	return token.UID, nil
