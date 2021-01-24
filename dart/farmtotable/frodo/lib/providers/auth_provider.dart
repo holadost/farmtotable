@@ -11,17 +11,19 @@ class AuthProvider with ChangeNotifier {
 
   Future<String> get token async {
     if (_idToken == "" || _idToken == null) {
+      info("Did not find any ID token");
       return null;
     }
     if (_expTime == null) {
+      info("Did not find an expiry time with the ID token");
       return null;
     }
     if (_expTime.subtract(Duration(minutes: 5)).isBefore(DateTime.now())) {
-      if (await refreshTokens()) {
-        return _idToken;
+      if (!await refreshTokens()) {
+        return null;
       }
     }
-    return null;
+    return _idToken;
   }
 
   Future<bool> refreshTokens() async {

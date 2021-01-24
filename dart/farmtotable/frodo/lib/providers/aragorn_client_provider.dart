@@ -14,6 +14,14 @@ class AragornClientProvider with ChangeNotifier {
 
   AragornClientProvider(this.authProv);
 
+  Future<String> _getIDToken() async {
+    final token = await authProv.token;
+    if (token == null) {
+      throw Future.error("Unable to get ID token");
+    }
+    return token;
+  }
+
   bool _parseAuctionsResponse(String jsonStr, List<AuctionItem> auctions) {
     Map<String, dynamic> myMap = json.decode(jsonStr);
     if (myMap["status"] < 200 || myMap["status"] >= 300) {
@@ -43,7 +51,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<List<AuctionItem>> getAuctions(int startID, int numAuctions) async {
     final route = baseRoute + "auctions/fetch_all";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body:
           json.encode({"start_id": startID, "num_auctions": numAuctions}));
       List<AuctionItem> auctions = [];
@@ -83,7 +93,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<Item> getItem(String itemID) async {
     final route = baseRoute + "items/get";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "item_id": itemID,
           }));
@@ -105,7 +117,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<void> registerBid(String itemID, double bidAmt, int bidQty) async {
     final route = baseRoute + "auctions/register_bid";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "item_id": itemID,
             "user_id": "user1",
@@ -149,7 +163,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<List<Order>> getUserOrders(String userID) async {
     final route = baseRoute + "orders/get_user_orders";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "user_id": "user1",
           }));
@@ -189,7 +205,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<Order> getUserOrder(String userID, String itemID) async {
     final route = baseRoute + "orders/get_order";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "user_id": "user1",
             "item_id": itemID,
@@ -214,7 +232,9 @@ class AragornClientProvider with ChangeNotifier {
   Future<double> getUserBid(String userID, String itemID) async {
     final route = baseRoute + "auctions/get_user_bid";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "user_id": "user1",
           }));
@@ -238,7 +258,35 @@ class AragornClientProvider with ChangeNotifier {
   Future<double> fetchMaxBids(List<String> orderIds) async {
     final route = baseRoute + "auctions/get_user_bid";
     try {
+      final idToken = await _getIDToken();
       final response = await http.post(route,
+          headers: {"Authorization": idToken},
+          body: json.encode({
+            "user_id": "user1",
+          }));
+      return _parseFetchMaxBidInfo(response.body);
+    } catch (error) {
+      throw error;
+    }
+  }
+
+  double _parseRegisterUserInfo(String jsonStr) {
+    print(jsonStr);
+    Map<String, dynamic> myMap = json.decode(jsonStr);
+    if (myMap["status"] < 200 || myMap["status"] >= 300) {
+      print("Received error from backend: ${myMap['error_msg']}");
+      throw Future.error("Did not get expected response");
+    }
+    final userBid = myMap["data"] as double;
+    return userBid;
+  }
+
+  Future<double> registerUser(String userID, String emailID) async {
+    final route = baseRoute + "auctions/get_user_bid";
+    try {
+      final idToken = await _getIDToken();
+      final response = await http.post(route,
+          headers: {"Authorization": idToken},
           body: json.encode({
             "user_id": "user1",
           }));
