@@ -44,12 +44,12 @@ func NewAragorn() *Aragorn {
 
 func NewAragornWithGandalf(g *gandalf.Gandalf) *Aragorn {
 	aragorn := &Aragorn{}
-	// TODO: Populate the config after we have the file from Raunaq.
-	//_, err := firebase.NewApp(context.Background(), nil)
-	//if err != nil {
-	//	panic("Unable to initialize firebase app")
-	//}
-	// TODO: Pick the backend type based on env. For now hardcode to sqlite.
+	var err error
+	opt := option.WithCredentialsFile(*fbCredPath)
+	aragorn.firebaseApp, err = firebase.NewApp(context.Background(), nil, opt)
+	if err != nil {
+		glog.Fatalf("Unable to initialize firebase app due to err: %s", err.Error())
+	}
 	aragorn.gandalf = g
 	aragorn.apiLogger = util.NewJSONLogger()
 	return aragorn
