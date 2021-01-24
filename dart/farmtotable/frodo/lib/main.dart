@@ -32,28 +32,26 @@ class MyApp extends StatelessWidget {
           return AragornClientProvider(auth);
         }),
       ],
-      child: Consumer<AuthProvider>(builder: (ctx, auth, _) {
-        return MaterialApp(
-          title: AppName,
-          theme: ThemeData(
-            brightness: Brightness.dark,
-            primaryColor: PrimaryColor,
-            primarySwatch: Colors.deepPurple,
-            accentColor: AccentColor,
-            fontFamily: 'Lato',
-          ),
-          home: HomeScreen(),
-          routes: {
-            OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
-            AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
-            ItemScreen.routeName: (ctx) => ItemScreen(),
-            OrderScreen.routeName: (ctx) => OrderScreen(),
-            BidScreen.routeName: (ctx) => BidScreen(),
-            AuthScreen.routeName: (ctx) => AuthScreen(),
-            WelcomeScreen.routeName: (ctx) => WelcomeScreen(),
-          },
-        );
-      }),
+      child: MaterialApp(
+        title: AppName,
+        theme: ThemeData(
+          brightness: Brightness.dark,
+          primaryColor: PrimaryColor,
+          primarySwatch: Colors.deepPurple,
+          accentColor: AccentColor,
+          fontFamily: 'Lato',
+        ),
+        home: HomeScreen(),
+        routes: {
+          OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
+          AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
+          ItemScreen.routeName: (ctx) => ItemScreen(),
+          OrderScreen.routeName: (ctx) => OrderScreen(),
+          BidScreen.routeName: (ctx) => BidScreen(),
+          AuthScreen.routeName: (ctx) => AuthScreen(),
+          WelcomeScreen.routeName: (ctx) => WelcomeScreen(),
+        },
+      )
     );
   }
 }

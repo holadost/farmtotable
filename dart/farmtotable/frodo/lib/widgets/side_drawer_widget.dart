@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/screens/auth_screen.dart';
 import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
@@ -50,9 +49,9 @@ class SideDrawerWidget extends StatelessWidget {
             leading: Icon(Icons.logout), title: Text('Log out'),
             onTap: () {
               prov.signout();
-              // Go back to main.dart.
+              // Go back to home screen.
               Navigator.of(context).popUntil((route) => route.isFirst);
-              Navigator.of(context).pushReplacementNamed(AuthScreen.routeName);
+              Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);
             },
           ),
         ],

@@ -25,7 +25,7 @@ class _AuctionsOverviewScreenState extends State<AuctionsOverviewScreen> {
 
   @override
   void didChangeDependencies() {
-    apiClient = Provider.of<AragornClientProvider>(context);
+    apiClient = Provider.of<AragornClientProvider>(context, listen: false);
     _cleanLoad();
     super.didChangeDependencies();
   }
