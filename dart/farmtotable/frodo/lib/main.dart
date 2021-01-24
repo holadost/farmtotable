@@ -26,9 +26,9 @@ class MyApp extends StatelessWidget {
       providers: [
         ChangeNotifierProvider.value(value: AuthProvider()),
         // ignore: missing_required_param
-        ChangeNotifierProxyProvider<AuthProvider, RestClientProvider>(
+        ChangeNotifierProxyProvider<AuthProvider, AragornClientProvider>(
             update: (ctx, auth, prevClient) {
-          return RestClientProvider(auth.token);
+          return AragornClientProvider(auth);
         }),
       ],
       child: Consumer<AuthProvider>(builder: (ctx, auth, _) {

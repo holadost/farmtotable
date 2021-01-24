@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/item.dart';
-import '../net/aragorn_rest_client.dart';
+import '../providers/rest_client_provider.dart';
 import '../util/constants.dart';
 
 class RegisterBidWidget extends StatefulWidget {
@@ -19,7 +20,13 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
   bool _isBeingSubmitted = false;
   bool _bidButtonDisabled = false;
   double _totalAmount = 0;
-  var apiClient = AragornRestClient();
+  AragornClientProvider apiClient;
+
+  @override
+  void didChangeDependencies() {
+    apiClient = Provider.of<AragornClientProvider>(context);
+    super.didChangeDependencies();
+  }
 
   void _updateTotal() {
     int qty;

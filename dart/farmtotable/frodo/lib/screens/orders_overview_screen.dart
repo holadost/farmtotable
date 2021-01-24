@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/order.dart';
-import '../net/aragorn_rest_client.dart';
+import '../providers/rest_client_provider.dart';
 import '../widgets/orders_list_widget.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';
@@ -15,7 +16,7 @@ class OrdersOverviewScreen extends StatefulWidget {
 }
 
 class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
-  final apiClient = AragornRestClient();
+  AragornClientProvider apiClient;
   List<Order> _ordersList = [];
   bool _isLoading = false;
 
@@ -37,6 +38,7 @@ class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
 
   @override
   void didChangeDependencies() {
+    apiClient = Provider.of<AragornClientProvider>(context);
     _loadData();
     super.didChangeDependencies();
   }

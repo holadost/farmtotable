@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 import '../models/item.dart';
-import '../net/aragorn_rest_client.dart';
+import '../providers/rest_client_provider.dart';
 import '../screens/bid_screen.dart';
 import '../util/constants.dart';
 import '../widgets/item_display_widget.dart';
@@ -17,12 +18,13 @@ class _ItemScreenState extends State<ItemScreen> {
   bool _showBiddingButton = false;
   String _itemID;
   bool _isLoading = false;
-  var _apiClient = AragornRestClient();
+  AragornClientProvider _apiClient;
   Item _item;
   bool _gatheredArgs = false;
 
   @override
   void didChangeDependencies() {
+    _apiClient = Provider.of<AragornClientProvider>(context);
     if (!_gatheredArgs) {
       final args = ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
       _showBiddingButton = args['show_bid_button'];
