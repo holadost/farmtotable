@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:frodo/screens/welcome_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -41,7 +42,7 @@ class MyApp extends StatelessWidget {
             accentColor: AccentColor,
             fontFamily: 'Lato',
           ),
-          home: auth.isAuthorized() ? HomeScreen() : AuthScreen(),
+          home: HomeScreen(),
           routes: {
             OrdersOverviewScreen.routeName: (ctx) => OrdersOverviewScreen(),
             AuctionsOverviewScreen.routeName: (ctx) => AuctionsOverviewScreen(),
@@ -49,6 +50,7 @@ class MyApp extends StatelessWidget {
             OrderScreen.routeName: (ctx) => OrderScreen(),
             BidScreen.routeName: (ctx) => BidScreen(),
             AuthScreen.routeName: (ctx) => AuthScreen(),
+            WelcomeScreen.routeName: (ctx) => WelcomeScreen(),
           },
         );
       }),

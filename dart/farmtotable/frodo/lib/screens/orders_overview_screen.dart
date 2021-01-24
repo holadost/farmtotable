@@ -38,7 +38,7 @@ class _OrdersOverviewScreenState extends State<OrdersOverviewScreen> {
 
   @override
   void didChangeDependencies() {
-    apiClient = Provider.of<AragornClientProvider>(context);
+    apiClient = Provider.of<AragornClientProvider>(context, listen: false);
     _loadData();
     super.didChangeDependencies();
   }

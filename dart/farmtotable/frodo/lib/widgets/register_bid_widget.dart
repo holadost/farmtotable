@@ -24,7 +24,7 @@ class _RegisterBidWidgetState extends State<RegisterBidWidget> {
 
   @override
   void didChangeDependencies() {
-    apiClient = Provider.of<AragornClientProvider>(context);
+    apiClient = Provider.of<AragornClientProvider>(context, listen: false);
     super.didChangeDependencies();
   }
 

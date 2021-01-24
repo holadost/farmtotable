@@ -1,28 +1,19 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
-import '../widgets/side_drawer_widget.dart';
-import '../util/constants.dart';
-import '../util/styles.dart';
+import '../providers/auth_provider.dart';
+import '../screens/auth_screen.dart';
+import '../screens/welcome_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   static const routeName = "/";
 
   @override
   Widget build(BuildContext context) {
-    final appBar = AppBar(
-      backgroundColor: PrimaryColor,
-      title: Text(
-        AppName,
-        style: getAppBarTextStyle(),
-      ),
-    );
-    final body = Container(
-      child: Text('Welcome to AlgoRhythm. Still under construction!'),
-    );
-    return Scaffold(
-      appBar: appBar,
-      body: body,
-      drawer: SideDrawerWidget(),
-    );
+    final authProv = Provider.of<AuthProvider>(context, listen: false);
+    if (authProv.isAuthorized()) {
+      return WelcomeScreen();
+    }
+    return AuthScreen();
   }
 }

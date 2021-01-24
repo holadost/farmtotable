@@ -24,7 +24,7 @@ class _ItemScreenState extends State<ItemScreen> {
 
   @override
   void didChangeDependencies() {
-    _apiClient = Provider.of<AragornClientProvider>(context);
+    _apiClient = Provider.of<AragornClientProvider>(context, listen: false);
     if (!_gatheredArgs) {
       final args = ModalRoute.of(context).settings.arguments as Map<String, dynamic>;
       _showBiddingButton = args['show_bid_button'];
