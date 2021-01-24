@@ -16,9 +16,10 @@ class AuthProvider with ChangeNotifier {
     if (_expTime == null) {
       return null;
     }
-    if (_expTime.subtract(Duration(minutes: 5)).isBefore(DateTime.now())) {}
-    if (await refreshTokens()) {
-      return _idToken;
+    if (_expTime.subtract(Duration(minutes: 5)).isBefore(DateTime.now())) {
+      if (await refreshTokens()) {
+        return _idToken;
+      }
     }
     return null;
   }
