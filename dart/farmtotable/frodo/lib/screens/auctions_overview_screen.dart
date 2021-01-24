@@ -3,7 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../util/logging.dart';
 import '../models/auction_item.dart';
-import '../providers/rest_client_provider.dart';
+import '../providers/aragorn_client_provider.dart';
 import '../util/styles.dart';
 import '../util/constants.dart';
 import '../widgets/side_drawer_widget.dart';

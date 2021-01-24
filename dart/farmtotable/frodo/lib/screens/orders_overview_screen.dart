@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/order.dart';
-import '../providers/rest_client_provider.dart';
+import '../providers/aragorn_client_provider.dart';
 import '../widgets/orders_list_widget.dart';
 import '../widgets/side_drawer_widget.dart';
 import '../util/styles.dart';

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/item.dart';
-import '../providers/rest_client_provider.dart';
+import '../providers/aragorn_client_provider.dart';
 import '../util/constants.dart';
 
 class RegisterBidWidget extends StatefulWidget {

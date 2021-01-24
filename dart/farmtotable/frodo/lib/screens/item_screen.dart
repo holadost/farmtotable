@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
 import '../models/item.dart';
-import '../providers/rest_client_provider.dart';
+import '../providers/aragorn_client_provider.dart';
 import '../screens/bid_screen.dart';
 import '../util/constants.dart';
 import '../widgets/item_display_widget.dart';
