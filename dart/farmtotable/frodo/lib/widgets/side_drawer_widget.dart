@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../providers/auth_provider.dart';
 import '../screens/home_screen.dart';
+import '../screens/contact_us_screen.dart';
 import '../screens/orders_overview_screen.dart';
 import '../screens/auctions_overview_screen.dart';
 import '../util/constants.dart';
@@ -11,7 +12,7 @@ class SideDrawerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    var prov = Provider.of<AuthProvider>(context);
+    var auth = Provider.of<AuthProvider>(context);
     return Drawer(
       child: Column(
         children: [
@@ -46,9 +47,18 @@ class SideDrawerWidget extends StatelessWidget {
           ),
           Divider(),
           ListTile(
+            leading: Icon(Icons.people), title: Text('Contact Us'),
+            onTap: () {
+              // Go back to home screen.
+              Navigator.of(context).pushReplacementNamed(
+                  ContactUsScreen.routeName);
+            },
+          ),
+          Divider(),
+          ListTile(
             leading: Icon(Icons.logout), title: Text('Log out'),
             onTap: () {
-              prov.signout();
+              auth.signout();
               // Go back to home screen.
               Navigator.of(context).popUntil((route) => route.isFirst);
               Navigator.of(context).pushReplacementNamed(HomeScreen.routeName);

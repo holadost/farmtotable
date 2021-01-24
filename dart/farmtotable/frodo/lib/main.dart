@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:frodo/screens/welcome_screen.dart';
 import 'package:provider/provider.dart';
 import 'package:firebase_core/firebase_core.dart';
 
@@ -12,6 +11,8 @@ import './screens/item_screen.dart';
 import './screens/orders_overview_screen.dart';
 import './screens/order_screen.dart';
 import './screens/bid_screen.dart';
+import './screens/contact_us_screen.dart';
+import './screens/welcome_screen.dart';
 import './util/constants.dart';
 
 Future<void> main() async {
@@ -50,6 +51,7 @@ class MyApp extends StatelessWidget {
           BidScreen.routeName: (ctx) => BidScreen(),
           AuthScreen.routeName: (ctx) => AuthScreen(),
           WelcomeScreen.routeName: (ctx) => WelcomeScreen(),
+          ContactUsScreen.routeName: (ctx) => ContactUsScreen(),
         },
       )
     );
