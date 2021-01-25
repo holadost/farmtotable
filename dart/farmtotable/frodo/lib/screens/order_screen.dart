@@ -8,6 +8,7 @@ class OrderScreen extends StatelessWidget {
   static const routeName = '/order-screen';
 
   void _handlePayment() {}
+  void _cancelOrder() {}
   void _gotoItemScreen(BuildContext context, String itemID) {
     Navigator.of(context).pushNamed(
         ItemScreen.routeName,
@@ -188,6 +189,15 @@ class OrderScreen extends StatelessWidget {
             RaisedButton(
               onPressed: _handlePayment,
               child: const Text("Make payment"),
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(16.0),
+              ),
+            ),
+          if (order.status == OrderStatus.KOrderPaymentPending)
+            FlatButton(
+              onPressed: _cancelOrder,
+              child: Text(
+                  "Cancel Order", style: TextStyle(color: Colors.red),),
               shape: RoundedRectangleBorder(
                 borderRadius: BorderRadius.circular(16.0),
               ),
