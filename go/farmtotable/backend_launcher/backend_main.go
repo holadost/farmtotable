@@ -200,21 +200,21 @@ func addDummyItemsAndOrders(gnd *gandalf.Gandalf) {
 	}
 
 	var items []gandalf.ItemModel
-	a, err := gnd.GetSupplierItems("supplier1")
+	a, err := gnd.GetSupplierItems(suppliers[0].SupplierID)
 	if err != nil {
 		glog.Fatalf("Unable to get supplier items for supplier1 due to err: %v", err)
 	}
 	items = append(items, a...)
 	a = nil
 
-	a, err = gnd.GetSupplierItems("supplier2")
+	a, err = gnd.GetSupplierItems(suppliers[1].SupplierID)
 	if err != nil {
 		glog.Fatalf("Unable to get supplier items for supplier2 due to err: %v", err)
 	}
 	items = append(items, a...)
 	a = nil
 
-	a, err = gnd.GetSupplierItems("supplier3")
+	a, err = gnd.GetSupplierItems(suppliers[2].SupplierID)
 	if err != nil {
 		glog.Fatalf("Unable to get supplier items for supplier3 due to err: %v", err)
 	}
