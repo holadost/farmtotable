@@ -1,18 +1,15 @@
 package aragorn
 
 import (
-	"context"
 	"errors"
 	"farmtotable/gandalf"
 	"farmtotable/util"
-	"firebase.google.com/go"
 	"flag"
 	"fmt"
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	"github.com/golang/glog"
 	"go.uber.org/zap"
-	"google.golang.org/api/option"
 	"net/http"
 	"time"
 )
@@ -20,23 +17,19 @@ import (
 var (
 	fbCredPath = flag.String("fb_cred_path", "",
 		"The firebase credentials path")
+	skipAuth = flag.Bool("skip_auth", true,
+		"Flag to skip auth. Defaults to true for dev and test purposes")
 )
 
 type Aragorn struct {
-	gandalf     *gandalf.Gandalf
-	firebaseApp *firebase.App
-	authCache   interface{}
-	apiLogger   *zap.Logger
+	gandalf   *gandalf.Gandalf
+	auth      *Auth
+	apiLogger *zap.Logger
 }
 
 func NewAragorn() *Aragorn {
 	aragorn := &Aragorn{}
-	opt := option.WithCredentialsFile(*fbCredPath)
-	var err error
-	aragorn.firebaseApp, err = firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		glog.Fatalf("Unable to initialize firebase app due to err: %s", err.Error())
-	}
+	aragorn.auth = NewAuth(*fbCredPath)
 	aragorn.gandalf = gandalf.NewSqliteGandalf()
 	aragorn.apiLogger = util.NewJSONLogger()
 	return aragorn
@@ -44,12 +37,7 @@ func NewAragorn() *Aragorn {
 
 func NewAragornWithGandalf(g *gandalf.Gandalf) *Aragorn {
 	aragorn := &Aragorn{}
-	var err error
-	opt := option.WithCredentialsFile(*fbCredPath)
-	aragorn.firebaseApp, err = firebase.NewApp(context.Background(), nil, opt)
-	if err != nil {
-		glog.Fatalf("Unable to initialize firebase app due to err: %s", err.Error())
-	}
+	aragorn.auth = NewAuth(*fbCredPath)
 	aragorn.gandalf = g
 	aragorn.apiLogger = util.NewJSONLogger()
 	return aragorn
@@ -97,22 +85,6 @@ func (aragorn *Aragorn) Run() {
 
 	// Start router.
 	r.Run(":8080")
-}
-
-func (aragorn *Aragorn) authenticate(c *gin.Context) (string, error) {
-	idToken := c.Request.Header["Authorization"][0]
-	glog.Infof("ID Token: %s", idToken)
-	client, err := aragorn.firebaseApp.Auth(context.Background())
-	if err != nil {
-		glog.Errorf("Unable to initialize firebase auth due to error: %s", err.Error())
-		return "", err
-	}
-	token, err := client.VerifyIDToken(context.Background(), idToken)
-	if err != nil {
-		glog.Errorf("Unable to verify ID token due to err: %s", err.Error())
-		return "", err
-	}
-	return token.UID, nil
 }
 
 /* UserModel APIs. */
@@ -356,7 +328,6 @@ func (aragorn *Aragorn) GetItem(c *gin.Context) {
 
 /* AuctionModel APIs. */
 func (aragorn *Aragorn) FetchAuctions(c *gin.Context) {
-	aragorn.authenticate(c)
 	var response FetchAllAuctionsRet
 	var fetchAucArg FetchAllAuctionsArg
 	if err := c.ShouldBindJSON(&fetchAucArg); err != nil {
