@@ -97,17 +97,20 @@ func (auth *Auth) Authenticate(c *gin.Context) error {
 	glog.V(1).Infof("ID Token: %s", idToken)
 	entryIf, present := auth.tokenCache.Get(idToken)
 	if present {
+		glog.V(1).Infof("Found entry in cache for token")
 		entry := entryIf.(*authCacheEntry)
 		c.Set("Token", entry.token)
 		return nil
 	}
+
 	token, err := auth.firebaseAuth.VerifyIDToken(context.Background(), idToken)
 	if err != nil {
 		return NewAuthError(KInvalidIDToken, err.Error())
 	}
+	glog.V(1).Infof("Did not find entry in cache for token. Total duration: %d secs",
+		(token.Expires - token.IssuedAt))
 	auth.tokenCache.SetWithTTL(
-		idToken, &authCacheEntry{token: token}, 1,
-		time.Duration(token.Expires-token.IssuedAt))
+		idToken, &authCacheEntry{token: token}, 1, time.Duration(token.Expires-token.IssuedAt)*time.Second)
 	c.Set("Token", token)
 	return nil
 }
