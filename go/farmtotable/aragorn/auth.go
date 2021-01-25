@@ -109,6 +109,5 @@ func (auth *Auth) Authenticate(c *gin.Context) error {
 		idToken, &authCacheEntry{token: token}, 1,
 		time.Duration(token.Expires-token.IssuedAt))
 	c.Set("Token", token)
-	c.Next()
 	return nil
 }

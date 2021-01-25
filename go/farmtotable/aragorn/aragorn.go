@@ -45,13 +45,16 @@ func NewAragornWithGandalf(g *gandalf.Gandalf) *Aragorn {
 
 func (aragorn *Aragorn) Run() {
 	glog.Info("Aragorn initialized")
-	r := gin.Default()
+	r := gin.New()
+	r.Use(gin.Logger())
+	r.Use(gin.Recovery())
 	r.Use(cors.New(cors.Config{
 		AllowOrigins: []string{"*"},
 		AllowMethods: []string{"POST", "GET"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Content-Length", "Accept-Encoding", "Authorization", "Cache-Control"},
 		MaxAge:       12 * time.Hour,
 	}))
+	r.Use(aragorn.authenticate)
 
 	// UserModel APIs.
 	r.POST("/api/v1/resources/users/fetch", aragorn.GetUser)
@@ -85,6 +88,20 @@ func (aragorn *Aragorn) Run() {
 
 	// Start router.
 	r.Run(":8080")
+}
+
+func (aragorn *Aragorn) authenticate(c *gin.Context) {
+	if *skipAuth {
+		c.Next()
+		return
+	}
+	if aragorn.auth.Authenticate(c) != nil {
+		c.Abort()
+		c.Writer.WriteHeader(http.StatusUnauthorized)
+		c.Writer.Write([]byte("Unauthorized"))
+		return
+	}
+	c.Next()
 }
 
 /* UserModel APIs. */
